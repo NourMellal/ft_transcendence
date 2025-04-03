@@ -7,13 +7,13 @@ services:
         networks:
             - ft_transcendence
         depends_on:
-            - user_manager
+            - api_gateway
         restart: always
-    user_manager:
-        container_name: user_manager
-        build: ./user_manager
+    api_gateway:
+        container_name: api_gateway
+        build: ./api_gateway
         volumes:
-            - user_manager_db_volume:/database:rw
+            - api_gateway_db_volume:/database:rw
         networks:
             - ft_transcendence
         restart: always
@@ -24,10 +24,10 @@ networks:
         driver: bridge
 
 volumes:
-    user_manager_db_volume:
-        name: user_manager_db_volume
+    api_gateway_db_volume:
+        name: api_gateway_db_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/user_manager_db_volume'
+            device: '/home/msitni/data/api_gateway_db_volume'

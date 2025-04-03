@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In</title>
     <script>
-        var signinCodeUrl = 'https://server.transcendence.fr/user/signin'
+        var signinCodeUrl = 'https://server.transcendence.fr/OAuth/signin'
         var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
         async function SignInWithGoogle() {
             try {
@@ -23,7 +23,7 @@
                 // Parameters to pass to OAuth 2.0 endpoint.
                 var params = {
                     'client_id': '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
-                    'redirect_uri': 'https://server.transcendence.fr/user/Auth/code',
+                    'redirect_uri': 'https://server.transcendence.fr/OAuth/code',
                     'scope': 'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
                     'state': code,
                     'include_granted_scopes': 'true',

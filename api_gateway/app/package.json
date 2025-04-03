@@ -1,8 +1,8 @@
 {
   "private": "true",
-  "name": "ft_user_manager",
+  "name": "ft_api_gateway",
   "version": "1.0.0",
-  "description": "user_manager microservice for ft_transcendence",
+  "description": "api_gateway microservice for ft_transcendence",
   "main": "./dist/app.js",
   "scripts": {
     "start": "npx tsc && node --env-file=./.env ./dist/app.js"
