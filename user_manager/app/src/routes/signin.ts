@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { DatabaseSync } from 'node:sqlite';
 
 async function routes(fastify: FastifyInstance, db: DatabaseSync) {
-    fastify.get('/signin', async (request, reply) => {
+    fastify.get('/user/signin', async (request, reply) => {
         const randomValues = new Uint32Array(4);
         crypto.getRandomValues(randomValues);
         // Encode as UTF-8

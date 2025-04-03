@@ -27,7 +27,7 @@ const opts = {
 };
 
 async function routes(fastify: FastifyInstance, db: DatabaseSync) {
-    fastify.get('/Auth/code', opts, async (request: FastifyRequest<{ Querystring: QueryStringType }>, reply) => {
+    fastify.get('/user/Auth/code', opts, async (request: FastifyRequest<{ Querystring: QueryStringType }>, reply) => {
         const { state, code, scope } = request.query;
         const getquery = db.prepare('SELECT * FROM signin_states WHERE state = ? ;');
         const getResult: SignInStatesModel = getquery.get(state) as SignInStatesModel;

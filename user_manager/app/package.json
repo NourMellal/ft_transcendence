@@ -5,7 +5,7 @@
   "description": "user_manager microservice for ft_transcendence",
   "main": "./dist/app.js",
   "scripts": {
-    "start": "npx tsc && node --env-file=../.private/.env ./dist/app.js"
+    "start": "npx tsc && node --env-file=./.env ./dist/app.js"
   },
   "author": "Sitni Mohammed",
   "license": "MIT",

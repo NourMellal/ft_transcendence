@@ -20,7 +20,7 @@ app.register(cors, { origin: '*' });
 app.register(signinRoute, database);
 app.register(OAuthCodeRoute, database);
 
-app.listen({ port: port }, (err, addr) => {
+app.listen({ port: port, host: '0.0.0.0' }, (err, addr) => {
     if (err) {
         app.log.error("fatal error: " + err);
         process.exit(1);
