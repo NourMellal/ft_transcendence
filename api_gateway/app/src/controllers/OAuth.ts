@@ -1,9 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import db from '../types/Databases'
+import db from '../classes/Databases'
+import Auth, { JWT } from '../classes/AuthProvider'
 import { SignInStatesModel } from '../models/SignInStates'
 import { OAuthCodeQueryString, OAuthCodeExchangeResponse } from '../types/OAuth'
 
-async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<string | undefined> {
+async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<JWT | unknown> {
     const reqOpt: RequestInit = {
         method: 'POST',
         headers: {
@@ -23,11 +24,11 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<string | 
         if (!response.ok)
             throw 'Response from google auth provider is not ok.';
         var responsejson = await response.json() as OAuthCodeExchangeResponse;
-        return responsejson.id_token;
+        return Auth.ValidateJWT(responsejson.id_token);
     } catch (error) {
-        console.log('Error in AuthenticateUser(): ' + error);
+        console.log('Error in OAuthExchangeCode(): ' + error);
+        return undefined;
     }
-    return undefined;
 }
 
 export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OAuthCodeQueryString }>, reply: FastifyReply) => {
@@ -39,11 +40,14 @@ export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OA
         const runResult = runquery.run(state);
         if (runResult.changes === 1) {
             var jwt = await OAuthExchangeCode(request.query);
-            if (jwt)
-                return reply.code(200).send(`JWT: ${jwt} OK!`);
+            if (jwt !== undefined)
+                return reply.code(200).send(`JWT: OK!\n${JSON.stringify(jwt)}`);
+            else
+                return reply.code(500).send(`ERROR: Invalid credentials.`);
         }
+        console.log(`ERROR: AuthenticateUser(): did not remove state_code=${state} from the db.`);
     }
-    return reply.code(500).send(`ERROR!`);
+    return reply.code(500).send(`ERROR: Invalid state code.`);
 }
 
 export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply) => {
