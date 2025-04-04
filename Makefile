@@ -12,6 +12,8 @@ re: clean all
 #Create docker persistent volumes
 create_volumes_dir:
 	@sudo mkdir -p /home/${USERNAME}/data/api_gateway_db_volume
+	@sudo mkdir -p /home/${USERNAME}/data/rabbit_mq_data_volume
+	@sudo mkdir -p /home/${USERNAME}/data/rabbit_mq_log_volume
 #Set host to fake route domains used to localhost
 set-host:
 	@if ! grep -q "server.transcendence.fr" /etc/hosts; then \

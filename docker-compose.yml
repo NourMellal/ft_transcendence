@@ -9,6 +9,16 @@ services:
         depends_on:
             - api_gateway
         restart: always
+    rabbitmq:
+        container_name: rabbitmq
+        build: ./rabbitmq
+        volumes:
+            - rabbit_mq_data_volume:/var/lib/rabbitmq/mnesia:rw
+            - rabbit_mq_log_volume:/var/log/rabbitmq:rw
+        networks:
+            - ft_transcendence
+        env_file: .env        
+        restart: always
     api_gateway:
         container_name: api_gateway
         build: ./api_gateway
@@ -16,6 +26,8 @@ services:
             - api_gateway_db_volume:/database:rw
         networks:
             - ft_transcendence
+        depends_on:
+            - rabbitmq
         restart: always
 
 networks:
@@ -31,3 +43,17 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/msitni/data/api_gateway_db_volume'
+    rabbit_mq_data_volume:
+        name: rabbit_mq_data_volume
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/home/msitni/data/rabbit_mq_data_volume'
+    rabbit_mq_log_volume:
+        name: rabbit_mq_log_volume
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/home/msitni/data/rabbit_mq_log_volume'

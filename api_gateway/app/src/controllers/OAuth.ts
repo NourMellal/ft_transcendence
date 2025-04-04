@@ -29,29 +29,24 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResp
     return result;
 }
 
-function CreateNewUser(response: OAuthResponse) {
-    const query = db.persistent.prepare('INSERT INTO users ( UID , role , access_token , refresh_token , ate ) VALUES( ? , ? , ? , ? , ? );');
-    const res = query.run(response.jwt.sub, 'user', response.response.access_token, response.response.refresh_token || '', (response.response.expires_in + Date.now() / 1000));
-    if (res.changes !== 1)
-        throw `Did not add user ${response.jwt.given_name} to db`;
-}
-
 export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OAuthCodeQueryString }>, reply: FastifyReply) => {
     try {
+        if (!Auth.isReady)
+            throw `OAuth class not ready`;
         const { state } = request.query;
-        const getStateQuery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ? ;');
+        const getStateQuery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ?;');
         const getStateResult = getStateQuery.get(state) as SignInStatesModel;
-        if (!getStateResult)
+        if (getStateResult === undefined)
             throw `Invalid state_code=${state}`;
         const runquery = db.transient.prepare('DELETE FROM signin_states WHERE state = ?;');
         const runResult = runquery.run(state);
         if (runResult.changes !== 1)
             throw `did not remove state_code=${state} from the db.`;
         var OAuthRes = await OAuthExchangeCode(request.query);
-        const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ? ;');
+        const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
-        if (!getUserResult) {
-            CreateNewUser(OAuthRes);
+        if (getUserResult === undefined) {
+            db.CreateNewUser(OAuthRes);
             return reply.code(200).send(`New user created\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`);
         }
         return reply.code(200).send(`Welcome back ${getUserResult.UID}\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`)
@@ -62,23 +57,29 @@ export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OA
 }
 
 export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply) => {
-    const randomValues = new Uint32Array(4);
-    crypto.getRandomValues(randomValues);
-    // Encode as UTF-8
-    const utf8Encoder = new TextEncoder();
-    const utf8Array = utf8Encoder.encode(
-        String.fromCharCode.apply(null, Array.from(randomValues))
-    );
-    // Base64 encode the UTF-8 data
-    var code = btoa(String.fromCharCode.apply(null, Array.from(utf8Array)))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-    const created = Date.now() / 1000;
-    const query = db.transient.prepare('INSERT INTO signin_states ( state , created ) VALUES( ? , ? );');
-    const res = query.run(code, created);
-    if (res.changes !== 1)
-        reply.code(500).send("try again");
-    else
-        reply.code(200).send(code);
+    try {
+        if (!Auth.isReady)
+            throw `OAuth class not ready`;
+        const randomValues = new Uint32Array(4);
+        crypto.getRandomValues(randomValues);
+        // Encode as UTF-8
+        const utf8Encoder = new TextEncoder();
+        const utf8Array = utf8Encoder.encode(
+            String.fromCharCode.apply(null, Array.from(randomValues))
+        );
+        // Base64 encode the UTF-8 data
+        var code = btoa(String.fromCharCode.apply(null, Array.from(utf8Array)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+        const created = Date.now() / 1000;
+        const query = db.transient.prepare('INSERT INTO signin_states ( state , created ) VALUES( ? , ? );');
+        const res = query.run(code, created);
+        if (res.changes !== 1)
+            throw `did not add state code to db`;
+        return reply.code(200).send(code);
+    } catch (error) {
+        console.log(`ERROR: GetOAuthCode(): ${error}`);
+        return reply.code(500).send("ERROR: internal error, try again later.");
+    }
 }

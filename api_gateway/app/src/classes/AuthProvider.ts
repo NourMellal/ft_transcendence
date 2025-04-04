@@ -1,31 +1,5 @@
 import crypto from 'crypto'
-
-export type JWT = {
-    iss: string,
-    aud: string,
-    sub: string,
-    exp: number,
-    iat: number,
-    email?: string,
-    given_name?: string,
-    picture?: string
-}
-
-type JWTHeaders = {
-    alg: string,
-    kid: string,
-    typ: string
-}
-
-type JWTKeyCert = {
-    keys: [{
-        pkey: crypto.KeyObject,
-        kid: string,
-        n: string,
-        e: string,
-        alg: string
-    }]
-}
+import { JWT, JWTHeaders, JWTKeyCert } from '../types/AuthProvider'
 
 type DiscoveryDocument = {
     issuer: string,

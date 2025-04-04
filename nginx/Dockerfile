@@ -1,8 +1,8 @@
 FROM debian:bookworm
 
-RUN apt update && apt upgrade -y && apt install nginx -y
+RUN apt update && apt upgrade -y 
 
-RUN apt install openssl -y
+RUN apt install nginx openssl -y
 
 WORKDIR /usr/local/nginx/conf
 

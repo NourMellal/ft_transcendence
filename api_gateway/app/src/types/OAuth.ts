@@ -1,4 +1,4 @@
-import {JWT} from '../classes/AuthProvider'
+import { JWT } from "./AuthProvider";
 
 export type OAuthCodeQueryString = {
     state: string,

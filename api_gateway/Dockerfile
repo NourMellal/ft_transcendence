@@ -1,12 +1,14 @@
 FROM debian:bookworm
 
-RUN apt update && apt upgrade -y && apt install wget -y 
+RUN apt update && apt upgrade -y
+
+RUN apt install wget -y 
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
 
-RUN chmod +x install.sh
+RUN chmod u+x install.sh
 
 RUN ./install.sh
 
