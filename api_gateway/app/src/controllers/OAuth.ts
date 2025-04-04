@@ -1,10 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import db from '../classes/Databases'
-import Auth, { JWT } from '../classes/AuthProvider'
-import { SignInStatesModel } from '../models/SignInStates'
-import { OAuthCodeQueryString, OAuthCodeExchangeResponse } from '../types/OAuth'
+import Auth from '../classes/AuthProvider'
+import { SignInStatesModel, UserModel } from '../types/DbTables'
+import { OAuthCodeQueryString, OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 
-async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<JWT | unknown> {
+async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
         method: 'POST',
         headers: {
@@ -19,35 +19,46 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<JWT | unk
             'grant_type': 'authorization_code'
         })
     };
-    try {
-        const response = await fetch('https://oauth2.googleapis.com/token', reqOpt);
-        if (!response.ok)
-            throw 'Response from google auth provider is not ok.';
-        var responsejson = await response.json() as OAuthCodeExchangeResponse;
-        return Auth.ValidateJWT(responsejson.id_token);
-    } catch (error) {
-        console.log('Error in OAuthExchangeCode(): ' + error);
-        return undefined;
-    }
+    const response = await fetch('https://oauth2.googleapis.com/token', reqOpt);
+    if (!response.ok)
+        throw 'OAuthExchangeCode(): Response from google auth provider is not ok.';
+    var responsejson = await response.json() as OAuthCodeExchangeResponse;
+    var result: OAuthResponse = {} as OAuthResponse;
+    result.response = responsejson;
+    result.jwt = Auth.ValidateJWT(responsejson.id_token);
+    return result;
+}
+
+function CreateNewUser(response: OAuthResponse) {
+    const query = db.persistent.prepare('INSERT INTO users ( UID , role , access_token , refresh_token , ate ) VALUES( ? , ? , ? , ? , ? );');
+    const res = query.run(response.jwt.sub, 'user', response.response.access_token, response.response.refresh_token || '', (response.response.expires_in + Date.now() / 1000));
+    if (res.changes !== 1)
+        throw `Did not add user ${response.jwt.given_name} to db`;
 }
 
 export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OAuthCodeQueryString }>, reply: FastifyReply) => {
-    const { state } = request.query;
-    const getquery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ? ;');
-    const getResult = getquery.get(state) as SignInStatesModel;
-    if (getResult) {
+    try {
+        const { state } = request.query;
+        const getStateQuery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ? ;');
+        const getStateResult = getStateQuery.get(state) as SignInStatesModel;
+        if (!getStateResult)
+            throw `Invalid state_code=${state}`;
         const runquery = db.transient.prepare('DELETE FROM signin_states WHERE state = ?;');
         const runResult = runquery.run(state);
-        if (runResult.changes === 1) {
-            var jwt = await OAuthExchangeCode(request.query);
-            if (jwt !== undefined)
-                return reply.code(200).send(`JWT: OK!\n${JSON.stringify(jwt)}`);
-            else
-                return reply.code(500).send(`ERROR: Invalid credentials.`);
+        if (runResult.changes !== 1)
+            throw `did not remove state_code=${state} from the db.`;
+        var OAuthRes = await OAuthExchangeCode(request.query);
+        const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ? ;');
+        const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
+        if (!getUserResult) {
+            CreateNewUser(OAuthRes);
+            return reply.code(200).send(`New user created\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`);
         }
-        console.log(`ERROR: AuthenticateUser(): did not remove state_code=${state} from the db.`);
+        return reply.code(200).send(`Welcome back ${getUserResult.UID}\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`)
+    } catch (error) {
+        console.log(`ERROR: AuthenticateUser(): ${error}`);
+        return reply.code(500).send(`ERROR: Invalid credentials.`);
     }
-    return reply.code(500).send(`ERROR: Invalid state code.`);
 }
 
 export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply) => {

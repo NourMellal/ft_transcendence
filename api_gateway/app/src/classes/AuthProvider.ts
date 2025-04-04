@@ -1,7 +1,6 @@
 import crypto from 'crypto'
 
 export type JWT = {
-    base46_token: string,
     iss: string,
     aud: string,
     sub: string,
@@ -67,7 +66,7 @@ class OAuthProvider {
             process.exit(1);
         }
     }
-    public ValidateJWT(encoded: string): JWT | unknown {
+    public ValidateJWT(encoded: string): JWT {
         if (!this.isReady)
             throw `Error ValidateJWT(): OAuthProvider class is not ready!`;
         var jwt_parts = encoded.split('.');
@@ -91,7 +90,6 @@ class OAuthProvider {
             throw `Error ValidateJWT(): invalid JWT audience`;
         if (jwt.exp <= Date.now() / 1000)
             throw `Error ValidateJWT(): expired JWT token`;
-        jwt.base46_token = encoded;
         return jwt;
     }
 }
