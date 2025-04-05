@@ -1,5 +1,7 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib'
+import { RabbitMQReq, RabbitMQRes, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
+import db from './Databases';
 
 
 class RabbitMQ {
@@ -41,7 +43,34 @@ class RabbitMQ {
         }
     }
     consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
-        console.log("Rabbitmq: got msg = %s", msg?.content.toString());
+        if (!msg)
+            return;
+        var response: RabbitMQRes = {
+            status: 500,
+            req_id: '',
+            message: ''
+        };
+        try {
+            const message = JSON.parse(msg.content.toString()) as RabbitMQReq;
+            response.req_id = message.id;
+            switch (message.op) {
+                case RabbitMQUserManagerOp.CREATE:
+                    db.CreateNewUser(message);
+                    response.status = 200;
+                    response.message = 'ok';
+                    break;
+                default:
+                    console.log("WARNING: rabbitmq consumeUserManagerQueue(): operation not implemented.");
+                    response.message = 'operation not implemented'
+                    break;
+            }
+        } catch (error) {
+            console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error}`);
+            if (response.req_id === '')
+                return;
+            response.message = 'internal server error: try later.';
+        }
+        rabbitmq.sendToAPIGatewayQueue(Buffer.from(JSON.stringify(response)));
     }
     public sendToAPIGatewayQueue(buffer: Buffer) {
         if (!this.isReady)

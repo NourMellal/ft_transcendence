@@ -2,6 +2,8 @@ services:
     nginx:
         container_name: nginx
         build: ./nginx
+        volumes:
+            - user_manager_static_volume:/static:ro
         ports:
             - "443:443"
         networks:
@@ -11,19 +13,12 @@ services:
         restart: always
     rabbitmq:
         container_name: rabbitmq
-        build:
-            context: ./rabbitmq
-            args:
-                RABBITMQ_NODENAME: ${RABBITMQ_NODENAME}
-                RABBITMQ_API_GATEWAY_USER: ${RABBITMQ_API_GATEWAY_USER}  
-                RABBITMQ_API_GATEWAY_PASSWORD: ${RABBITMQ_API_GATEWAY_PASSWORD}  
-                RABBITMQ_USER_MANAGER_USER: ${RABBITMQ_USER_MANAGER_USER}  
-                RABBITMQ_USER_MANAGER_PASSWORD: ${RABBITMQ_USER_MANAGER_PASSWORD}  
+        build: ./rabbitmq
         volumes:
             - rabbit_mq_log_volume:/var/log/rabbitmq:rw
         networks:
             - ft_transcendence
-        env_file: .env        
+        env_file: .env
         init: true
         restart: always
     api_gateway:
@@ -41,6 +36,7 @@ services:
         build: ./micro_services/user_manager
         volumes:
             - user_manager_db_volume:/database:rw
+            - user_manager_static_volume:/static:rw
         networks:
             - ft_transcendence
         depends_on:
@@ -67,6 +63,13 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/msitni/data/user_manager_db_volume'
+    user_manager_static_volume:
+        name: user_manager_static_volume
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/home/msitni/data/user_manager_static_volume'
     rabbit_mq_log_volume:
         name: rabbit_mq_log_volume
         driver: local

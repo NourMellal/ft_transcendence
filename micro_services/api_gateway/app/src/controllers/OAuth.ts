@@ -4,6 +4,7 @@ import Auth from '../classes/AuthProvider'
 import { SignInStatesModel, UserModel } from '../types/DbTables'
 import { OAuthCodeQueryString, OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
+import { RabbitMQReq, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
 
 async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
@@ -30,6 +31,17 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResp
     return result;
 }
 
+function SignUpNewUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
+    db.CreateNewUser(OAuthRes);
+    const msg: RabbitMQReq = {
+        op: RabbitMQUserManagerOp.CREATE,
+        message: JSON.stringify(OAuthRes.jwt),
+        id: '123456' // change this
+    }
+    rabbitmq.sendToUserManagerQueue(Buffer.from(JSON.stringify(msg)));
+    return reply.code(200).send(`New user created\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`);
+}
+
 export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OAuthCodeQueryString }>, reply: FastifyReply) => {
     try {
         if (!Auth.isReady)
@@ -46,11 +58,8 @@ export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OA
         var OAuthRes = await OAuthExchangeCode(request.query);
         const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
-        rabbitmq.sendToUserManagerQueue(Buffer.from(JSON.stringify(OAuthRes)));
-        if (getUserResult === undefined) {
-            db.CreateNewUser(OAuthRes);
-            return reply.code(200).send(`New user created\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`);
-        }
+        if (getUserResult === undefined)
+            return SignUpNewUser(OAuthRes, reply);
         return reply.code(200).send(`Welcome back ${getUserResult.UID}\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`)
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);

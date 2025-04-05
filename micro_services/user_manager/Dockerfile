@@ -24,6 +24,8 @@ RUN source "$HOME/.nvm/nvm.sh" && npm install
 
 COPY ./app /app
 
+COPY ./static /static
+
 EXPOSE 5566
 
 ENTRYPOINT source "$HOME/.nvm/nvm.sh" && npm start
