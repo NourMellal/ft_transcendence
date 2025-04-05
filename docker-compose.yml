@@ -11,19 +11,36 @@ services:
         restart: always
     rabbitmq:
         container_name: rabbitmq
-        build: ./rabbitmq
+        build:
+            context: ./rabbitmq
+            args:
+                RABBITMQ_NODENAME: ${RABBITMQ_NODENAME}
+                RABBITMQ_API_GATEWAY_USER: ${RABBITMQ_API_GATEWAY_USER}  
+                RABBITMQ_API_GATEWAY_PASSWORD: ${RABBITMQ_API_GATEWAY_PASSWORD}  
+                RABBITMQ_USER_MANAGER_USER: ${RABBITMQ_USER_MANAGER_USER}  
+                RABBITMQ_USER_MANAGER_PASSWORD: ${RABBITMQ_USER_MANAGER_PASSWORD}  
         volumes:
-            - rabbit_mq_data_volume:/var/lib/rabbitmq/mnesia:rw
             - rabbit_mq_log_volume:/var/log/rabbitmq:rw
         networks:
             - ft_transcendence
         env_file: .env        
+        init: true
         restart: always
     api_gateway:
         container_name: api_gateway
-        build: ./api_gateway
+        build: ./micro_services/api_gateway
         volumes:
             - api_gateway_db_volume:/database:rw
+        networks:
+            - ft_transcendence
+        depends_on:
+            - rabbitmq
+        restart: always
+    user_manager:
+        container_name: user_manager
+        build: ./micro_services/user_manager
+        volumes:
+            - user_manager_db_volume:/database:rw
         networks:
             - ft_transcendence
         depends_on:
@@ -43,13 +60,13 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/msitni/data/api_gateway_db_volume'
-    rabbit_mq_data_volume:
-        name: rabbit_mq_data_volume
+    user_manager_db_volume:
+        name: user_manager_db_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/rabbit_mq_data_volume'
+            device: '/home/msitni/data/user_manager_db_volume'
     rabbit_mq_log_volume:
         name: rabbit_mq_log_volume
         driver: local
