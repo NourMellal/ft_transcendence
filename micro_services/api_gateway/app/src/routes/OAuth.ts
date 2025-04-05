@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { GetOAuthCode, AuthenticateUser } from '../controllers/OAuth'
 
 const AuthCodeOpts = {
@@ -15,8 +15,20 @@ const AuthCodeOpts = {
     }
 };
 
+const discoverDocument = {
+    OAuthStateCodeRoute: '/OAuth/state',
+    OAuthRedirectUrl: 'https://server.transcendence.fr/OAuth/code'
+};
+
+const discoverDocumentSerialized = JSON.stringify(discoverDocument);
+
+const GetDiscoveryDocument = async (request: FastifyRequest, reply: FastifyReply) => {
+    reply.code(200).send(discoverDocumentSerialized);
+}
+
 async function OAuthRoutes(fastify: FastifyInstance) {
-    fastify.get('/OAuth/signin', GetOAuthCode);
+    fastify.get(discoverDocument.OAuthStateCodeRoute, GetOAuthCode);
+    fastify.get('/.well-known/discovery', GetDiscoveryDocument)
     fastify.get('/OAuth/code', AuthCodeOpts, AuthenticateUser);
 }
 
