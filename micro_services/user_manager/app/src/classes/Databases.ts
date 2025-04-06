@@ -1,8 +1,9 @@
 import { DatabaseSync } from 'node:sqlite';
-import { RabbitMQReq } from '../types/RabbitMQMessages';
 import fs from 'fs'
 import https from 'https'
 import { Transform } from 'stream';
+import { UserModel } from '../types/DbTables';
+import { JWT } from '../types/RabbitMQMessages';
 
 class Databases {
     transient: DatabaseSync;
@@ -21,12 +22,11 @@ class Databases {
             process.exit(1);
         }
     }
-    public CreateNewUser(msg: RabbitMQReq) {
-        const jwt: { sub: string, display_name?: string, picture?: string } = JSON.parse(msg.message);
-        const query = this.persistent.prepare('INSERT INTO users ( UID , display_name , picture_url , bio ) VALUES( ? , ? , ? , ? );');
+    public CreateNewUser(jwt: JWT): UserModel {
         var picture_route = '/static/profile/default.png'
         if (jwt.picture) {
-            // split google photo url by = and adding =s500 to get 500x500 image
+            // spliting google photo url by = and adding =s500 to get 500x500 image
+            picture_route = `/static/profile/${jwt.sub}.jpg`;
             var uri = jwt.picture.split('=');
             var req = https.request(uri[0] + '=s500');
             https.request(uri[0] + '=s500', function (response) {
@@ -35,14 +35,34 @@ class Databases {
                     data.push(chunk);
                 });
                 response.on('end', function () {
-                    picture_route = `/static/profile/${jwt.sub}.jpg`;
                     fs.writeFileSync(`/static/profile/${jwt.sub}.jpg`, data.read());
                 });
             }).end();
         }
-        const res = query.run(jwt.sub, jwt.display_name || jwt.sub, picture_route, 'Hello everyone, new PING-PONG player here.');
+        const user: UserModel = {
+            UID: jwt.sub,
+            display_name: jwt.name || crypto.randomUUID(),
+            picture_url: picture_route,
+            bio: process.env.DEFAULT_NEW_USER_BIO || 'Hello everyone, new PING-PONG player here.'
+        }
+        const insertQuery = this.persistent.prepare('INSERT INTO users ( UID , display_name , picture_url , bio ) VALUES( ? , ? , ? , ? );');
+        var res = insertQuery.run(user.UID, user.display_name, user.picture_url, user.bio);
+        if (res.changes !== 1 && user.display_name !== jwt.name)
+            throw `Can not add user uid=${jwt.sub} with display_name=${user.display_name} to db`;
+        if (res.changes !== 1) {
+            user.display_name = crypto.randomUUID();
+            res = insertQuery.run(user.UID, user.display_name, user.picture_url, user.bio);
+        }
         if (res.changes !== 1)
-            throw `Did not add user ${jwt.sub} to db`;
+            throw `Can not add user uid=${jwt.sub} with display_name=${user.display_name} to db`;
+        return user;
+    }
+    public FetchUser(UID: string): UserModel {
+        const getQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
+        const res = getQuery.get(UID);
+        if (res === undefined)
+            throw `No record for user uid ${UID} in db`;
+        return res as UserModel;
     }
 }
 

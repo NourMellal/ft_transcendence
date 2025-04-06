@@ -1,3 +1,5 @@
+import { JWT } from "./AuthProvider";
+
 export enum RabbitMQUserManagerOp {
     CREATE = 1,
     UPDATE = 2,
@@ -5,12 +7,13 @@ export enum RabbitMQUserManagerOp {
     FETCH = 4
 }
 
-export type RabbitMQReq = {
+export type RabbitMQRequest = {
     op: number,
-    message: string
+    message?: string
     id: string
+    JWT: JWT
 };
-export type RabbitMQRes = {
+export type RabbitMQResponse = {
     status: number,
     message: string
     req_id: string

@@ -1,12 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import db from '../classes/Databases'
-import Auth from '../classes/AuthProvider'
+import AuthProvider from '../classes/AuthProvider'
 import { SignInStatesModel, UserModel } from '../types/DbTables'
-import { OAuthCodeQueryString, OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
+import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
-import { RabbitMQReq, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
+import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
 
-async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResponse> {
+async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
         method: 'POST',
         headers: {
@@ -14,7 +14,7 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResp
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
-            'code': query.code,
+            'code': code,
             'client_id': process.env.GOOGLE_CLIENT_ID || '',
             'client_secret': process.env.GOOGLE_CLIENT_SECRET || '',
             'redirect_uri': process.env.GOOGLE_REDIRECT_URL || '',
@@ -27,26 +27,41 @@ async function OAuthExchangeCode(query: OAuthCodeQueryString): Promise<OAuthResp
     var responsejson = await response.json() as OAuthCodeExchangeResponse;
     var result: OAuthResponse = {} as OAuthResponse;
     result.response = responsejson;
-    result.jwt = Auth.ValidateJWT(responsejson.id_token);
+    result.jwt = AuthProvider.ValidateJWT(responsejson.id_token);
     return result;
 }
 
 function SignUpNewUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
     db.CreateNewUser(OAuthRes);
-    const msg: RabbitMQReq = {
+    const msg: RabbitMQRequest = {
         op: RabbitMQUserManagerOp.CREATE,
-        message: JSON.stringify(OAuthRes.jwt),
-        id: '123456' // change this
+        id: '',
+        JWT: OAuthRes.jwt
     }
-    rabbitmq.sendToUserManagerQueue(Buffer.from(JSON.stringify(msg)));
-    return reply.code(200).send(`New user created\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`);
+    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.response.id_token);
 }
 
-export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OAuthCodeQueryString }>, reply: FastifyReply) => {
+function FetchUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
+    const msg: RabbitMQRequest = {
+        op: RabbitMQUserManagerOp.FETCH,
+        message: OAuthRes.jwt.sub,
+        id: '',
+        JWT: OAuthRes.jwt
+    }
+    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.response.id_token);
+}
+
+export const AuthenticateUser = async (request: FastifyRequest<{
+    Querystring: {
+        state: string,
+        code: string,
+        scope: string
+    }
+}>, reply: FastifyReply) => {
     try {
-        if (!Auth.isReady)
+        if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
-        const { state } = request.query;
+        const { state, code } = request.query;
         const getStateQuery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ?;');
         const getStateResult = getStateQuery.get(state) as SignInStatesModel;
         if (getStateResult === undefined)
@@ -55,12 +70,15 @@ export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OA
         const runResult = runquery.run(state);
         if (runResult.changes !== 1)
             throw `did not remove state_code=${state} from the db.`;
-        var OAuthRes = await OAuthExchangeCode(request.query);
+        var OAuthRes = await OAuthExchangeCode(code);
         const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
+        reply.hijack();
         if (getUserResult === undefined)
-            return SignUpNewUser(OAuthRes, reply);
-        return reply.code(200).send(`Welcome back ${getUserResult.UID}\nJWT: OK!\ntoken:\n${OAuthRes.response.id_token}\ndecoded:\n${JSON.stringify(OAuthRes.jwt)}`)
+            SignUpNewUser(OAuthRes, reply);
+        else
+            FetchUser(OAuthRes, reply);
+        return Promise.resolve();
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);
         return reply.code(500).send(`ERROR: Invalid credentials.`);
@@ -69,7 +87,7 @@ export const AuthenticateUser = async (request: FastifyRequest<{ Querystring: OA
 
 export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        if (!Auth.isReady)
+        if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
         const randomValues = new Uint32Array(4);
         crypto.getRandomValues(randomValues);

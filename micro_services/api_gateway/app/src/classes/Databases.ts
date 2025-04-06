@@ -23,7 +23,7 @@ class Databases {
         const query = this.persistent.prepare('INSERT INTO users ( UID , role , access_token , refresh_token , ate ) VALUES( ? , ? , ? , ? , ? );');
         const res = query.run(response.jwt.sub, 'user', response.response.access_token, response.response.refresh_token || '', (response.response.expires_in + Date.now() / 1000));
         if (res.changes !== 1)
-            throw `Did not add user ${response.jwt.given_name} to db`;
+            throw `Did not add user ${response.jwt.sub} to db`;
     }
 }
 

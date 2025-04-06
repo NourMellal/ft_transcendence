@@ -1,6 +1,6 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib'
-import { RabbitMQReq, RabbitMQRes, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
+import { RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
 import db from './Databases';
 
 
@@ -45,37 +45,40 @@ class RabbitMQ {
     consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
-        var response: RabbitMQRes = {
+        var RMqResponse: RabbitMQResponse = {
             status: 500,
             req_id: '',
             message: ''
         };
         try {
-            const message = JSON.parse(msg.content.toString()) as RabbitMQReq;
-            response.req_id = message.id;
-            switch (message.op) {
+            const RMqRequest = JSON.parse(msg.content.toString()) as RabbitMQRequest;
+            RMqResponse.req_id = RMqRequest.id;
+            switch (RMqRequest.op) {
                 case RabbitMQUserManagerOp.CREATE:
-                    db.CreateNewUser(message);
-                    response.status = 200;
-                    response.message = 'ok';
+                    RMqResponse.message = JSON.stringify(db.CreateNewUser(RMqRequest.JWT));
+                    RMqResponse.status = 200;
+                    break;
+                case RabbitMQUserManagerOp.FETCH:
+                    RMqResponse.message = JSON.stringify(db.FetchUser(RMqRequest.message as string));
+                    RMqResponse.status = 200;
                     break;
                 default:
                     console.log("WARNING: rabbitmq consumeUserManagerQueue(): operation not implemented.");
-                    response.message = 'operation not implemented'
+                    RMqResponse.message = 'operation not implemented'
                     break;
             }
         } catch (error) {
             console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error}`);
-            if (response.req_id === '')
+            if (RMqResponse.req_id === '') // Ignoring unparsed request cause req_id not resolvable
                 return;
-            response.message = 'internal server error: try later.';
+            RMqResponse.message = 'internal server error: try later.';
         }
-        rabbitmq.sendToAPIGatewayQueue(Buffer.from(JSON.stringify(response)));
+        rabbitmq.sendToAPIGatewayQueue(RMqResponse);
     }
-    public sendToAPIGatewayQueue(buffer: Buffer) {
+    public sendToAPIGatewayQueue(RMqResponse: RabbitMQResponse) {
         if (!this.isReady)
             throw 'RabbitMQ class not ready';
-        this.channel.sendToQueue(this.api_gateway_queue, buffer);
+        this.channel.sendToQueue(this.api_gateway_queue, Buffer.from(JSON.stringify(RMqResponse)));
     }
 }
 

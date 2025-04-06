@@ -1,11 +1,5 @@
 import { JWT } from "./AuthProvider";
 
-export type OAuthCodeQueryString = {
-    state: string,
-    code: string,
-    scope: string
-};
-
 export type OAuthCodeExchangeResponse = {
     access_token: string
     expires_in: number

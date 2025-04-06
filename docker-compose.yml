@@ -55,25 +55,25 @@ volumes:
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/api_gateway_db_volume'
+            device: '/home/simo/docker_volumes/api_gateway_db_volume'
     user_manager_db_volume:
         name: user_manager_db_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/user_manager_db_volume'
+            device: '/home/simo/docker_volumes/user_manager_db_volume'
     user_manager_static_volume:
         name: user_manager_static_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/user_manager_static_volume'
+            device: '/home/simo/docker_volumes/user_manager_static_volume'
     rabbit_mq_log_volume:
         name: rabbit_mq_log_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/msitni/data/rabbit_mq_log_volume'
+            device: '/home/simo/docker_volumes/rabbit_mq_log_volume'
