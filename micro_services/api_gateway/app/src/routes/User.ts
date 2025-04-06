@@ -8,7 +8,8 @@ const UserInfoOpts = {
             type: 'object',
             properties: {
                 uid: { type: 'string' },
-            }
+            },
+            required: ['uid']
         },
         headers: {
             type: 'object',

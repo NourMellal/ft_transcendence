@@ -27,7 +27,7 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     var responsejson = await response.json() as OAuthCodeExchangeResponse;
     var result: OAuthResponse = {} as OAuthResponse;
     result.response = responsejson;
-    result.jwt = AuthProvider.ValidateJWT(responsejson.id_token);
+    result.jwt = AuthProvider.ValidateJWT_Token(responsejson.id_token);
     return result;
 }
 

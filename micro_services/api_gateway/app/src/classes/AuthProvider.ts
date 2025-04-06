@@ -40,30 +40,38 @@ class OAuthProvider {
             process.exit(1);
         }
     }
-    public ValidateJWT(encoded: string): JWT {
+    public ValidateJWT_Header(header: string): JWT {
         if (!this.isReady)
-            throw `Error ValidateJWT(): OAuthProvider class is not ready!`;
+            throw `Error ValidateJWT_Header(): OAuthProvider class is not ready!`;
+        const header_part = header.split(' ');
+        if (header_part.length !== 2 || header_part[0] !== 'Bearer')
+            throw `Error ValidateJWT_Header(): bad header!`;
+        return this.ValidateJWT_Token(header_part[1]);
+    }
+    public ValidateJWT_Token(encoded: string): JWT {
+        if (!this.isReady)
+            throw `Error ValidateJWT_Token(): OAuthProvider class is not ready!`;
         var jwt_parts = encoded.split('.');
         if (jwt_parts.length != 3)
-            throw `Error ValidateJWT(): JWT token string is invalid!`;
+            throw `Error ValidateJWT_Token(): JWT token string is invalid!`;
         var header: JWTHeaders = JSON.parse(Buffer.from(jwt_parts[0], 'base64').toString());
         if (header.alg != 'RS256')
-            throw `Error ValidateJWT(): algorithm '${header.alg}' is not supported!`;
+            throw `Error ValidateJWT_Token(): algorithm '${header.alg}' is not supported!`;
         var key = this.JWTKeyCertificate.keys.find((value) => { return value.kid === header.kid });
         if (!key)
-            throw `Error ValidateJWT(): invalid key_id: '${header.kid}'`;
+            throw `Error ValidateJWT_Token(): invalid key_id: '${header.kid}'`;
         var Verifier = crypto.createVerify('RSA-SHA256');
         var signature = Buffer.from(jwt_parts[2], 'base64');
         Verifier.update(jwt_parts[0] + '.' + jwt_parts[1]);
         if (Verifier.verify(key.pkey, signature) == false)
-            throw `Error ValidateJWT(): invalid signature`;
+            throw `Error ValidateJWT_Token(): invalid signature`;
         var jwt: JWT = JSON.parse(Buffer.from(jwt_parts[1], 'base64').toString());
         if (jwt.iss !== this.discoveryDocument.issuer)
-            throw `Error ValidateJWT(): invalid JWT issuer`;
+            throw `Error ValidateJWT_Token(): invalid JWT issuer`;
         if (jwt.aud !== process.env.GOOGLE_CLIENT_ID)
-            throw `Error ValidateJWT(): invalid JWT audience`;
+            throw `Error ValidateJWT_Token(): invalid JWT audience`;
         if (jwt.exp <= Date.now() / 1000)
-            throw `Error ValidateJWT(): expired JWT token`;
+            throw `Error ValidateJWT_Token(): expired JWT token`;
         return jwt;
     }
 }
