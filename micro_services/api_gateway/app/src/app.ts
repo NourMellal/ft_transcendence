@@ -15,7 +15,8 @@ const app = fastify({ logger: true });
 
 // Register cors module to allow traffic from all hosts
 app.register(cors, { origin: '*' });
-// Register /OAuth routes
+// Register routes
+app.decorateRequest('jwt', null);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
 app.register(UserRoutes);

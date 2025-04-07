@@ -1,20 +1,18 @@
 # install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 # Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
 
-@jwt_token = put_your_jwt_access_token_here
-
 # GET the discovery document of the server:
 GET https://server.transcendence.fr/.well-known/discovery
 
 ###
 
 # GET a random state_code for OAuth flow:
-GET https://server.transcendence.fr/OAuth/state?ref=https://www.transcendence.fr/login
+GET https://server.transcendence.fr/OAuth/state
 
 ###
 
 # GET user info:
-GET https://server.transcendence.fr/user/info?uid=USER-UID
+GET https://server.transcendence.fr/user/info?uid=105404925440430836662
 Authorization: Bearer {{jwt_token}}
 
 ###
@@ -22,3 +20,5 @@ Authorization: Bearer {{jwt_token}}
 # GET current logged user info uid alias:
 GET https://server.transcendence.fr/user/info?uid=me
 Authorization: Bearer {{jwt_token}}
+
+@jwt_token = put_your_jwt_access_token_here

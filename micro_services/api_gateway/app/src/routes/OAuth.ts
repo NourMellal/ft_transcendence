@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { GetOAuthCode, AuthenticateUser } from '../controllers/OAuth'
 import { discoverDocument } from '../models/DiscoveryDocument';
+import { JWT } from '../types/AuthProvider';
+import AuthProvider from '../classes/AuthProvider';
 
 const AuthCodeOpts = {
     schema: {
@@ -16,8 +18,20 @@ const AuthCodeOpts = {
     }
 };
 
+export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+        if (!AuthProvider.isReady)
+            throw `OAuth class not ready`;
+        request.jwt = AuthProvider.ValidateJWT_Header(request.headers.authorization as string);
+    } catch (error) {
+        console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
+        reply.code(401);
+        throw 'request unauthorized';
+    }
+}
+
 async function OAuthRoutes(fastify: FastifyInstance) {
-    fastify.get(discoverDocument.OAuthStateCodeRoute.route, GetOAuthCode);
+    fastify.get(discoverDocument.OAuthStateRoute.route, GetOAuthCode);
     fastify.get(discoverDocument.OAuthRedirectRoute.route, AuthCodeOpts, AuthenticateUser);
 }
 

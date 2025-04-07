@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { FetchUserInfo } from '../controllers/User';
 import { discoverDocument } from '../models/DiscoveryDocument';
+import { isRequestAuthorizedHook } from './OAuth';
 
 const UserInfoOpts = {
     schema: {
@@ -22,6 +23,7 @@ const UserInfoOpts = {
 };
 
 async function UserRoutes(fastify: FastifyInstance) {
+    fastify.addHook('preHandler', isRequestAuthorizedHook);
     fastify.get(discoverDocument.FetchUserInfoRoute.route, UserInfoOpts, FetchUserInfo);
 }
 
