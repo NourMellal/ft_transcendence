@@ -3,7 +3,7 @@ services:
         container_name: nginx
         build: ./nginx
         volumes:
-            - user_manager_static_volume:/static:ro
+            - static_data_volume:/static:ro
         ports:
             - "443:443"
         networks:
@@ -26,6 +26,7 @@ services:
         build: ./micro_services/api_gateway
         volumes:
             - api_gateway_db_volume:/database:rw
+            - static_data_volume:/static:rw
         networks:
             - ft_transcendence
         depends_on:
@@ -36,7 +37,7 @@ services:
         build: ./micro_services/user_manager
         volumes:
             - user_manager_db_volume:/database:rw
-            - user_manager_static_volume:/static:rw
+            - static_data_volume:/static:rw
         networks:
             - ft_transcendence
         depends_on:
@@ -63,13 +64,13 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/simo/docker_volumes/user_manager_db_volume'
-    user_manager_static_volume:
-        name: user_manager_static_volume
+    static_data_volume:
+        name: static_data_volume
         driver: local
         driver_opts:
             type: 'none'
             o: 'bind'
-            device: '/home/simo/docker_volumes/user_manager_static_volume'
+            device: '/home/simo/docker_volumes/static_data_volume'
     rabbit_mq_log_volume:
         name: rabbit_mq_log_volume
         driver: local

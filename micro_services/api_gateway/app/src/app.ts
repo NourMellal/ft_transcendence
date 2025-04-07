@@ -6,6 +6,7 @@ import AuthProvider from './classes/AuthProvider';
 import rabbitmq from './classes/RabbitMQ';
 import DiscoveryDocumentRoute from './routes/DiscoveryDocument';
 import UserRoutes from './routes/User';
+import fastifyMultipart from '@fastify/multipart';
 
 db.init();
 AuthProvider.init();
@@ -15,6 +16,7 @@ const app = fastify({ logger: true });
 
 // Register cors module to allow traffic from all hosts
 app.register(cors, { origin: '*' });
+app.register(fastifyMultipart, { attachFieldsToBody: true });
 // Register routes
 app.decorateRequest('jwt', null);
 app.register(DiscoveryDocumentRoute);

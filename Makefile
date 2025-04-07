@@ -14,7 +14,7 @@ re: clean all
 create_volumes_dir:
 	@mkdir -p /home/${USER}/docker_volumes/api_gateway_db_volume
 	@mkdir -p /home/${USER}/docker_volumes/user_manager_db_volume
-	@mkdir -p /home/${USER}/docker_volumes/user_manager_static_volume
+	@mkdir -p /home/${USER}/docker_volumes/static_data_volume
 	@mkdir -p /home/${USER}/docker_volumes/rabbit_mq_log_volume
 #Set host to fake route domains used to localhost
 set-host-and-permission:

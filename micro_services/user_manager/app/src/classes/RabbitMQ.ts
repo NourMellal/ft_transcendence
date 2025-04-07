@@ -2,6 +2,8 @@ import amqp from 'amqplib'
 import { Options } from 'amqplib'
 import { RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
 import db from './Databases';
+import UserManager from '../Handlers/UserManager';
+import HandleMessage from '../Handlers/UserManager';
 
 
 class RabbitMQ {
@@ -45,35 +47,23 @@ class RabbitMQ {
     consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
-        var RMqResponse: RabbitMQResponse = {
-            status: 500,
-            req_id: '',
-            message: ''
-        };
+        var req_id: string | undefined = undefined;
         try {
             const RMqRequest = JSON.parse(msg.content.toString()) as RabbitMQRequest;
-            RMqResponse.req_id = RMqRequest.id;
-            switch (RMqRequest.op) {
-                case RabbitMQUserManagerOp.CREATE:
-                    RMqResponse.message = JSON.stringify(db.CreateNewUser(RMqRequest.JWT));
-                    RMqResponse.status = 200;
-                    break;
-                case RabbitMQUserManagerOp.FETCH:
-                    RMqResponse.message = JSON.stringify(db.FetchUser(RMqRequest.message as string));
-                    RMqResponse.status = 200;
-                    break;
-                default:
-                    console.log("WARNING: rabbitmq consumeUserManagerQueue(): operation not implemented.");
-                    RMqResponse.message = 'operation not implemented'
-                    break;
-            }
+            req_id = RMqRequest.id;
+            var RMqResponse = HandleMessage(RMqRequest);
+            rabbitmq.sendToAPIGatewayQueue(RMqResponse);
         } catch (error) {
             console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error}`);
-            if (RMqResponse.req_id === '') // Ignoring unparsed request cause req_id not resolvable
-                return;
-            RMqResponse.message = 'internal server error: try later.';
+            if (req_id) {
+                const RMqResponse: RabbitMQResponse = {
+                    req_id: req_id,
+                    status: 500,
+                    message: 'internal server error, please try again later'
+                };
+                rabbitmq.sendToAPIGatewayQueue(RMqResponse);
+            }
         }
-        rabbitmq.sendToAPIGatewayQueue(RMqResponse);
     }
     public sendToAPIGatewayQueue(RMqResponse: RabbitMQResponse) {
         if (!this.isReady)
