@@ -4,7 +4,8 @@ export enum RabbitMQUserManagerOp {
     CREATE = 1,
     UPDATE = 2,
     DELETE = 3,
-    FETCH = 4
+    FETCH = 4,
+    IsDisplayNameAvailable = 5
 }
 
 export type UpdateUser = {

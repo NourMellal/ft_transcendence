@@ -25,6 +25,24 @@ export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid
     }
 }
 
+export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystring: { name: string } }>, reply: FastifyReply) => {
+    try {
+        reply.hijack();
+        const { name } = request.query;
+        const RabbitMQReq: RabbitMQRequest = {
+            op: RabbitMQUserManagerOp.IsDisplayNameAvailable,
+            message: name,
+            id: '',
+            JWT: request.jwt
+        };
+        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply);
+    } catch (error) {
+        console.log(`ERROR: FetchUserInfo(): ${error}`);
+        reply.raw.statusCode = 500;
+        reply.raw.end("ERROR: internal error, try again later.");
+    }
+}
+
 export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const UpdatedInfo: UpdateUser = {

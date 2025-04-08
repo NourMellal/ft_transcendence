@@ -22,6 +22,13 @@ GET https://server.transcendence.fr/user/info?uid=me
 Authorization: Bearer {{jwt_token}}
 
 ###
+
+# Check if display name is available:
+GET https://server.transcendence.fr/user/name?name=ahmed
+Authorization: Bearer {{jwt_token}}
+
+###
+
 # Change current logged user info:
 POST https://server.transcendence.fr/user/info
 Authorization: Bearer {{jwt_token}}
@@ -35,7 +42,7 @@ new_username
 Content-Disposition: form-data; name="picture"; filename="profile.jpg"
 Content-Type: image/jpeg
 
-< ../micro_services/user_manager/static/profile/default.jpg  <-- change this to the path of the image
+< ../micro_services/user_manager/static/profile/default.jpg
 --boundary
 Content-Disposition: form-data; name="bio"
 
@@ -43,6 +50,8 @@ hey everyone this is my new bio.
 --boundary--
 
 ###
+
+# Delete user's profile picture
 DELETE https://server.transcendence.fr/user/remove_picture
 Authorization: Bearer {{jwt_token}}
 

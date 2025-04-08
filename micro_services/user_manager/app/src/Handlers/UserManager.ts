@@ -52,6 +52,14 @@ function FetchUser(UID: string): UserModel {
     return res as UserModel;
 }
 
+function CheckDisplayName(name: string): boolean {
+    const getQuery = db.persistent.prepare(`SELECT * FROM '${users_table_name}' WHERE display_name = ?;`);
+    const res = getQuery.get(name);
+    if (res == undefined)
+        return true;
+    return false;
+}
+
 function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
     if (!updatedFields.display_name && !updatedFields.bio && !updatedFields.picture_url)
         throw 'bad UpdateUser request: no field is supplied';
@@ -69,23 +77,33 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     switch (RMqRequest.op) {
         case RabbitMQUserManagerOp.CREATE:
             RMqResponse.message = JSON.stringify(CreateNewUser(RMqRequest.JWT));
+            RMqResponse.status = 200;
             break;
         case RabbitMQUserManagerOp.FETCH:
             if (!RMqRequest.message)
                 throw 'RMqRequest.message is mandatory';
             RMqResponse.message = JSON.stringify(FetchUser(RMqRequest.message as string));
+            RMqResponse.status = 200;
             break;
         case RabbitMQUserManagerOp.UPDATE:
             if (!RMqRequest.message)
                 throw 'RMqRequest.message is mandatory';
             const info = JSON.parse(RMqRequest.message) as UpdateUser;
             RMqResponse.message = UpdateUserInfo(RMqRequest.JWT, info);
+            RMqResponse.status = 200;
+            break;
+        case RabbitMQUserManagerOp.IsDisplayNameAvailable:
+            if (!RMqRequest.message)
+                throw 'RMqRequest.message is mandatory';
+            if (CheckDisplayName(RMqRequest.message))
+                RMqResponse.status = 200;
+            else
+                RMqResponse.status = 403;
             break;
         default:
             console.log("WARNING: rabbitmq HandleMessage(): operation not implemented.");
             throw 'operation not implemented';
     }
-    RMqResponse.status = 200;
     return RMqResponse;
 }
 

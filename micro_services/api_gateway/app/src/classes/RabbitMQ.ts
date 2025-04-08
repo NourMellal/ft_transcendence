@@ -63,6 +63,7 @@ class RabbitMQ {
                 user_info: RMqResponse.message,
                 JWT: replyInstance.JWT
             });
+            replyInstance.reply.raw.setHeader('access-control-allow-origin', '*');
             replyInstance.reply.raw.end(payload);
             this.reply_map.delete(RMqResponse.req_id);
         } catch (error) {
