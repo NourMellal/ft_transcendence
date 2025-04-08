@@ -39,6 +39,15 @@ export const discoverDocument = {
         headers: ['Authorization'],
         method: 'GET'
     }
+    ,
+    RemoveUserProfileRoute:
+    {
+        description: 'Front: remove user\'s profile picture.',
+        route: '/user/remove_picture',
+        params: [],
+        headers: ['Authorization'],
+        method: 'DELETE'
+    }
 };
 
 export const discoverDocumentSerialized = JSON.stringify(discoverDocument);

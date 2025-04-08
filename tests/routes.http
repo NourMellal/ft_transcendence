@@ -21,4 +21,31 @@ Authorization: Bearer {{jwt_token}}
 GET https://server.transcendence.fr/user/info?uid=me
 Authorization: Bearer {{jwt_token}}
 
+###
+# Change current logged user info:
+POST https://server.transcendence.fr/user/info
+Authorization: Bearer {{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="name"
+
+new_username
+--boundary
+Content-Disposition: form-data; name="picture"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+< ../micro_services/user_manager/static/profile/default.jpg  <-- change this to the path of the image
+--boundary
+Content-Disposition: form-data; name="bio"
+
+hey everyone this is my new bio.
+--boundary--
+
+###
+DELETE https://server.transcendence.fr/user/remove_picture
+Authorization: Bearer {{jwt_token}}
+
+###
+
 @jwt_token = put_your_jwt_access_token_here

@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyRequest, RawRequestDefaultExpression } from 'fastify'
 import cors from '@fastify/cors'
 import OAuthRoute from './routes/OAuth'
 import db from './classes/Databases';
@@ -6,7 +6,9 @@ import AuthProvider from './classes/AuthProvider';
 import rabbitmq from './classes/RabbitMQ';
 import DiscoveryDocumentRoute from './routes/DiscoveryDocument';
 import UserRoutes from './routes/User';
-import fastifyMultipart from '@fastify/multipart';
+import Busboy, { BusboyHeaders } from '@fastify/busboy';
+import ParseMultipart from './controllers/multipart';
+import { multipart_fields, multipart_files } from './types/multipart';
 
 db.init();
 AuthProvider.init();
@@ -16,9 +18,8 @@ const app = fastify({ logger: true });
 
 // Register cors module to allow traffic from all hosts
 app.register(cors, { origin: '*' });
-app.register(fastifyMultipart, { attachFieldsToBody: true });
 // Register routes
-app.decorateRequest('jwt', null);
+app.addContentTypeParser('multipart/form-data', ParseMultipart);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
 app.register(UserRoutes);

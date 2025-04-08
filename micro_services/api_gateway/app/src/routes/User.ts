@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { FetchUserInfo, UpdateUserInfo } from '../controllers/User';
+import { FetchUserInfo, RemoveUserProfile, UpdateUserInfo } from '../controllers/User';
 import { discoverDocument } from '../models/DiscoveryDocument';
 import { isRequestAuthorizedHook } from './OAuth';
 
@@ -38,6 +38,7 @@ async function UserRoutes(fastify: FastifyInstance) {
     fastify.addHook('preHandler', isRequestAuthorizedHook);
     fastify.get(discoverDocument.FetchUserInfoRoute.route, GetUserInfoOpts, FetchUserInfo);
     fastify.post(discoverDocument.UpdateUserInfoRoute.route, PostUserInfoOpts, UpdateUserInfo);
+    fastify.delete(discoverDocument.RemoveUserProfileRoute.route, PostUserInfoOpts, RemoveUserProfile);
 }
 
 export default UserRoutes;

@@ -55,7 +55,7 @@ function FetchUser(UID: string): UserModel {
 function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
     if (!updatedFields.display_name && !updatedFields.bio && !updatedFields.picture_url)
         throw 'bad UpdateUser request: no field is supplied';
-    var query_sql = `UPDATE '${users_table_name}' SET display_name = ISNULL(?, display_name), picture_url = ISNULL(?, picture_url), bio = ISNULL(?, bio) WHERE UID = ?;`;
+    var query_sql = `UPDATE '${users_table_name}' SET display_name = IFNULL(?, display_name), picture_url = IFNULL(?, picture_url), bio = IFNULL(?, bio) WHERE UID = ?;`;
     const query = db.persistent.prepare(query_sql);
     const query_result = query.run(updatedFields.display_name, updatedFields.picture_url, updatedFields.bio, jwt.sub);
     if (query_result.changes !== 1)
