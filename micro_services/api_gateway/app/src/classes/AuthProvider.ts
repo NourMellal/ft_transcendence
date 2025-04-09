@@ -40,13 +40,13 @@ class OAuthProvider {
             process.exit(1);
         }
     }
-    public ValidateJWT_Header(header: string): JWT {
+    public ValidateJWT_Cookie(cookie: string): JWT {
         if (!this.isReady)
-            throw `Error ValidateJWT_Header(): OAuthProvider class is not ready!`;
-        const header_part = header.split(' ');
-        if (header_part.length !== 2 || header_part[0] !== 'Bearer')
-            throw `Error ValidateJWT_Header(): bad header!`;
-        return this.ValidateJWT_Token(header_part[1]);
+            throw `Error ValidateJWT_Cookie(): OAuthProvider class is not ready!`;
+        const cookie_part = cookie.split('=');
+        if (cookie_part.length !== 2 || cookie_part[0] !== 'jwt')
+            throw `Error ValidateJWT_Cookie(): bad header!`;
+        return this.ValidateJWT_Token(cookie_part[1]);
     }
     public ValidateJWT_Token(encoded: string): JWT {
         if (!this.isReady)

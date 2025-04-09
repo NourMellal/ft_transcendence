@@ -13,25 +13,25 @@ GET https://server.transcendence.fr/OAuth/state
 
 # GET user info:
 GET https://server.transcendence.fr/user/info?uid=105404925440430836662
-Authorization: Bearer {{jwt_token}}
+Cookie: jwt={{jwt_token}}
 
 ###
 
 # GET current logged user info uid alias:
 GET https://server.transcendence.fr/user/info?uid=me
-Authorization: Bearer {{jwt_token}}
+Cookie: jwt={{jwt_token}}
 
 ###
 
 # Check if display name is available:
 GET https://server.transcendence.fr/user/name?name=ahmed
-Authorization: Bearer {{jwt_token}}
+Cookie: jwt={{jwt_token}}
 
 ###
 
 # Change current logged user info:
 POST https://server.transcendence.fr/user/info
-Authorization: Bearer {{jwt_token}}
+Cookie: jwt={{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
@@ -53,7 +53,7 @@ hey everyone this is my new bio.
 
 # Delete user's profile picture
 DELETE https://server.transcendence.fr/user/remove_picture
-Authorization: Bearer {{jwt_token}}
+Cookie: jwt={{jwt_token}}
 
 ###
 

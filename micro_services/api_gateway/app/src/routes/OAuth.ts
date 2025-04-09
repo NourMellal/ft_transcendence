@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { GetOAuthCode, AuthenticateUser } from '../controllers/OAuth'
 import { discoverDocument } from '../models/DiscoveryDocument';
-import { JWT } from '../types/AuthProvider';
 import AuthProvider from '../classes/AuthProvider';
 
 const AuthCodeOpts = {
@@ -22,7 +21,7 @@ export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: Fa
     try {
         if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
-        request.jwt = AuthProvider.ValidateJWT_Header(request.headers.authorization as string);
+        request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
     } catch (error) {
         console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
         reply.code(401);

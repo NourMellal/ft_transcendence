@@ -38,7 +38,7 @@ function SignUpNewUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
         id: '',
         JWT: OAuthRes.jwt
     }
-    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.response.id_token);
+    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
 }
 
 function FetchUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
@@ -48,7 +48,7 @@ function FetchUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
         id: '',
         JWT: OAuthRes.jwt
     }
-    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.response.id_token);
+    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
 }
 
 export const AuthenticateUser = async (request: FastifyRequest<{
