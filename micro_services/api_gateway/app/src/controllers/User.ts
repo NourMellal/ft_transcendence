@@ -27,7 +27,7 @@ export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid
                 return reply.raw.end(response.message);
             var payload = JSON.parse(response.message);
             const query = db.persistent.prepare('SELECT username FROM users WHERE UID = ? ;');
-            const res = query.get(request.jwt.sub) as UserModel;
+            const res = query.get(RabbitMQReq.message as string) as UserModel;
             if (res)
                 payload.username = res.username;
             reply.raw.end(reply.serialize(payload));
@@ -57,14 +57,19 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
             UpdatedInfo.picture_url = `/static/profile/${request.jwt.sub}.jpg`;
             fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
         }
-        console.log('got: ' + request.fields.length);
         if (bio) {
             UpdatedInfo.bio = bio.field_value;
         }
         if (username === undefined && UpdatedInfo.bio === null && UpdatedInfo.picture_url === null)
             return reply.code(400).send('bad request no field is supplied');
-        if (username && username.field_value.length < 3)
-            return reply.code(400).send('bad request provide a valid username');
+        if (username) {
+            if (username.field_value.length < 3)
+                return reply.code(400).send('bad request provide a valid username');
+            const query = db.persistent.prepare('UPDATE users SET username = ? WHERE UID = ? ;');
+            const res = query.run(username.field_value, request.jwt.sub);
+            if (res.changes !== 1)
+                return reply.code(500).send('database error');
+        }
         const RabbitMQReq: RabbitMQRequest = {
             op: RabbitMQUserManagerOp.UPDATE,
             message: JSON.stringify(UpdatedInfo),
