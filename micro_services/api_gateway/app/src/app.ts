@@ -9,6 +9,7 @@ import UserRoutes from './routes/User';
 import Busboy, { BusboyHeaders } from '@fastify/busboy';
 import ParseMultipart from './controllers/multipart';
 import { multipart_fields, multipart_files } from './types/multipart';
+import AuthenticatorRoutes from './routes/Authenticator';
 
 db.init();
 AuthProvider.init();
@@ -22,6 +23,7 @@ app.register(cors, { origin: '*' });
 app.addContentTypeParser('multipart/form-data', ParseMultipart);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
+app.register(AuthenticatorRoutes);
 app.register(UserRoutes);
 
 app.listen({ port: port, host: '0.0.0.0' }, (err, addr) => {

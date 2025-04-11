@@ -14,6 +14,8 @@ RUN ./install.sh
 
 RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
+RUN openssl req -x509 -newkey rsa:4096 -keyout /private.key -out /cert.pem -sha256 -days 3650 -noenc -subj "/C=MA/ST=BENGURIR/L=BENGURIR/SN=msitni"
+
 RUN mkdir app
 
 WORKDIR /app

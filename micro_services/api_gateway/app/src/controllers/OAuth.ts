@@ -31,24 +31,31 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     return result;
 }
 
-function SignUpNewUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
-    db.CreateNewUser(OAuthRes);
-    const msg: RabbitMQRequest = {
-        op: RabbitMQUserManagerOp.CREATE,
-        id: '',
-        JWT: OAuthRes.jwt
+function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
+    reply.hijack();
+    var NewUser: UserModel;
+    try {
+        NewUser = db.CreateNewGoogleUser(OAuthRes);
+    } catch (error) {
+        reply.raw.statusCode = 500;
+        reply.raw.end('Database error.');
+        return;
     }
-    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
-}
-
-function FetchUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
-    const msg: RabbitMQRequest = {
-        op: RabbitMQUserManagerOp.FETCH,
-        message: OAuthRes.jwt.sub,
-        id: '',
-        JWT: OAuthRes.jwt
+    try {
+        const msg: RabbitMQRequest = {
+            op: RabbitMQUserManagerOp.CREATE_GOOGLE,
+            id: '',
+            JWT: OAuthRes.jwt
+        }
+        rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
+    } catch (error) {
+        const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
+        query.run(NewUser.UID);
+        console.log(`ERROR: SignUpNewGoogleUser(): ${error}`);
+        reply.raw.statusCode = 500;
+        reply.raw.end("ERROR: internal error, try again later.");
+        return;
     }
-    rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
 }
 
 export const AuthenticateUser = async (request: FastifyRequest<{
@@ -73,12 +80,14 @@ export const AuthenticateUser = async (request: FastifyRequest<{
         var OAuthRes = await OAuthExchangeCode(code);
         const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
-        reply.hijack();
-        if (getUserResult === undefined)
-            SignUpNewUser(OAuthRes, reply);
-        else
-            FetchUser(OAuthRes, reply);
-        return Promise.resolve();
+        if (getUserResult === undefined) {
+            SignUpNewGoogleUser(OAuthRes, reply);
+            return Promise.resolve();
+        }
+        const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
+        reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+        reply.code(200);
+        return reply.send({ decoded: OAuthRes.jwt, token: OAuthRes.response.id_token });
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);
         return reply.code(500).send(`ERROR: Invalid credentials.`);

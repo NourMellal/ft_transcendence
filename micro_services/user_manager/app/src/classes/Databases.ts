@@ -1,6 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { UserModel, users_table_name } from '../types/DbTables';
-import { JWT } from '../types/RabbitMQMessages';
+import { users_table_name } from '../types/DbTables';
 
 class Databases {
     transient: DatabaseSync;
@@ -12,7 +11,7 @@ class Databases {
     }
     public init(): void {
         try {
-            db.persistent.exec(`create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'display_name' TEXT NOT NULL UNIQUE, 'picture_url' TEXT NOT NULL, 'bio' TEXT)`);
+            db.persistent.exec(`create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'picture_url' TEXT NOT NULL, 'bio' TEXT, 'friends_uids' TEXT)`);
         }
         catch (err) {
             console.log("fatal error: " + err);

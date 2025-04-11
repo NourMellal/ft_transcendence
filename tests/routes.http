@@ -1,5 +1,6 @@
 # install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 # Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
+# No need to pass cookie as REST client support cookies (optionaly you can pass them only if you connect with OAuth via browser)
 
 # GET the discovery document of the server:
 GET https://server.transcendence.fr/.well-known/discovery
@@ -13,48 +14,68 @@ GET https://server.transcendence.fr/OAuth/state
 
 # GET user info:
 GET https://server.transcendence.fr/user/info?uid=105404925440430836662
-Cookie: jwt={{jwt_token}}
 
 ###
 
 # GET current logged user info uid alias:
 GET https://server.transcendence.fr/user/info?uid=me
-Cookie: jwt={{jwt_token}}
 
 ###
 
 # Check if display name is available:
-GET https://server.transcendence.fr/user/name?name=ahmed
-Cookie: jwt={{jwt_token}}
+GET https://server.transcendence.fr/user/namecheck?username=ahmed
+
+###
+
+# Signup standard user:
+POST https://server.transcendence.fr/user/signup
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="username"
+
+Ahmedssxssqa14
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="password"
+
+Ahmed123456
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+
+# Signin standard user:
+POST https://server.transcendence.fr/user/signin
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="username"
+
+Ahmedssxssqa14
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="password"
+
+Ahmed123456
+--boundary13132121321H_4zdzdz90dlzkn--
 
 ###
 
 # Change current logged user info:
 POST https://server.transcendence.fr/user/info
-Cookie: jwt={{jwt_token}}
-Content-Type: multipart/form-data; boundary=boundary
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
---boundary
-Content-Disposition: form-data; name="name"
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="username"
 
 new_username
---boundary
-Content-Disposition: form-data; name="picture"; filename="profile.jpg"
-Content-Type: image/jpeg
-
-< ../micro_services/user_manager/static/profile/default.jpg
---boundary
+--boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="bio"
 
 hey everyone this is my new bio.
---boundary--
+--boundary13132121321H_4zdzdz90dlzkn--
 
 ###
 
 # Delete user's profile picture
 DELETE https://server.transcendence.fr/user/remove_picture
-Cookie: jwt={{jwt_token}}
 
 ###
-
-@jwt_token = put_your_jwt_access_token_here

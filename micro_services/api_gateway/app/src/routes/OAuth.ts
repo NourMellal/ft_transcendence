@@ -21,6 +21,7 @@ export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: Fa
     try {
         if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
+        console.log('cookie: ' + request.headers.cookie as string);
         request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
     } catch (error) {
         console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);

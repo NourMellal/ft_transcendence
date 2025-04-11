@@ -6,7 +6,10 @@ import { pipeline } from "stream/promises";
 import { discoverDocument } from "../models/DiscoveryDocument";
 import Busboy, { BusboyHeaders } from "@fastify/busboy";
 import { multipart_fields, multipart_files } from "../types/multipart";
+import db from "../classes/Databases";
 
+
+// TODO: agregate data from different microservices
 export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid: string } }>, reply: FastifyReply) => {
     try {
         reply.hijack();
@@ -25,46 +28,32 @@ export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid
     }
 }
 
-export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystring: { name: string } }>, reply: FastifyReply) => {
-    try {
-        reply.hijack();
-        const { name } = request.query;
-        const RabbitMQReq: RabbitMQRequest = {
-            op: RabbitMQUserManagerOp.IsDisplayNameAvailable,
-            message: name,
-            id: '',
-            JWT: request.jwt
-        };
-        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply);
-    } catch (error) {
-        console.log(`ERROR: FetchUserInfo(): ${error}`);
-        reply.raw.statusCode = 500;
-        reply.raw.end("ERROR: internal error, try again later.");
-    }
-}
-
 export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.is_valid_multipart)
+        return reply.code(400).send('bad request');
     try {
         const UpdatedInfo: UpdateUser = {
-            display_name: null,
             bio: null,
             picture_url: null
         };
-        const name: multipart_fields | undefined = request.fields.find((field: multipart_fields, i) => field.field_name === 'name');
+        const username: multipart_fields | undefined = request.fields.find((field: multipart_fields, i) => field.field_name === 'username');
         const bio: multipart_fields | undefined = request.fields.find((field: multipart_fields, i) => field.field_name === 'bio');
         const image: multipart_files | undefined = request.files_uploaded.find((file: multipart_files) => file.field_name === 'picture');
         if (image) {
             if (image.mime_type !== 'image/jpeg')
-                return reply.code(400).send(`$got ${image.mime_type} only image jpeg are allowed`);
+                return reply.code(400).send(`only image jpeg are allowed`);
             UpdatedInfo.picture_url = `/static/profile/${request.jwt.sub}.jpg`;
             fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
         }
-        if (name)
-            UpdatedInfo.display_name = name.field_value;
+        console.log('got: ' + request.fields.length);
         if (bio)
+        {
             UpdatedInfo.bio = bio.field_value;
-        if (UpdatedInfo.display_name === null && UpdatedInfo.bio === null && UpdatedInfo.picture_url === null)
+        }
+        if (username === undefined && UpdatedInfo.bio === null && UpdatedInfo.picture_url === null)
             return reply.code(400).send('bad request no field is supplied');
+        if (username && username.field_value.length < 3)
+            return reply.code(400).send('bad request provide a valid username');
         const RabbitMQReq: RabbitMQRequest = {
             op: RabbitMQUserManagerOp.UPDATE,
             message: JSON.stringify(UpdatedInfo),
@@ -83,11 +72,14 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
 export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const UpdatedInfo: UpdateUser = {
-            display_name: null,
             bio: null,
             picture_url: `/static/profile/default.jpg`
         };
-        fs.unlinkSync(`/static/profile/${request.jwt.sub}.jpg`);
+        const picture_path = `/static/profile/${request.jwt.sub}.jpg`;
+        if (fs.existsSync(picture_path))
+            fs.unlinkSync(picture_path);
+        else
+            return reply.status(403).send('Picture already removed.');
         const RabbitMQReq: RabbitMQRequest = {
             op: RabbitMQUserManagerOp.UPDATE,
             message: JSON.stringify(UpdatedInfo),

@@ -13,3 +13,10 @@ export type OAuthResponse = {
     response:OAuthCodeExchangeResponse,
     jwt: JWT
 }
+
+export type GoogleDiscoveryDocument = {
+    issuer: string,
+    authorization_endpoint: string,
+    token_endpoint: string,
+    jwks_uri: string
+}

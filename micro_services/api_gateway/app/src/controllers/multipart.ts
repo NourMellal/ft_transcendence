@@ -2,7 +2,7 @@ import Busboy, { BusboyFileStream, BusboyHeaders } from "@fastify/busboy";
 import { FastifyRequest } from "fastify";
 import { multipart_fields, multipart_files } from "../types/multipart";
 
-export const ParseMultipart = async (request: FastifyRequest, payload: NodeJS.ReadableStream) => {
+export const ParseMultipart = function (request: FastifyRequest, payload: NodeJS.ReadableStream, done: (err: any, ...args: any) => any) {
     const bb = new Busboy({ limits: { parts: 25, fields: 20, files: 5, fileSize: 5 * 1024 * 1024 }, headers: request.headers as BusboyHeaders });
     request.fields = new Array<multipart_fields>;
     request.files_uploaded = new Array<multipart_files>;
@@ -13,15 +13,20 @@ export const ParseMultipart = async (request: FastifyRequest, payload: NodeJS.Re
         request.files_uploaded.push({ field_name: fieldname, mime_type: mimeType, field_file: stream });
     })
     bb.on('fieldsLimit', () => {
-        throw 'multipart exceeded limits';
+        request.is_valid_multipart = false;
     });
     bb.on('filesLimit', () => {
-        throw 'multipart exceeded limits';
+        request.is_valid_multipart = false;
+    });
+    bb.on('partsLimit', () => {
+        request.is_valid_multipart = false;
     });
     bb.on('error', (error) => {
         console.log(`ERROR: ParseMultipart(): ${error}`);
-        throw 'error parsing multipart';
+        request.is_valid_multipart = false;
     });
+    bb.on('finish', () => { done(null); });
+    request.is_valid_multipart = true;
     payload.pipe(bb);
 }
 

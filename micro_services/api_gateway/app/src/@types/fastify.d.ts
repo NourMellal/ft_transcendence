@@ -7,5 +7,6 @@ declare module 'fastify' {
         jwt: JWT;
         files_uploaded: multipart_files[];
         fields: multipart_fields[];
+        is_valid_multipart: boolean;
     }
 }

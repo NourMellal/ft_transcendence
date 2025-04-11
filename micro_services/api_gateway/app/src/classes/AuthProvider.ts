@@ -1,34 +1,32 @@
 import crypto from 'crypto'
 import { JWT, JWTHeaders, JWTKeyCert } from '../types/AuthProvider'
-
-type DiscoveryDocument = {
-    issuer: string,
-    authorization_endpoint: string,
-    token_endpoint: string,
-    jwks_uri: string
-}
+import { GoogleDiscoveryDocument } from '../types/OAuth';
+import JWTFactory from './JWTFactory';
 
 class OAuthProvider {
     isReady: boolean = false;
     discoveryDocumentURL: string;
-    discoveryDocument: DiscoveryDocument;
+    discoveryDocument: GoogleDiscoveryDocument;
     JWTKeyCertificate: JWTKeyCert;
+    jwtFactory: JWTFactory;
 
     constructor(DiscoveryDocumentUrl: string) {
         this.discoveryDocumentURL = DiscoveryDocumentUrl;
-        this.discoveryDocument = {} as DiscoveryDocument;
+        this.discoveryDocument = {} as GoogleDiscoveryDocument;
         this.JWTKeyCertificate = {} as JWTKeyCert;
+        this.jwtFactory = {} as JWTFactory;
     }
     public async init() {
         try {
             var res = await fetch(this.discoveryDocumentURL);
             if (!res.ok)
                 throw `Can't get OAuth discovery document at ${this.discoveryDocumentURL}`;
-            this.discoveryDocument = await res.json() as DiscoveryDocument;
+            this.discoveryDocument = await res.json() as GoogleDiscoveryDocument;
             res = await fetch(this.discoveryDocument.jwks_uri);
             if (!res.ok)
                 throw `Can't get OAuth jwk certificate at ${this.discoveryDocument.jwks_uri}`;
             this.JWTKeyCertificate = await res.json() as JWTKeyCert;
+            this.jwtFactory = new JWTFactory(process.env.SERVER_PRIVATE_KEY_PATH || '', this.discoveryDocument);
             for (let i = 0; i < this.JWTKeyCertificate.keys.length; i++) {
                 const element = this.JWTKeyCertificate.keys[i];
                 element.pkey = crypto.createPublicKey({ key: element, format: 'jwk' });
@@ -57,6 +55,8 @@ class OAuthProvider {
         var header: JWTHeaders = JSON.parse(Buffer.from(jwt_parts[0], 'base64').toString());
         if (header.alg != 'RS256')
             throw `Error ValidateJWT_Token(): algorithm '${header.alg}' is not supported!`;
+        if (header.kid === process.env.SERVER_JWT_KID)
+            return this.jwtFactory.VerifyJWT(jwt_parts);
         var key = this.JWTKeyCertificate.keys.find((value) => { return value.kid === header.kid });
         if (!key)
             throw `Error ValidateJWT_Token(): invalid key_id: '${header.kid}'`;

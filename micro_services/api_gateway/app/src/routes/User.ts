@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { FetchUserInfo, IsDisplayNameAvailable, RemoveUserProfile, UpdateUserInfo } from '../controllers/User';
+import { FetchUserInfo, RemoveUserProfile, UpdateUserInfo } from '../controllers/User';
 import { discoverDocument } from '../models/DiscoveryDocument';
 import { isRequestAuthorizedHook } from './OAuth';
 
@@ -28,23 +28,9 @@ const GetUserInfoOpts = {
     }
 };
 
-const CheckDisplayNameOpts = {
-    schema: {
-        querystring: {
-            type: 'object',
-            properties: {
-                uid: { type: 'string' },
-            },
-            required: ['name']
-        },
-        headers: AuthHeaderValidation.schema.headers
-    }
-};
-
 async function UserRoutes(fastify: FastifyInstance) {
     fastify.addHook('preHandler', isRequestAuthorizedHook);
     fastify.get(discoverDocument.FetchUserInfoRoute.route, GetUserInfoOpts, FetchUserInfo);
-    fastify.get(discoverDocument.CheckUserDisplayNameAvailableRoute.route, CheckDisplayNameOpts, IsDisplayNameAvailable);
     fastify.post(discoverDocument.UpdateUserInfoRoute.route, AuthHeaderValidation, UpdateUserInfo);
     fastify.delete(discoverDocument.RemoveUserProfileRoute.route, AuthHeaderValidation, RemoveUserProfile);
 }

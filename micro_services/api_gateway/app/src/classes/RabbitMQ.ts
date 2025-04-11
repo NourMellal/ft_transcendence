@@ -11,6 +11,7 @@ type ReplyPayload = {
     JWT_Token?: string,
 }
 
+// TODO:Handle error responses correctly
 class RabbitMQ {
     isReady = false;
     connection_option: Options.Connect =
@@ -63,6 +64,7 @@ class RabbitMQ {
             replyInstance.reply.raw.setHeader('Content-Type', 'application/json');
             if (replyInstance.JWT_Token && replyInstance.JWT) {
                 const expiresDate = new Date(replyInstance.JWT.exp * 1000).toUTCString();
+                console.log('sending cookie: ' + replyInstance.JWT_Token);
                 replyInstance.reply.raw.setHeader('Set-Cookie', `jwt=${replyInstance.JWT_Token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
             }
             const payload = replyInstance.reply.serialize({

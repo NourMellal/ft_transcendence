@@ -47,19 +47,24 @@ class RabbitMQ {
     consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
-        var req_id: string | undefined = undefined;
+        var RMqRequest: RabbitMQRequest;
         try {
-            const RMqRequest = JSON.parse(msg.content.toString()) as RabbitMQRequest;
-            req_id = RMqRequest.id;
-            var RMqResponse = HandleMessage(RMqRequest);
+            RMqRequest = JSON.parse(msg.content.toString());
+        } catch (error) {
+            console.log(`Error: rabbitmq consumeUserManagerQueue(): parse error ${error}`);
+            return;
+        }
+        try {
+            const RMqResponse = HandleMessage(RMqRequest);
             rabbitmq.sendToAPIGatewayQueue(RMqResponse);
         } catch (error) {
             console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error}`);
-            if (req_id) {
+            if (RMqRequest.id) {
                 const RMqResponse: RabbitMQResponse = {
-                    req_id: req_id,
+                    op: RMqRequest.op,
+                    req_id: RMqRequest.id,
                     status: 500,
-                    message: 'internal server error, please try again later'
+                    message: 'internal server error, please try again later.'
                 };
                 rabbitmq.sendToAPIGatewayQueue(RMqResponse);
             }

@@ -1,24 +1,14 @@
-export type JWT = {
-    iss: string,
-    aud: string,
-    sub: string,
-    exp: number,
-    iat: number,
-    email?: string,
-    name?: string,
-    picture?: string
-}
+import { JWT } from "./common";
 
 export enum RabbitMQUserManagerOp {
-    CREATE = 1,
-    UPDATE = 2,
-    DELETE = 3,
-    FETCH = 4,
-    IsDisplayNameAvailable = 5
+    CREATE_GOOGLE = 1,
+    CREATE_STANDARD,
+    UPDATE,
+    DELETE,
+    FETCH
 }
 
 export type UpdateUser = {
-    display_name: string | null,
     picture_url: string | null,
     bio: string | null
 };
@@ -31,7 +21,8 @@ export type RabbitMQRequest = {
 };
 
 export type RabbitMQResponse = {
+    op: RabbitMQUserManagerOp,
     status: number,
-    message: string
+    message?: string
     req_id: string
 };
