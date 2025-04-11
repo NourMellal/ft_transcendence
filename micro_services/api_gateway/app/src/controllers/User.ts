@@ -7,6 +7,7 @@ import { discoverDocument } from "../models/DiscoveryDocument";
 import Busboy, { BusboyHeaders } from "@fastify/busboy";
 import { multipart_fields, multipart_files } from "../types/multipart";
 import db from "../classes/Databases";
+import { UserModel } from "../types/DbTables";
 
 
 // TODO: agregate data from different microservices
@@ -20,12 +21,23 @@ export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid
             id: '',
             JWT: request.jwt
         };
-        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply);
+        rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+            reply.raw.statusCode = response.status;
+            if (response.status !== 200 || response.message === undefined)
+                return reply.raw.end(response.message);
+            var payload = JSON.parse(response.message);
+            const query = db.persistent.prepare('SELECT username FROM users WHERE UID = ? ;');
+            const res = query.get(request.jwt.sub) as UserModel;
+            if (res)
+                payload.username = res.username;
+            reply.raw.end(reply.serialize(payload));
+        });
     } catch (error) {
         console.log(`ERROR: FetchUserInfo(): ${error}`);
         reply.raw.statusCode = 500;
         reply.raw.end("ERROR: internal error, try again later.");
     }
+    return Promise.resolve();
 }
 
 export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -46,8 +58,7 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
             fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
         }
         console.log('got: ' + request.fields.length);
-        if (bio)
-        {
+        if (bio) {
             UpdatedInfo.bio = bio.field_value;
         }
         if (username === undefined && UpdatedInfo.bio === null && UpdatedInfo.picture_url === null)
@@ -61,12 +72,16 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
             JWT: request.jwt
         };
         reply.hijack();
-        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply);
+        rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+            reply.raw.statusCode = response.status;
+            reply.raw.end(response.message);
+        });
     } catch (error) {
         console.log(`ERROR: FetchUserInfo(): ${error}`);
         reply.raw.statusCode = 500;
-        return reply.raw.end("ERROR: internal error, try again later.");
+        reply.raw.end("ERROR: internal error, try again later.");
     }
+    return Promise.resolve();
 }
 
 export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -87,7 +102,10 @@ export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyR
             JWT: request.jwt
         };
         reply.hijack();
-        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply);
+        rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+            reply.raw.statusCode = response.status;
+            reply.raw.end(response.message);
+        });
     } catch (error) {
         console.log(`ERROR: RemoveUserProfile(): ${error}`);
         reply.raw.statusCode = 500;

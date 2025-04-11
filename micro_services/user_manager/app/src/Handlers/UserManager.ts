@@ -34,8 +34,7 @@ function CreateNewGoogleUser(jwt: JWT): UserModel {
     }
     const insertQuery = db.persistent.prepare(`INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`);
     var res = insertQuery.run(user.UID, user.picture_url, user.bio);
-    if (res.changes !== 1)
-    {
+    if (res.changes !== 1) {
         if (picture_route !== '/static/profile/default.png' && fs.existsSync(picture_route))
             fs.unlinkSync(picture_route);
         throw `Can not add Google user uid=${jwt.sub} to db`;
@@ -94,11 +93,14 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
             if (!RMqRequest.message)
                 throw 'RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.FETCH]';
             const record = FetchUser(RMqRequest.message as string);
-            if (typeof record === 'string')
+            if (typeof record === 'string') {
+                RMqResponse.status = 404;
                 RMqResponse.message = record;
-            else
+            }
+            else {
+                RMqResponse.status = 200;
                 RMqResponse.message = JSON.stringify(record);
-            RMqResponse.status = 200;
+            }
             break;
         case RabbitMQUserManagerOp.UPDATE:
             if (!RMqRequest.message)

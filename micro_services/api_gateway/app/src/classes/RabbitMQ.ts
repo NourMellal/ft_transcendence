@@ -25,7 +25,7 @@ class RabbitMQ {
     channel: amqp.Channel;
     api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME || 'ft_api_gateway';
     user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME || 'ft_user_manager';
-    reply_map = new Map<string, ReplyPayload>();
+    reply_map = new Map<string, (response: RabbitMQResponse) => void>();
     constructor() {
         this.connection = {} as amqp.ChannelModel;
         this.channel = {} as amqp.Channel;
@@ -57,38 +57,23 @@ class RabbitMQ {
         var RMqResponse = { req_id: '' } as RabbitMQResponse;
         try {
             const RMqResponse = JSON.parse(msg.content.toString()) as RabbitMQResponse;
-            var replyInstance = this.reply_map.get(RMqResponse.req_id);
-            if (replyInstance === undefined)
+            var replyInstanceCallback = this.reply_map.get(RMqResponse.req_id);
+            if (replyInstanceCallback === undefined)
                 throw `request id ${RMqResponse.req_id} not found`;
-            replyInstance.reply.raw.statusCode = RMqResponse.status;
-            replyInstance.reply.raw.setHeader('Content-Type', 'application/json');
-            if (replyInstance.JWT_Token && replyInstance.JWT) {
-                const expiresDate = new Date(replyInstance.JWT.exp * 1000).toUTCString();
-                replyInstance.reply.raw.setHeader('Set-Cookie', `jwt=${replyInstance.JWT_Token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-            }
-            const payload = replyInstance.reply.serialize({
-                user_info: RMqResponse.message,
-                JWT: replyInstance.JWT_Token
-            });
-            replyInstance.reply.raw.setHeader('access-control-allow-origin', '*');
-            replyInstance.reply.raw.end(payload);
+            replyInstanceCallback(RMqResponse);
             this.reply_map.delete(RMqResponse.req_id);
         } catch (error) {
             console.log(`Error: rabbitmq consumeAPIGatewayQueue(): ${error}`);
-            if ((replyInstance = this.reply_map.get(RMqResponse.req_id)) !== undefined) {
-                replyInstance.reply.raw.statusCode = 500;
-                replyInstance.reply.raw.end('Internal Server Error');
-                this.reply_map.delete(RMqResponse.req_id);
-            }
+            this.reply_map.delete(RMqResponse.req_id);
         }
     }
-    public sendToUserManagerQueue(req: RabbitMQRequest, reply: FastifyReply, jwt?: JWT, jwt_token?: string) {
+    public sendToUserManagerQueue(req: RabbitMQRequest, callback: (response: RabbitMQResponse) => void) {
         if (!this.isReady)
             throw 'RabbitMQ class not ready';
         req.id = crypto.randomUUID();
         if (this.reply_map.has(req.id))
             throw `request id with UID=${req.id} already exist`;
-        this.reply_map.set(req.id, { reply: reply, JWT: jwt, JWT_Token: jwt_token });
+        this.reply_map.set(req.id, callback);
         this.channel.sendToQueue(this.user_manager_queue, Buffer.from(JSON.stringify(req)));
     }
 }

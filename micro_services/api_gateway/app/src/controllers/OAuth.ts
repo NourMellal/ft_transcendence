@@ -5,6 +5,7 @@ import { SignInStatesModel, UserModel } from '../types/DbTables'
 import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
 import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
+import { SendSignInResponse } from './Common'
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
@@ -47,7 +48,9 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
             id: '',
             JWT: OAuthRes.jwt
         }
-        rabbitmq.sendToUserManagerQueue(msg, reply, OAuthRes.jwt, OAuthRes.response.id_token);
+        rabbitmq.sendToUserManagerQueue(msg, (response) => {
+            SendSignInResponse(reply, response, OAuthRes.jwt, OAuthRes.response.id_token);
+        });
     } catch (error) {
         const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
         query.run(NewUser.UID);
@@ -86,8 +89,7 @@ export const AuthenticateUser = async (request: FastifyRequest<{
         }
         const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
         reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
-        reply.code(200);
-        return reply.send({ decoded: OAuthRes.jwt, token: OAuthRes.response.id_token });
+        return reply.code(200).send(OAuthRes.response.id_token);
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);
         return reply.code(500).send(`ERROR: Invalid credentials.`);

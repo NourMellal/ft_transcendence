@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { RabbitMQRequest, RabbitMQUserManagerOp } from "../types/RabbitMQMessages";
 import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
+import { SendSignInResponse } from "./Common";
 
 export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystring: { username: string } }>, reply: FastifyReply) => {
     try {
@@ -57,7 +58,10 @@ export const SignUpNewStandardUser = async (request: FastifyRequest, reply: Fast
             id: '',
             JWT: jwt
         };
-        rabbitmq.sendToUserManagerQueue(RabbitMQReq, reply, jwt, jwt_token);
+        rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+            SendSignInResponse(reply, response, jwt, jwt_token);
+        });
+        return Promise.resolve();
     } catch (error) {
         const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
         query.run(NewUser.UID);
