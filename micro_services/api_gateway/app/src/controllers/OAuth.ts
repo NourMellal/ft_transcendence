@@ -5,7 +5,7 @@ import { SignInStatesModel, UserModel } from '../types/DbTables'
 import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
 import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
-import { SendSignInResponse } from './Common'
+import { ProcessSignUpResponse, SignPayload } from './Common'
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
@@ -33,7 +33,6 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
 }
 
 function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
-    reply.hijack();
     var NewUser: UserModel;
     try {
         NewUser = db.CreateNewGoogleUser(OAuthRes);
@@ -49,7 +48,7 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
             JWT: OAuthRes.jwt
         }
         rabbitmq.sendToUserManagerQueue(msg, (response) => {
-            SendSignInResponse(reply, response, OAuthRes.jwt, OAuthRes.response.id_token);
+            ProcessSignUpResponse(reply, response, OAuthRes.jwt, OAuthRes.response.id_token);
         });
     } catch (error) {
         const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
@@ -84,12 +83,14 @@ export const AuthenticateUser = async (request: FastifyRequest<{
         const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
         if (getUserResult === undefined) {
+            reply.hijack();
             SignUpNewGoogleUser(OAuthRes, reply);
             return Promise.resolve();
         }
         const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
         reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
-        return reply.code(200).send(OAuthRes.response.id_token);
+        const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
+        return reply.code(200).send(payload);
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);
         return reply.code(500).send(`ERROR: Invalid credentials.`);
@@ -108,10 +109,7 @@ export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply)
             String.fromCharCode.apply(null, Array.from(randomValues))
         );
         // Base64 encode the UTF-8 data
-        var code = btoa(String.fromCharCode.apply(null, Array.from(utf8Array)))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
+        var code = Buffer.from(utf8Array).toString('base64url');
         const created = Date.now() / 1000;
         const query = db.transient.prepare('INSERT INTO signin_states ( state , created ) VALUES( ? , ? );');
         const res = query.run(code, created);

@@ -1,11 +1,17 @@
+# No need to pass cookie as REST client support cookies (optionaly you can pass them only if you connect with OAuth via browser or if you disable REST client cookies)
 # install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 # Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
-# No need to pass cookie as REST client support cookies (optionaly you can pass them only if you connect with OAuth via browser)
 
-# GET the discovery document of the server:
+
+# GET the discovery document of the server: (No authorization required)
+# READ THIS DOCUMENT FOR A DETAILED DESCRIPTION OF EACH ROUTE
 GET https://server.transcendence.fr/.well-known/discovery
 
-###
+
+
+
+
+###### START GOOGLE OAUTH TESTs (No authorization required) ######
 
 # GET a random state_code for OAuth flow:
 GET https://server.transcendence.fr/OAuth/state
@@ -14,18 +20,15 @@ GET https://server.transcendence.fr/OAuth/state
 
 # GET user info:
 GET https://server.transcendence.fr/user/info?uid=105404925440430836662
+# Cookie: jwt={{jwt_token}}
 
-###
+###### END GOOGLE OAUTH TESTs ######
 
-# GET current logged user info uid alias:
-GET https://server.transcendence.fr/user/info?uid=me
 
-###
 
-# Check if display name is available:
-GET https://server.transcendence.fr/user/namecheck?username=ahmed
 
-###
+
+###### START USER/PWD TESTs (No authorization required) ######
 
 # Signup standard user:
 POST https://server.transcendence.fr/user/signup
@@ -34,11 +37,11 @@ Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="username"
 
-Ahmedssxssqa14
+msitni
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="password"
 
-Ahmed123456
+very_hard_password
 --boundary13132121321H_4zdzdz90dlzkn--
 
 ###
@@ -50,23 +53,36 @@ Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="username"
 
-Ahmedssxssqa14
+msitni
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="password"
 
-Ahmed123456
+very_hard_password
 --boundary13132121321H_4zdzdz90dlzkn--
+
+###### END USER/PWD TESTs ######
+
+
+
+
+
+###### START USER MANAGEMENT TESTs (Authorization required) ######
+
+# GET current logged user info uid alias:
+GET https://server.transcendence.fr/user/info?uid=me
+# Cookie: jwt={{jwt_token}}
 
 ###
 
 # Change current logged user info:
 POST https://server.transcendence.fr/user/info
+# Cookie: jwt={{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="username"
 
-new_username
+msitni
 --boundary13132121321H_4zdzdz90dlzkn
 Content-Disposition: form-data; name="bio"
 
@@ -77,5 +93,26 @@ hey everyone this is my new bio.
 
 # Delete user's profile picture
 DELETE https://server.transcendence.fr/user/remove_picture
+# Cookie: jwt={{jwt_token}}
+
+###### END USER MANAGEMENT TESTs ######
+
+
+
+
+
+###### START MISC TESTs ######
+
+# Check if username is available: (No authorization required)
+GET https://server.transcendence.fr/user/namecheck?username=simbolic
 
 ###
+
+###### END MISC TESTs ######
+
+
+
+
+
+
+@jwt_token = put_token_here_and_uncomment_cookie_header

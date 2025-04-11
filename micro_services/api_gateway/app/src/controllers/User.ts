@@ -10,7 +10,6 @@ import db from "../classes/Databases";
 import { UserModel } from "../types/DbTables";
 
 
-// TODO: agregate data from different microservices
 export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid: string } }>, reply: FastifyReply) => {
     try {
         reply.hijack();
@@ -65,24 +64,29 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
         if (username) {
             if (username.field_value.length < 3)
                 return reply.code(400).send('bad request provide a valid username');
-            const query = db.persistent.prepare('UPDATE users SET username = ? WHERE UID = ? ;');
-            const res = query.run(username.field_value, request.jwt.sub);
-            if (res.changes !== 1)
-                return reply.code(500).send('database error');
+            try {
+                const query = db.persistent.prepare('UPDATE users SET username = ? WHERE UID = ? ;');
+                const res = query.run(username.field_value, request.jwt.sub);
+                if (res.changes !== 1)
+                    throw 'database error';
+            } catch (error) {
+                console.log(`ERROR: UpdateUserInfo(): query.run(): ${error}`);
+                return reply.code(400).send('username is taken');
+            }
         }
+        reply.hijack();
         const RabbitMQReq: RabbitMQRequest = {
             op: RabbitMQUserManagerOp.UPDATE,
             message: JSON.stringify(UpdatedInfo),
             id: '',
             JWT: request.jwt
         };
-        reply.hijack();
         rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
             reply.raw.statusCode = response.status;
             reply.raw.end(response.message);
         });
     } catch (error) {
-        console.log(`ERROR: FetchUserInfo(): ${error}`);
+        console.log(`ERROR: UpdateUserInfo(): ${error}`);
         reply.raw.statusCode = 500;
         reply.raw.end("ERROR: internal error, try again later.");
     }
@@ -100,13 +104,13 @@ export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyR
             fs.unlinkSync(picture_path);
         else
             return reply.status(403).send('Picture already removed.');
+        reply.hijack();
         const RabbitMQReq: RabbitMQRequest = {
             op: RabbitMQUserManagerOp.UPDATE,
             message: JSON.stringify(UpdatedInfo),
             id: '',
             JWT: request.jwt
         };
-        reply.hijack();
         rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
             reply.raw.statusCode = response.status;
             reply.raw.end(response.message);
@@ -114,6 +118,7 @@ export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyR
     } catch (error) {
         console.log(`ERROR: RemoveUserProfile(): ${error}`);
         reply.raw.statusCode = 500;
-        return reply.raw.end("ERROR: internal error, try again later.");
+        reply.raw.end("ERROR: internal error, try again later.");
     }
+    return Promise.resolve();
 }

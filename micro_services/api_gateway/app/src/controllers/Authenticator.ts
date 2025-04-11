@@ -7,7 +7,7 @@ import crypto from "crypto";
 import { RabbitMQRequest, RabbitMQUserManagerOp } from "../types/RabbitMQMessages";
 import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
-import { SendSignInResponse } from "./Common";
+import { ProcessSignUpResponse, SignPayload } from "./Common";
 
 export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystring: { username: string } }>, reply: FastifyReply) => {
     try {
@@ -59,7 +59,7 @@ export const SignUpNewStandardUser = async (request: FastifyRequest, reply: Fast
             JWT: jwt
         };
         rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
-            SendSignInResponse(reply, response, jwt, jwt_token);
+            ProcessSignUpResponse(reply, response, jwt, jwt_token);
         });
         return Promise.resolve();
     } catch (error) {
@@ -91,7 +91,8 @@ export const SignInStandardUser = async (request: FastifyRequest, reply: Fastify
             const expiresDate = new Date(jwt.exp * 1000).toUTCString();
             reply.headers({ "set-cookie": `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
             reply.code(200);
-            return reply.send({ decoded: jwt, token: jwt_token });
+            const payload: SignPayload = { status: 'User sign in.', decoded: jwt, token: jwt_token };
+            return reply.send(payload);
         }
         return reply.code(401).send('invalid credentials');
     } catch (error) {
