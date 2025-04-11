@@ -81,7 +81,6 @@ export const SignInStandardUser = async (request: FastifyRequest, reply: Fastify
         hasher.update(Buffer.from(psswd.field_value));
         const query = db.persistent.prepare('SELECT * from users WHERE username = ? AND password_hash = ? ;');
         const res = query.get(username.field_value, hasher.digest().toString()) as UserModel;
-        console.log(res);
         if (res) {
             const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, res.username);
             const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);

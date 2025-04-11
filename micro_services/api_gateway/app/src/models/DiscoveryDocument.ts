@@ -34,7 +34,7 @@ export const discoverDocument = {
         description: 'Front: sign in user using username and password. returns jwt cookie or 401',
         notes: 'don\'t use the decoded jwt to infer user\'s info instead fetch the user info route.',
         route: '/user/signin',
-        multipart_params: [{ name: 'username', type: 'text/plain', constraint: '>2 chars' }, { name: 'password', type: 'text/plain', constraint: '>7 chars' }, { name: 'picture', type: 'image/jpeg' }],
+        multipart_params: [{ name: 'username', type: 'text/plain', constraint: '>2 chars' }, { name: 'password', type: 'text/plain', constraint: '>7 chars' }],
         method: 'POST'
     },
     FetchUserInfoRoute:
