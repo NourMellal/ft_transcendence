@@ -1,13 +1,13 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { RabbitMQRequest, RabbitMQUserManagerOp, UpdateUser } from "../types/RabbitMQMessages";
-import rabbitmq from "../classes/RabbitMQ";
+import { RabbitMQRequest, RabbitMQUserManagerOp, UpdateUser } from "../../types/RabbitMQMessages";
+import rabbitmq from "../../classes/RabbitMQ";
 import fs from "fs";
 import { pipeline } from "stream/promises";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoverDocument } from "../../models/DiscoveryDocument";
 import Busboy, { BusboyHeaders } from "@fastify/busboy";
-import { multipart_fields, multipart_files } from "../types/multipart";
-import db from "../classes/Databases";
-import { UserModel } from "../types/DbTables";
+import { multipart_fields, multipart_files } from "../../types/multipart";
+import db from "../../classes/Databases";
+import { UserModel } from "../../types/DbTables";
 
 
 export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid: string } }>, reply: FastifyReply) => {
@@ -68,7 +68,7 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
                 const query = db.persistent.prepare('UPDATE users SET username = ? WHERE UID = ? ;');
                 const res = query.run(username.field_value, request.jwt.sub);
                 if (res.changes !== 1)
-                    throw 'database error';
+                    throw 'UpdateUserInfo(): database error';
             } catch (error) {
                 console.log(`ERROR: UpdateUserInfo(): query.run(): ${error}`);
                 return reply.code(400).send('username is taken');

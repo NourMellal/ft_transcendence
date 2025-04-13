@@ -1,7 +1,7 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib'
-import { RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
-import HandleMessage from '../Handlers/UserManager';
+import { RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
+import HandleMessage from '../Handlers/FriendsManager';
 
 
 class RabbitMQ {
@@ -16,7 +16,7 @@ class RabbitMQ {
     connection: amqp.ChannelModel;
     channel: amqp.Channel;
     api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME || 'ft_api_gateway';
-    user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME || 'ft_user_manager';
+    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME || 'ft_friends_manager';
     constructor() {
         this.connection = {} as amqp.ChannelModel;
         this.channel = {} as amqp.Channel;
@@ -31,8 +31,8 @@ class RabbitMQ {
             this.connection = await amqp.connect(this.connection_option);
             this.channel = await this.connection.createChannel();
             await this.channel.assertQueue(this.api_gateway_queue, { durable: false });
-            await this.channel.assertQueue(this.user_manager_queue, { durable: false });
-            await this.channel.consume(this.user_manager_queue, this.consumeUserManagerQueue, { noAck: true });
+            await this.channel.assertQueue(this.friends_manager_queue, { durable: false });
+            await this.channel.consume(this.friends_manager_queue, this.consumeFriendsManagerQueue, { noAck: true });
             this.channel.on('close', async () => { await new Promise(r => setTimeout(r, 1000)); this.AttemptConnection(); });
             this.isReady = true;
             console.log('RabbitMQ class connection established.');
@@ -42,7 +42,7 @@ class RabbitMQ {
             this.AttemptConnection();
         }
     }
-    consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
+    consumeFriendsManagerQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
         var RMqRequest: RabbitMQRequest;
@@ -51,14 +51,14 @@ class RabbitMQ {
             if (!RMqRequest.id || RMqRequest.id === '')
                 throw 'received request with no id';
         } catch (error) {
-            console.log(`Error: rabbitmq consumeUserManagerQueue(): parse error ${error}`);
+            console.log(`Error: rabbitmq consumeFriendsManagerQueue(): parse error ${error}`);
             return;
         }
         try {
             const RMqResponse = HandleMessage(RMqRequest);
             rabbitmq.sendToAPIGatewayQueue(RMqResponse);
         } catch (error) {
-            console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error} | request id: ${RMqRequest.id}`);
+            console.log(`Error: rabbitmq consumeFriendsManagerQueue(): ${error} | request id: ${RMqRequest.id}`);
             const RMqResponse: RabbitMQResponse = {
                 op: RMqRequest.op,
                 req_id: RMqRequest.id,

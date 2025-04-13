@@ -43,6 +43,17 @@ services:
         depends_on:
             - rabbitmq
         restart: always
+    friends_manager:
+        container_name: friends_manager
+        build: ./micro_services/friends_manager
+        volumes:
+            - friends_manager_db_volume:/database:rw
+            - static_data_volume:/static:rw
+        networks:
+            - ft_transcendence
+        depends_on:
+            - rabbitmq
+        restart: always
 
 networks:
     ft_transcendence:
@@ -64,6 +75,13 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/simo/docker_volumes/user_manager_db_volume'
+    friends_manager_db_volume:
+        name: friends_manager_db_volume
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/home/simo/docker_volumes/friends_manager_db_volume'
     static_data_volume:
         name: static_data_volume
         driver: local

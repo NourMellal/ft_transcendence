@@ -19,7 +19,7 @@ GET https://server.transcendence.fr/OAuth/state
 ###
 
 # GET user info:
-GET https://server.transcendence.fr/user/info?uid=105404925440430836662
+GET https://server.transcendence.fr/user/info?uid=
 # Cookie: jwt={{jwt_token}}
 
 ###### END GOOGLE OAUTH TESTs ######
@@ -113,6 +113,47 @@ GET https://server.transcendence.fr/user/namecheck?username=simbolic
 
 
 
+###### START FRIENDS SYSTEM TESTs (Authorization required) ######
+
+# Get current user friends list
+GET https://server.transcendence.fr/friends
+# Cookie: jwt={{jwt_token}}
+
+###
+
+# Get current user friends requests
+GET https://server.transcendence.fr/friends/requests
+# Cookie: jwt={{jwt_token}}
+
+###
+
+# Send a friend request
+POST https://server.transcendence.fr/friends/request?uid=
+# Cookie: jwt={{jwt_token}}
+
+###
+
+# Accept a friend request
+POST https://server.transcendence.fr/friends/accept?uid=
+# Cookie: jwt={{jwt_token}}
+
+###
+
+# Deny a friend request
+POST https://server.transcendence.fr/friends/deny?uid=
+# Cookie: jwt={{jwt_token}}
+
+###
+
+# Remove a friend
+POST https://server.transcendence.fr/friends/remove?uid=
+# Cookie: jwt={{jwt_token}}
+
+###
+
+###### END FRIENDS SYSTEM TESTs ######
 
 
-@jwt_token = put_token_here_and_uncomment_cookie_header
+
+
+@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings

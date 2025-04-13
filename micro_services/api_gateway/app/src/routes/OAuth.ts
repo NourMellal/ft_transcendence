@@ -30,8 +30,8 @@ export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: Fa
 }
 
 async function OAuthRoutes(fastify: FastifyInstance) {
-    fastify.get(discoverDocument.OAuthStateRoute.route, GetOAuthCode);
-    fastify.get(discoverDocument.OAuthRedirectRoute.route, AuthCodeOpts, AuthenticateUser);
+    fastify.get(discoverDocument.OAuthRoutes.OAuthStateRoute.route, GetOAuthCode);
+    fastify.get(discoverDocument.OAuthRoutes.OAuthRedirectRoute.route, AuthCodeOpts, AuthenticateUser);
 }
 
 export default OAuthRoutes;

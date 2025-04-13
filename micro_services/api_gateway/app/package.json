@@ -1,6 +1,6 @@
 {
   "private": "true",
-  "name": "ft_api_gateway",
+  "name": "api_gateway",
   "version": "1.0.0",
   "description": "api_gateway microservice for ft_transcendence",
   "main": "./dist/app.js",

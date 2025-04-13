@@ -1,12 +1,4 @@
-import { JWT } from "./AuthProvider";
-
-export enum RabbitMQUserManagerOp {
-    CREATE_GOOGLE = 1,
-    CREATE_STANDARD,
-    UPDATE,
-    DELETE,
-    FETCH
-}
+import { JWT } from "./common";
 
 export enum RabbitMQFriendsManagerOp {
     ADD_FRIEND = 1,
@@ -17,20 +9,15 @@ export enum RabbitMQFriendsManagerOp {
     LIST_REQUESTS,
 }
 
-export type UpdateUser = {
-    picture_url: string | null,
-    bio: string | null
-};
-
 export type RabbitMQRequest = {
-    op: number,
+    op: RabbitMQFriendsManagerOp,
     message?: string
-    id: string
+    id: string,
     JWT: JWT
 };
 
 export type RabbitMQResponse = {
-    op: number,
+    op: RabbitMQFriendsManagerOp,
     status: number,
     message?: string
     req_id: string

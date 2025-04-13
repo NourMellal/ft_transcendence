@@ -25,6 +25,7 @@ class RabbitMQ {
     channel: amqp.Channel;
     api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME || 'ft_api_gateway';
     user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME || 'ft_user_manager';
+    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME || 'ft_friends_manager';
     reply_map = new Map<string, (response: RabbitMQResponse) => void>();
     constructor() {
         this.connection = {} as amqp.ChannelModel;
@@ -75,6 +76,15 @@ class RabbitMQ {
             throw `request id with UID=${req.id} already exist`;
         this.reply_map.set(req.id, callback);
         this.channel.sendToQueue(this.user_manager_queue, Buffer.from(JSON.stringify(req)));
+    }
+    public sendToFriendsManagerQueue(req: RabbitMQRequest, callback: (response: RabbitMQResponse) => void) {
+        if (!this.isReady)
+            throw 'RabbitMQ class not ready';
+        req.id = crypto.randomUUID();
+        if (this.reply_map.has(req.id))
+            throw `request id with UID=${req.id} already exist`;
+        this.reply_map.set(req.id, callback);
+        this.channel.sendToQueue(this.friends_manager_queue, Buffer.from(JSON.stringify(req)));
     }
 }
 

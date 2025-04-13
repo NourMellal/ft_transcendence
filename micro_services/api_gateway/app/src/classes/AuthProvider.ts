@@ -50,10 +50,10 @@ class OAuthProvider {
         if (!this.isReady)
             throw `Error ValidateJWT_Token(): OAuthProvider class is not ready!`;
         var jwt_parts = encoded.split('.');
-        if (jwt_parts.length != 3)
+        if (jwt_parts.length !== 3)
             throw `Error ValidateJWT_Token(): JWT token string is invalid!`;
         var header: JWTHeaders = JSON.parse(Buffer.from(jwt_parts[0], 'base64').toString());
-        if (header.alg != 'RS256')
+        if (header.alg !== 'RS256')
             throw `Error ValidateJWT_Token(): algorithm '${header.alg}' is not supported!`;
         if (header.kid === process.env.SERVER_JWT_KID)
             return this.jwtFactory.VerifyJWT(jwt_parts);
@@ -63,7 +63,7 @@ class OAuthProvider {
         var Verifier = crypto.createVerify('RSA-SHA256');
         var signature = Buffer.from(jwt_parts[2], 'base64');
         Verifier.update(jwt_parts[0] + '.' + jwt_parts[1]);
-        if (Verifier.verify(key.pkey, signature) == false)
+        if (Verifier.verify(key.pkey, signature) === false)
             throw `Error ValidateJWT_Token(): invalid signature`;
         var jwt: JWT = JSON.parse(Buffer.from(jwt_parts[1], 'base64').toString());
         if (jwt.iss !== this.discoveryDocument.issuer)

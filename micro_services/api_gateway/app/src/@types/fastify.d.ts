@@ -1,4 +1,4 @@
-import JWT from '../types/AuthProvider'
+import { JWT } from '../types/AuthProvider'
 import multipart_fields from '../types/multipart';
 import multipart_files from '../types/multipart';
 

@@ -78,8 +78,7 @@ function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
 }
 
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = {} as RabbitMQResponse;
-    RMqResponse.req_id = RMqRequest.id;
+    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
     switch (RMqRequest.op) {
         case RabbitMQUserManagerOp.CREATE_GOOGLE:
             RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));

@@ -19,7 +19,7 @@ class JWTFactory {
             name: name,
             picture: picture,
             exp: (Date.now() / 1000) + 3600,
-            iss: this.discoveryDocument.issuer,
+            iss: process.env.SERVER_JWT_ISSUER || '',
             iat: Date.now() / 1000
         };
         return jwt;
@@ -39,10 +39,10 @@ class JWTFactory {
         var Verifier = crypto.createVerify('RSA-SHA256');
         var signature = Buffer.from(jwt_parts[2], 'base64');
         Verifier.update(jwt_parts[0] + '.' + jwt_parts[1]);
-        if (Verifier.verify(this.key, signature) == false)
+        if (Verifier.verify(this.key, signature) === false)
             throw `Error VerifyJWT(): invalid signature`;
         var jwt: JWT = JSON.parse(Buffer.from(jwt_parts[1], 'base64').toString());
-        if (jwt.iss !== this.discoveryDocument.issuer)
+        if (jwt.iss !== process.env.SERVER_JWT_ISSUER)
             throw `Error VerifyJWT(): invalid JWT issuer`;
         if (jwt.aud !== process.env.GOOGLE_CLIENT_ID)
             throw `Error VerifyJWT(): invalid JWT audience`;
