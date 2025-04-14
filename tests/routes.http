@@ -16,11 +16,6 @@ GET https://server.transcendence.fr/.well-known/discovery
 # GET a random state_code for OAuth flow:
 GET https://server.transcendence.fr/OAuth/state
 
-###
-
-# GET user info:
-GET https://server.transcendence.fr/user/info?uid=
-# Cookie: jwt={{jwt_token}}
 
 ###### END GOOGLE OAUTH TESTs ######
 
@@ -68,9 +63,20 @@ very_hard_password
 
 ###### START USER MANAGEMENT TESTs (Authorization required) ######
 
-# GET current logged user info uid alias:
+# GET user info by uid:
+GET https://server.transcendence.fr/user/info?uid=
+# Cookie: jwt={{jwt_token}}v
+
+###
+
+# GET current logged user info (uid alias for me):
 GET https://server.transcendence.fr/user/info?uid=me
 # Cookie: jwt={{jwt_token}}
+
+###
+
+# Check if username is available: (No authorization required)
+GET https://server.transcendence.fr/user/namecheck?username=msitni1337
 
 ###
 
@@ -95,20 +101,10 @@ hey everyone this is my new bio.
 DELETE https://server.transcendence.fr/user/remove_picture
 # Cookie: jwt={{jwt_token}}
 
-###### END USER MANAGEMENT TESTs ######
-
-
-
-
-
-###### START MISC TESTs ######
-
-# Check if username is available: (No authorization required)
-GET https://server.transcendence.fr/user/namecheck?username=simbolic
-
 ###
 
-###### END MISC TESTs ######
+###### END USER MANAGEMENT TESTs ######
+
 
 
 
