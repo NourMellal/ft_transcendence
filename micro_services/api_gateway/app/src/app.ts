@@ -35,4 +35,4 @@ app.listen({ port: port, host: '0.0.0.0' }, (err, addr) => {
         process.exit(1);
     }
     app.log.info("server now listen on: " + addr);
-})
+});
