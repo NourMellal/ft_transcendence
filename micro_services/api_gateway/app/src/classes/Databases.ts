@@ -13,8 +13,8 @@ class Databases {
     public init(): void {
         try {
             db.transient.exec(`create table IF NOT EXISTS '${signin_state_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'created' INT NOT NULL)`);
-            db.transient.exec(`create table IF NOT EXISTS '${totp_states_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'UID' TEXT NOT NULL, 'jwt_token' TEXT NOT NULL, 'created' INT NOT NULL)`);
-            db.persistent.exec(`create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'access_token' TEXT, 'refresh_token' TEXT, 'ate' INT)`);
+            db.transient.exec(`create table IF NOT EXISTS '${totp_states_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'totp_key' TEXT NOT NULL, 'jwt_token' TEXT NOT NULL, 'created' INT NOT NULL)`);
+            db.persistent.exec(`create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'totp_key' TEXT , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'access_token' TEXT, 'refresh_token' TEXT, 'ate' INT)`);
         }
         catch (err) {
             console.log("fatal error: " + err);

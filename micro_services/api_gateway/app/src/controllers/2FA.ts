@@ -1,6 +1,11 @@
 import crypto from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { isRequestAuthorizedHook } from './Common';
+import { GetRandomString, isRequestAuthorizedHook } from './Common';
+import { state_expiree_sec, totp_states_table_name, TOTPStatesModel, UserModel, users_table_name } from '../types/DbTables';
+import db from '../classes/Databases';
+import base32 from 'base32-encode'
+import { multipart_fields } from '../types/multipart';
+import { JWT } from '../types/AuthProvider';
 
 function generateTOTP(keyString: string): string {
     const codeDigitsCount = 6;
@@ -31,26 +36,76 @@ export const Enable2FA = async (request: FastifyRequest, reply: FastifyReply) =>
     try {
         isRequestAuthorizedHook(request, reply);
     } catch (error) {
-        return Promise.resolve();
+        return reply.send('request unauthorized');
     }
-    /*
-        Enable TOTP and send provisioning uri..
-    */
+    {
+        const query = db.persistent.prepare(`SELECT totp_key FROM '${users_table_name}' WHERE UID = ? ;`);
+        const result = query.get(request.jwt.sub) as UserModel;
+        if (result && result.totp_key !== null)
+            return reply.code(401).send(`totp already enabled`);
+    }
+    {
+        const keyPlain = GetRandomString(16);
+        const query = db.persistent.prepare(`UPDATE '${users_table_name}' SET totp_key = ? WHERE UID = ? ;`);
+        const result = query.run(keyPlain, request.jwt.sub);
+        if (result.changes !== 1)
+            return reply.code(500).send('database error');
+        const keyBase32 = base32(Buffer.from(keyPlain), 'RFC3548');
+        const totp_uri = `otpauth://totp/ft_transcendence:${request.jwt.sub}?secret=${keyBase32}&issuer=ft_transcendence&algorithm=SHA256&digits=6&period=30`;
+        return reply.code(200).send(totp_uri);
+    }
 }
 
 export const Disable2FA = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         isRequestAuthorizedHook(request, reply);
     } catch (error) {
-        return Promise.resolve();
+        return reply.send('request unauthorized');
     }
-    /*
-        Check TOTP code and disable 2FA..
-    */
+    const requestCode: multipart_fields | undefined = request.fields.find((field: multipart_fields, i) => field.field_name === 'code');
+    if (!requestCode || requestCode.field_value.length !== 6)
+        return reply.code(401).send('invalid totp_code');
+    var totp_key: string;
+    {
+        const query = db.persistent.prepare(`SELECT totp_key FROM '${users_table_name}' WHERE UID = ? ;`);
+        const result = query.get(request.jwt.sub) as UserModel;
+        if (result === undefined || result.totp_key === null)
+            return reply.code(401).send('totp not enabled');
+        totp_key = result.totp_key as string;
+    }
+    {
+        const code = generateTOTP(totp_key);
+        if (code !== requestCode.field_value)
+            return reply.code(401).send('invalid totp_code');
+        const query = db.persistent.prepare(`UPDATE '${users_table_name}' SET totp_key = ? WHERE UID = ? ;`);
+        const result = query.run(null, request.jwt.sub);
+        if (result.changes !== 1)
+            return reply.code(500).send('database error');
+        return reply.code(200).send('totp disabled.');
+    }
 }
 
 export const Verify2FACode = async (request: FastifyRequest<{ Querystring: { state: string } }>, reply: FastifyReply) => {
-    /*
-        Check 2FA code then reply with JWT
-    */
+    const query = db.transient.prepare(`SELECT * FROM '${totp_states_table_name}' WHERE state = ? ;`);
+    const result = query.get(request.query.state) as TOTPStatesModel | undefined;
+    if (!result)
+        return reply.code(401).send('request unauthorized');
+    const requestCode: multipart_fields | undefined = request.fields.find((field: multipart_fields, i) => field.field_name === 'code');
+    if (!requestCode || requestCode.field_value.length !== 6)
+        return reply.code(401).send('invalid totp_code');
+    const code = generateTOTP(result.totp_key);
+    if (code !== requestCode.field_value)
+        return reply.code(401).send('invalid totp_code');
+    {
+        const query = db.transient.prepare(`DELETE FROM '${totp_states_table_name}' WHERE state = ? ;`);
+        const result = query.run(request.query.state);
+        if (result.changes !== 1)
+            console.log(`Verify2FACode(): database error can't remove state=${request.query.state}`);
+    }
+    if ((Date.now() / 1000) - result.created > state_expiree_sec)
+        return reply.code(401).send('request expired');
+    const jwt = JSON.parse(Buffer.from(result.jwt_token.split('.')[1], 'base64url').toString()) as JWT;
+    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    reply.headers({ "set-cookie": `jwt=${result.jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+    return reply.code(200).send(result.jwt_token);
 }

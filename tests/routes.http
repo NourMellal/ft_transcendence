@@ -61,11 +61,51 @@ very_hard_password
 
 
 
+###### START TOTP 2FA TESTs ######
+
+# Enable 2fa: (Authorization required)
+POST https://server.transcendence.fr/2FA/enable
+# Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Disable 2fa: (Authorization required)
+POST https://server.transcendence.fr/2FA/disable
+# Cookie: jwt={{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="code"
+
+send 6 digits totp code to disable
+--boundary13132121321H_4zdzdz90dlzkn--
+
+
+###
+
+# Verify totp code and obtain jwt (No authorization required):
+POST https://server.transcendence.fr/2FA/verify?state=StateObtainedFromSignIn
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="code"
+
+send 6 digits totp code to get jwt
+--boundary13132121321H_4zdzdz90dlzkn--
+
+
+###### END TOTP 2FA TESTs ######
+
+
+
+
+
 ###### START USER MANAGEMENT TESTs (Authorization required) ######
 
 # GET user info by uid:
 GET https://server.transcendence.fr/user/info?uid=
-# Cookie: jwt={{jwt_token}}v
+# Cookie: jwt={{jwt_token}}
 
 ###
 

@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { RabbitMQResponse } from "../types/RabbitMQMessages";
 import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
-import { users_table_name } from "../types/DbTables";
+import { totp_states_table_name, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 
 export type SignPayload = {
@@ -41,4 +41,25 @@ export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: Fa
         reply.code(401);
         throw 'request unauthorized';
     }
+}
+
+export const GetRandomString = function (bytesCount: number): string {
+    const randomValues = new Uint32Array(bytesCount);
+    crypto.getRandomValues(randomValues);
+    // Encode as UTF-8
+    const utf8Encoder = new TextEncoder();
+    const utf8Array = utf8Encoder.encode(
+        String.fromCharCode.apply(null, Array.from(randomValues))
+    );
+    // Base64 encode the UTF-8 data
+    return Buffer.from(utf8Array).toString('base64url');
+}
+
+export const GetTOTPRedirectionUrl = function (jwt_token: string, totp_key: string): string {
+    const state = GetRandomString(4);
+    const query = db.transient.prepare(`INSERT INTO '${totp_states_table_name}' ( 'state', 'totp_key', 'jwt_token', 'created'  ) VALUES ( ? , ? , ? , ? );`);
+    const res = query.run(state, totp_key, jwt_token, Date.now() / 1000);
+    if (res.changes !== 1)
+        throw 'database error';
+    return `${process.env.FRONTEND_URL}/2fa/verify?state=${state}`;
 }

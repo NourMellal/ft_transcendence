@@ -7,7 +7,7 @@ import crypto from "crypto";
 import { RabbitMQRequest, RabbitMQUserManagerOp } from "../types/RabbitMQMessages";
 import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
-import { ProcessSignUpResponse, SignPayload } from "./Common";
+import { GetTOTPRedirectionUrl, ProcessSignUpResponse, SignPayload } from "./Common";
 
 export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystring: { username: string } }>, reply: FastifyReply) => {
     try {
@@ -85,9 +85,17 @@ export const SignInStandardUser = async (request: FastifyRequest, reply: Fastify
         hasher.update(Buffer.from(psswd.field_value));
         const query = db.persistent.prepare(`SELECT * from '${users_table_name}' WHERE username = ? AND password_hash = ? ;`);
         const res = query.get(username.field_value, hasher.digest().toString()) as UserModel;
-        if (res) { // TODO: This should be delayed untill 2FA success
+        if (res) {
             const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, res.username);
             const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
+            if (res.totp_key && res.totp_key !== null) {
+                try {
+                    const redirectUrl = GetTOTPRedirectionUrl(jwt_token, res.totp_key);
+                    return reply.code(301).redirect(redirectUrl);
+                } catch (error) {
+                    return reply.code(500).send('database error');
+                }
+            }
             const expiresDate = new Date(jwt.exp * 1000).toUTCString();
             reply.headers({ "set-cookie": `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
             reply.code(200);

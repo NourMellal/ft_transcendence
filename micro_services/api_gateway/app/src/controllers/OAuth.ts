@@ -5,7 +5,7 @@ import { signin_state_table_name, SignInStatesModel, state_expiree_sec, UserMode
 import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
 import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
-import { ProcessSignUpResponse, SignPayload } from './Common'
+import { GetRandomString, GetTOTPRedirectionUrl, ProcessSignUpResponse, SignPayload } from './Common'
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
@@ -89,7 +89,14 @@ export const AuthenticateUser = async (request: FastifyRequest<{
             SignUpNewGoogleUser(OAuthRes, reply);
             return Promise.resolve();
         }
-        // TODO: This should be delayed untill 2FA success
+        if (getUserResult.totp_key && getUserResult.totp_key !== null) {
+            try {
+                const redirectUrl = GetTOTPRedirectionUrl(OAuthRes.response.id_token, getUserResult.totp_key);
+                return reply.code(301).redirect(redirectUrl);
+            } catch (error) {
+                return reply.code(500).send('database error');
+            }
+        }
         const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
         reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
         const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
@@ -104,15 +111,7 @@ export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply)
     try {
         if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
-        const randomValues = new Uint32Array(4);
-        crypto.getRandomValues(randomValues);
-        // Encode as UTF-8
-        const utf8Encoder = new TextEncoder();
-        const utf8Array = utf8Encoder.encode(
-            String.fromCharCode.apply(null, Array.from(randomValues))
-        );
-        // Base64 encode the UTF-8 data
-        var code = Buffer.from(utf8Array).toString('base64url');
+        var code = GetRandomString(4);
         const created = Date.now() / 1000;
         const query = db.transient.prepare(`INSERT INTO '${signin_state_table_name}' ( state , created ) VALUES( ? , ? );`);
         const res = query.run(code, created);

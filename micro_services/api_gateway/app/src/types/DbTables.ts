@@ -10,7 +10,7 @@ export type SignInStatesModel = {
 
 export type TOTPStatesModel = {
     state: string,
-    UID: string,
+    totp_key: string,
     jwt_token: string,
     created: number
 };
@@ -30,6 +30,7 @@ export type UserModel = {
     UID: string,
     username: string,
     password_hash?: string,
+    totp_key?: string,
     provider: UserProviders,
     role: UserRoles,
     access_token?: string,
