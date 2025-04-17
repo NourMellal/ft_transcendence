@@ -17,18 +17,6 @@ const AuthCodeOpts = {
     }
 };
 
-export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-        if (!AuthProvider.isReady)
-            throw `OAuth class not ready`;
-        request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
-    } catch (error) {
-        console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
-        reply.code(401);
-        throw 'request unauthorized';
-    }
-}
-
 async function OAuthRoutes(fastify: FastifyInstance) {
     fastify.get(discoverDocument.OAuthRoutes.OAuthStateRoute.route, GetOAuthCode);
     fastify.get(discoverDocument.OAuthRoutes.OAuthRedirectRoute.route, AuthCodeOpts, AuthenticateUser);

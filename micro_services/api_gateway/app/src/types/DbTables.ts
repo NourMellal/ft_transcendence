@@ -1,5 +1,17 @@
+export const signin_state_table_name = 'signin_states';
+export const totp_states_table_name = 'totp_states';
+export const users_table_name = 'users';
+export const state_expiree_sec = 60;
+
 export type SignInStatesModel = {
     state: string,
+    created: number
+};
+
+export type TOTPStatesModel = {
+    state: string,
+    UID: string,
+    jwt_token: string,
     created: number
 };
 

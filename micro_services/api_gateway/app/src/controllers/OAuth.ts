@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import db from '../classes/Databases'
 import AuthProvider from '../classes/AuthProvider'
-import { SignInStatesModel, UserModel } from '../types/DbTables'
+import { signin_state_table_name, SignInStatesModel, state_expiree_sec, UserModel, users_table_name } from '../types/DbTables'
 import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
 import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
@@ -51,7 +51,7 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
             ProcessSignUpResponse(reply, response, OAuthRes.jwt, OAuthRes.response.id_token);
         });
     } catch (error) {
-        const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
+        const query = db.persistent.prepare(`DELETE FROM '${users_table_name}' WHERE UID = ? ;`);
         query.run(NewUser.UID);
         console.log(`ERROR: SignUpNewGoogleUser(): ${error}`);
         reply.raw.statusCode = 500;
@@ -71,22 +71,25 @@ export const AuthenticateUser = async (request: FastifyRequest<{
         if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
         const { state, code } = request.query;
-        const getStateQuery = db.transient.prepare('SELECT * FROM signin_states WHERE state = ?;');
+        const getStateQuery = db.transient.prepare(`SELECT * FROM '${signin_state_table_name}' WHERE state = ?;`);
         const getStateResult = getStateQuery.get(state) as SignInStatesModel;
         if (getStateResult === undefined)
             throw `Invalid state_code=${state}`;
-        const runquery = db.transient.prepare('DELETE FROM signin_states WHERE state = ?;');
+        const runquery = db.transient.prepare(`DELETE FROM '${signin_state_table_name}' WHERE state = ?;`);
         const runResult = runquery.run(state);
         if (runResult.changes !== 1)
             throw `did not remove state_code=${state} from the db.`;
+        if ((Date.now() / 1000) - getStateResult.created > state_expiree_sec)
+            throw `state_code=${state} has been expired.`;
         var OAuthRes = await OAuthExchangeCode(code);
-        const getUserQuery = db.persistent.prepare('SELECT * FROM users WHERE UID = ?;');
+        const getUserQuery = db.persistent.prepare(`SELECT * FROM '${users_table_name}' WHERE UID = ?;`);
         const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
         if (getUserResult === undefined) {
             reply.hijack();
             SignUpNewGoogleUser(OAuthRes, reply);
             return Promise.resolve();
         }
+        // TODO: This should be delayed untill 2FA success
         const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
         reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
         const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
@@ -111,7 +114,7 @@ export const GetOAuthCode = async (request: FastifyRequest, reply: FastifyReply)
         // Base64 encode the UTF-8 data
         var code = Buffer.from(utf8Array).toString('base64url');
         const created = Date.now() / 1000;
-        const query = db.transient.prepare('INSERT INTO signin_states ( state , created ) VALUES( ? , ? );');
+        const query = db.transient.prepare(`INSERT INTO '${signin_state_table_name}' ( state , created ) VALUES( ? , ? );`);
         const res = query.run(code, created);
         if (res.changes !== 1)
             throw `did not add state code to db`;

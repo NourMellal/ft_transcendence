@@ -3,6 +3,7 @@ import { RabbitMQFriendsManagerOp, RabbitMQRequest } from "../../types/RabbitMQM
 import rabbitmq from "../../classes/RabbitMQ";
 import { JWT } from "../../types/AuthProvider"
 import db from "../../classes/Databases";
+import { users_table_name } from "../../types/DbTables";
 
 export const ListFriends = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -51,7 +52,7 @@ export const SendFriendRequest = async (request: FastifyRequest<{ Querystring: {
         return reply.code(400).send('bad request');
     // Check is uid valid user id:
     {
-        const query = db.persistent.prepare('SELECT uid FROM users WHERE UID = ? ;');
+        const query = db.persistent.prepare(`SELECT uid FROM '${users_table_name}' WHERE UID = ? ;`);
         const res = query.get(request.query.uid);
         if (!res)
             return reply.code(400).send('bad request');
@@ -127,7 +128,7 @@ export const RemoveFriend = async (request: FastifyRequest<{ Querystring: { uid:
         return reply.code(400).send('bad request');
     // Check is uid valid user id:
     {
-        const query = db.persistent.prepare('SELECT uid FROM users WHERE UID = ? ;');
+        const query = db.persistent.prepare(`SELECT uid FROM '${users_table_name}' WHERE UID = ? ;`);
         const res = query.get(request.query.uid);
         if (!res)
             return reply.code(400).send('bad request');

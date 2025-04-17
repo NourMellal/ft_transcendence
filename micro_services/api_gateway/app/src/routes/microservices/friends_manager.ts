@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { discoverDocument } from '../../models/DiscoveryDocument';
-import { isRequestAuthorizedHook } from '../OAuth';
+import { isRequestAuthorizedHook } from '../../controllers/Common';
 import { AcceptFriendRequest, DenyFriendRequest, ListFriends, ListRequests, RemoveFriend, SendFriendRequest } from '../../controllers/microservices/friends_manager';
 
 const AuthHeaderValidation = {

@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UserModel } from "../types/DbTables";
+import { UserModel, users_table_name } from "../types/DbTables";
 import fs from "fs";
 import { multipart_fields, multipart_files } from "../types/multipart";
 import db from "../classes/Databases";
@@ -14,7 +14,7 @@ export const IsDisplayNameAvailable = async (request: FastifyRequest<{ Querystri
         const { username } = request.query;
         if (username.length < 3)
             return reply.code(400).send();
-        const query = db.persistent.prepare('SELECT username FROM users where username = ? ;');
+        const query = db.persistent.prepare(`SELECT username FROM '${users_table_name}' where username = ? ;`);
         const res = query.get(username);
         if (res === undefined)
             return reply.code(200).send();
@@ -63,7 +63,7 @@ export const SignUpNewStandardUser = async (request: FastifyRequest, reply: Fast
         });
         return Promise.resolve();
     } catch (error) {
-        const query = db.persistent.prepare('DELETE FROM users WHERE UID = ? ;');
+        const query = db.persistent.prepare(`DELETE FROM '${users_table_name}' WHERE UID = ? ;`);
         query.run(NewUser.UID);
         if (image && fs.existsSync(picture_url))
             fs.unlinkSync(picture_url);
@@ -83,9 +83,9 @@ export const SignInStandardUser = async (request: FastifyRequest, reply: Fastify
     try {
         const hasher = crypto.createHash('sha256');
         hasher.update(Buffer.from(psswd.field_value));
-        const query = db.persistent.prepare('SELECT * from users WHERE username = ? AND password_hash = ? ;');
+        const query = db.persistent.prepare(`SELECT * from '${users_table_name}' WHERE username = ? AND password_hash = ? ;`);
         const res = query.get(username.field_value, hasher.digest().toString()) as UserModel;
-        if (res) {
+        if (res) { // TODO: This should be delayed untill 2FA success
             const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, res.username);
             const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
             const expiresDate = new Date(jwt.exp * 1000).toUTCString();

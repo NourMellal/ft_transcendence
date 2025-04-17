@@ -7,7 +7,7 @@ import { discoverDocument } from "../../models/DiscoveryDocument";
 import Busboy, { BusboyHeaders } from "@fastify/busboy";
 import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
-import { UserModel } from "../../types/DbTables";
+import { UserModel, users_table_name } from "../../types/DbTables";
 
 
 export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid: string } }>, reply: FastifyReply) => {
@@ -25,7 +25,7 @@ export const FetchUserInfo = async (request: FastifyRequest<{ Querystring: { uid
             if (response.status !== 200 || response.message === undefined)
                 return reply.raw.end(response.message);
             var payload = JSON.parse(response.message);
-            const query = db.persistent.prepare('SELECT username FROM users WHERE UID = ? ;');
+            const query = db.persistent.prepare(`SELECT username FROM '${users_table_name}' WHERE UID = ? ;`);
             const res = query.get(RabbitMQReq.message as string) as UserModel;
             if (res)
                 payload.username = res.username;
@@ -65,7 +65,7 @@ export const UpdateUserInfo = async (request: FastifyRequest, reply: FastifyRepl
             if (username.field_value.length < 3)
                 return reply.code(400).send('bad request provide a valid username');
             try {
-                const query = db.persistent.prepare('UPDATE users SET username = ? WHERE UID = ? ;');
+                const query = db.persistent.prepare(`UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`);
                 const res = query.run(username.field_value, request.jwt.sub);
                 if (res.changes !== 1)
                     throw 'UpdateUserInfo(): database error';

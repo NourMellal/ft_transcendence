@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { FetchUserInfo, RemoveUserProfile, UpdateUserInfo } from '../../controllers/microservices/user_manager';
 import { discoverDocument } from '../../models/DiscoveryDocument';
-import { isRequestAuthorizedHook } from '../OAuth';
+import { isRequestAuthorizedHook } from '../../controllers/Common';
 
 const AuthHeaderValidation = {
     schema: {

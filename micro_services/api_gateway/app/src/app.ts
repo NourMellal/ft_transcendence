@@ -11,6 +11,7 @@ import ParseMultipart from './controllers/multipart';
 import { multipart_fields, multipart_files } from './types/multipart';
 import AuthenticatorRoutes from './routes/Authenticator';
 import FriendsManagerRoutes from './routes/microservices/friends_manager';
+import TwoFactorAuth from './routes/2FA';
 
 db.init();
 AuthProvider.init();
@@ -25,6 +26,7 @@ app.addContentTypeParser('multipart/form-data', ParseMultipart);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
 app.register(AuthenticatorRoutes);
+app.register(TwoFactorAuth);
 // Register micro_services routes:
 app.register(UserManagerRoutes);
 app.register(FriendsManagerRoutes);

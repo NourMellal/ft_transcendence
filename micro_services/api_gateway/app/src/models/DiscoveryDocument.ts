@@ -34,6 +34,31 @@ export const discoverDocument = {
             method: 'POST'
         }
     },
+    TwoFactorAuthRoutes: {
+        Enable2FA:
+        {
+            description: 'Front: Enable TOTP codes',
+            route: '/2FA/enable',
+            headers: [{ name: 'Cookie', value: 'jwt={{jwt_token}}' }],
+            method: 'POST'
+        },
+        Disable2FA:
+        {
+            description: 'Front: Disable TOTP codes',
+            route: '/2FA/disable',
+            multipart_params: [{ name: 'code', type: 'text/plain', constraint: '=6 digits' }],
+            headers: [{ name: 'Cookie', value: 'jwt={{jwt_token}}' }],
+            method: 'POST'
+        },
+        VerifyCode:
+        {
+            description: 'Front: Verify TOTP code to complete sign in and get JWT token',
+            route: '/2FA/verify',
+            QueryParams: [{ name: 'state' }],
+            multipart_params: [{ name: 'code', type: 'text/plain', constraint: '=6 digits' }],
+            method: 'POST'
+        }
+    },
     UserManagementRoutes: {
         FetchUserInfoRoute:
         {

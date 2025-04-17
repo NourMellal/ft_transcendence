@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { OAuthResponse } from '../types/OAuth';
-import { UserModel, UserProviders, UserRoles } from '../types/DbTables';
+import { signin_state_table_name, totp_states_table_name, UserModel, UserProviders, UserRoles, users_table_name } from '../types/DbTables';
 
 class Databases {
     transient: DatabaseSync;
@@ -12,8 +12,9 @@ class Databases {
     }
     public init(): void {
         try {
-            db.transient.exec("create table IF NOT EXISTS 'signin_states' ('state' TEXT NOT NULL PRIMARY KEY, 'created' INT NOT NULL)");
-            db.persistent.exec("create table IF NOT EXISTS 'users' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'access_token' TEXT, 'refresh_token' TEXT, 'ate' INT)");
+            db.transient.exec(`create table IF NOT EXISTS '${signin_state_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'created' INT NOT NULL)`);
+            db.transient.exec(`create table IF NOT EXISTS '${totp_states_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'UID' TEXT NOT NULL, 'jwt_token' TEXT NOT NULL, 'created' INT NOT NULL)`);
+            db.persistent.exec(`create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'access_token' TEXT, 'refresh_token' TEXT, 'ate' INT)`);
         }
         catch (err) {
             console.log("fatal error: " + err);
@@ -30,7 +31,7 @@ class Databases {
             refresh_token: response.response.refresh_token,
             ate: (response.response.expires_in + Date.now() / 1000)
         }
-        const query = this.persistent.prepare('INSERT INTO users ( UID , username , provider , role , access_token , refresh_token , ate ) VALUES( ? , ? , ? , ? , ? , ? , ? );');
+        const query = this.persistent.prepare(`INSERT INTO '${users_table_name}' ( UID , username , provider , role , access_token , refresh_token , ate ) VALUES( ? , ? , ? , ? , ? , ? , ? );`);
         const res = query.run(User.UID, User.username, User.provider, User.role, User.access_token as string, User.refresh_token || null, User.ate as number);
         if (res.changes !== 1)
             throw `Did not add user ${response.jwt.sub} to db`;
@@ -44,7 +45,7 @@ class Databases {
             provider: UserProviders.PASSWD,
             role: UserRoles.User,
         }
-        const query = this.persistent.prepare('INSERT INTO users ( UID , username , password_hash , provider , role  ) VALUES( ? , ? , ? , ? , ? );');
+        const query = this.persistent.prepare(`INSERT INTO '${users_table_name}' ( UID , username , password_hash , provider , role  ) VALUES( ? , ? , ? , ? , ? );`);
         const res = query.run(User.UID, User.username, User.password_hash as string, User.provider, User.role);
         if (res.changes !== 1)
             throw `Did not add user with username=${username} to db`;
