@@ -1,4 +1,3 @@
-# No need to pass cookie as REST client support cookies (optionaly you can pass them only if you connect with OAuth via browser or if you disable REST client cookies)
 # install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 # Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
 
@@ -65,14 +64,14 @@ very_hard_password
 
 # Enable 2fa: (Authorization required)
 POST https://server.transcendence.fr/2FA/enable
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 
 ###
 
 # Disable 2fa: (Authorization required)
 POST https://server.transcendence.fr/2FA/disable
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -105,13 +104,13 @@ send 6 digits totp code to get jwt
 
 # GET user info by uid:
 GET https://server.transcendence.fr/user/info?uid=
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # GET current logged user info (uid alias for me):
 GET https://server.transcendence.fr/user/info?uid=me
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
@@ -122,7 +121,7 @@ GET https://server.transcendence.fr/user/namecheck?username=msitni1337
 
 # Change current logged user info:
 POST https://server.transcendence.fr/user/info
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -139,7 +138,7 @@ hey everyone this is my new bio.
 
 # Delete user's profile picture
 DELETE https://server.transcendence.fr/user/remove_picture
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
@@ -153,38 +152,38 @@ DELETE https://server.transcendence.fr/user/remove_picture
 
 # Get current user friends list
 GET https://server.transcendence.fr/friends
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Get current user friends requests
 GET https://server.transcendence.fr/friends/requests
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Send a friend request
 POST https://server.transcendence.fr/friends/request?uid=
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Accept a friend request
 POST https://server.transcendence.fr/friends/accept?uid=
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Deny a friend request
 POST https://server.transcendence.fr/friends/deny?uid=
-# Cookie: jwt={{jwt_token}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Remove a friend
 POST https://server.transcendence.fr/friends/remove?uid=
-# Cookie: jwt={{jwt_token}}
-
+Authorization: Bearer {{jwt_token}}
+ 
 ###
 
 ###### END FRIENDS SYSTEM TESTs ######
@@ -192,4 +191,4 @@ POST https://server.transcendence.fr/friends/remove?uid=
 
 
 
-@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings
+@jwt_token = eyJhbGciOiJSUzI1NiIsImtpZCI6ImZ0X3RyYW5zY2VuZGVuY2Vfand0X3Byb3ZpZGVyIiwidHlwIjoiand0In0.eyJhdWQiOiI3NTI1MTc0OTM4MTEtM3VlaGc4NWcwaWVubWlmNWZyazFjMGxwaXExNXJrcW0uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxNDMzMzZhNy0xYTE5LTQ2MmMtYjM1Ny0yNzkwNDhlM2IzNzAiLCJuYW1lIjoibXNpdG5pIiwicGljdHVyZSI6Ii9zdGF0aWMvcHJvZmlsZS9kZWZhdWx0LmpwZyIsImV4cCI6MTc0NTA3OTM4MS42MDgsImlzcyI6ImZ0X3RyYW5zY2VuZGVuY2VfaXNzdWVyIiwiaWF0IjoxNzQ1MDc1NzgxLjYwOH0.DsmVOD7j5Xk2T4ft7dyOYX3qNdUkLYQ3WTQvL-iKZWGrA5W3qO3NmhjAImvY3yZzbejVK0y4ZfviULBz221P2A1Zz2y0Txrn_MERV2bDFuQp4W5LEJw43kJ0inlZvbHyTotc6UF2Bo_Y3JqAcQSu7zGugmdCTF_3ex4UFtpdIy0K2imRL9HdKbEfbL4tUY4h0h3aVT6c0mRLBUnyL3EnRSq5KJNqO-eMliIaSIrLM0lxBHmvBA1We3tGSFbpAYQboVmUFvORI2m0R114FjsmdP16C6YQZ40GCJahY9g-yBvS-25P-w_YsMmU961ux5073j2s_h7F0iTk3cyd9tfTWN65_o00ScTHOj9A7aE2VKUJOnX54dbarFuICPGglh9Damjjl8K-9wu8YMJqTIocbDOoHlxxqs4mZj3xuv_LyH73hVBxjhFadFaFjR92BwhLt6GFP4XIQ5I0EanwUkAsV5MyUTOSoPPPsHY9zRLKhkujeGIigA87czOtGGE1Y2n90NFbTfGKjEu1k_ZfWT7H1APculbRZhNyB2l8gArN1Z4kVYDtAcLrlOHfnwMPQq0vxXpT4id4c4cTvQt3T8cfud-6zSZ9QtsF3dsFYgNdw_0IMVzQw5phXjJxJ5_qHO7CbFEG7w-n8H2raU-QNwdqygmor1egEtXZ7YcTuUeVrlg

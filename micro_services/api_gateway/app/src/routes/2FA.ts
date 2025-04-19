@@ -2,18 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { discoverDocument } from '../models/DiscoveryDocument';
 import AuthProvider from '../classes/AuthProvider';
 import { Disable2FA, Enable2FA, Verify2FACode } from '../controllers/2FA';
-
-const AuthHeaderValidation = {
-    schema: {
-        headers: {
-            type: 'object',
-            properties: {
-                'Cookie': { type: 'string' }
-            },
-            required: ['Cookie']
-        }
-    }
-};
+import { AuthHeaderValidation } from '../types/AuthProvider';
 
 const Verify2FAOpts = {
     schema: {

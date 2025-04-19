@@ -26,3 +26,15 @@ export type JWTKeyCert = {
         alg: string
     }]
 }
+
+export const AuthHeaderValidation = {
+    schema: {
+        headers: {
+            type: 'object',
+            properties: {
+                'Authorization': { type: 'string' }
+            },
+            required: ['Authorization']
+        }
+    }
+}

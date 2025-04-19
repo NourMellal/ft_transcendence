@@ -25,7 +25,7 @@ export const ProcessSignUpResponse = function (reply: FastifyReply, response: Ra
     }
     reply.raw.setHeader('Content-Type', 'application/json');
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-    reply.raw.setHeader('Set-Cookie', `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
+    // reply.raw.setHeader('Set-Cookie', `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
     reply.raw.setHeader('access-control-allow-origin', '*');
     const payload: SignPayload = { status: 'New User Created.', decoded: jwt, token: jwt_token };
     reply.raw.end(reply.serialize(payload));
@@ -35,7 +35,8 @@ export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: Fa
     try {
         if (!AuthProvider.isReady)
             throw `OAuth class not ready`;
-        request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
+        // request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
+        request.jwt = AuthProvider.ValidateJWT_AuthHeader(request.headers.authorization as string);
     } catch (error) {
         console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
         reply.code(401);

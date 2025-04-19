@@ -97,7 +97,7 @@ export const SignInStandardUser = async (request: FastifyRequest, reply: Fastify
                 }
             }
             const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-            reply.headers({ "set-cookie": `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+            // reply.headers({ "set-cookie": `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
             reply.code(200);
             const payload: SignPayload = { status: 'User sign in.', decoded: jwt, token: jwt_token };
             return reply.send(payload);

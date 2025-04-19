@@ -2,18 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { discoverDocument } from '../../models/DiscoveryDocument';
 import { isRequestAuthorizedHook } from '../../controllers/Common';
 import { AcceptFriendRequest, DenyFriendRequest, ListFriends, ListRequests, RemoveFriend, SendFriendRequest } from '../../controllers/microservices/friends_manager';
-
-const AuthHeaderValidation = {
-    schema: {
-        headers: {
-            type: 'object',
-            properties: {
-                'Cookie': { type: 'string' }
-            },
-            required: ['Cookie']
-        }
-    }
-}
+import { AuthHeaderValidation } from '../../types/AuthProvider';
 
 const FriendRequestOpts = {
     schema: {

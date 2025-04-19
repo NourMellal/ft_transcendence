@@ -46,6 +46,14 @@ class OAuthProvider {
             throw `Error ValidateJWT_Cookie(): bad header!`;
         return this.ValidateJWT_Token(cookie_part[1]);
     }
+    public ValidateJWT_AuthHeader(header: string): JWT {
+        if (!this.isReady)
+            throw `Error ValidateJWT_Header(): OAuthProvider class is not ready!`;
+        const header_part = header.split(' ');
+        if (header_part.length !== 2 || header_part[0] !== 'Bearer')
+            throw `Error ValidateJWT_Header(): bad header!`;
+        return this.ValidateJWT_Token(header_part[1]);
+    }
     public ValidateJWT_Token(encoded: string): JWT {
         if (!this.isReady)
             throw `Error ValidateJWT_Token(): OAuthProvider class is not ready!`;
