@@ -34,7 +34,7 @@ function generateTOTP(keyString: string): string {
 
 export const Enable2FA = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        isRequestAuthorizedHook(request, reply);
+        await isRequestAuthorizedHook(request, reply);
     } catch (error) {
         return reply.send('request unauthorized');
     }
@@ -58,7 +58,7 @@ export const Enable2FA = async (request: FastifyRequest, reply: FastifyReply) =>
 
 export const Disable2FA = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        isRequestAuthorizedHook(request, reply);
+        await isRequestAuthorizedHook(request, reply);
     } catch (error) {
         return reply.send('request unauthorized');
     }
