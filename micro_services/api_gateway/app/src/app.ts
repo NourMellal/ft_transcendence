@@ -9,7 +9,8 @@ import UserManagerRoutes from './routes/microservices/user_manager';
 import ParseMultipart from './controllers/multipart';
 import AuthenticatorRoutes from './routes/Authenticator';
 import FriendsManagerRoutes from './routes/microservices/friends_manager';
-import TwoFactorAuth from './routes/2FA';
+import TwoFactorAuthRoutes from './routes/2FA';
+import { NotificationRoutes, SetupWebSocketServer } from './routes/microservices/notifications';
 
 db.init();
 AuthProvider.init();
@@ -24,15 +25,17 @@ app.addContentTypeParser('multipart/form-data', ParseMultipart);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
 app.register(AuthenticatorRoutes);
-app.register(TwoFactorAuth);
+app.register(TwoFactorAuthRoutes);
 // Register micro_services routes:
 app.register(UserManagerRoutes);
 app.register(FriendsManagerRoutes);
+app.register(NotificationRoutes);
 
 app.listen({ port: port, host: '0.0.0.0' }, (err, addr) => {
     if (err) {
         app.log.error("fatal error: " + err);
         process.exit(1);
     }
+    SetupWebSocketServer(app);
     app.log.info("server now listen on: " + addr);
 });

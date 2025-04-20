@@ -16,10 +16,10 @@ const Verify2FAOpts = {
     }
 };
 
-async function TwoFactorAuth(fastify: FastifyInstance) {
+async function TwoFactorAuthRoutes(fastify: FastifyInstance) {
     fastify.post(discoverDocument.TwoFactorAuthRoutes.Enable2FA.route, AuthHeaderValidation, Enable2FA);
     fastify.post(discoverDocument.TwoFactorAuthRoutes.Disable2FA.route, AuthHeaderValidation, Disable2FA);
     fastify.post(discoverDocument.TwoFactorAuthRoutes.VerifyCode.route, Verify2FAOpts, Verify2FACode);
 }
 
-export default TwoFactorAuth;
+export default TwoFactorAuthRoutes;

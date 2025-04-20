@@ -15,7 +15,7 @@ const CheckDisplayNameOpts = {
 };
 
 async function AuthenticatorRoutes(fastify: FastifyInstance) {
-    fastify.get(discoverDocument.MiscRoutes.CheckUserDisplayNameAvailableRoute.route, CheckDisplayNameOpts, IsDisplayNameAvailable);
+    fastify.get(discoverDocument.StandardAuthRoutes.CheckUserDisplayNameAvailableRoute.route, CheckDisplayNameOpts, IsDisplayNameAvailable);
     fastify.post(discoverDocument.StandardAuthRoutes.SignUpUserRoute.route, SignUpNewStandardUser);
     fastify.post(discoverDocument.StandardAuthRoutes.SignInUserRoute.route, SignInStandardUser);
 }

@@ -1,0 +1,17 @@
+<script>
+
+    function ListenToNotificationPing() {
+        const socket = new WebSocket('wss://server.transcendence.fr/notifications/push_notification', ["eyJhbG...JWT_TOKEN_HERE...oBym9Y"]);
+
+        socket.onmessage = (event) => {
+            alert(event.type);
+        };
+        socket.onerror = (error) => {
+            console.error('error:', error);
+        };
+
+        return socket;
+    }
+</script>
+
+<button onclick="ListenToNotificationPing()">Listen</button>
