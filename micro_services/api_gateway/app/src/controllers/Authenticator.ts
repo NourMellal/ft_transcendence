@@ -44,7 +44,7 @@ export const SignUpNewStandardUser = async (request: FastifyRequest, reply: Fast
         console.log(`ERROR: SignUpNewStandardUser(): ${error}`);
         return reply.code(400).send("username already taken try another one.");
     }
-    var picture_url = `/static/profile/default.jpg`;
+    var picture_url = `/static/profile/default.png`;
     if (image) {
         picture_url = `/static/profile/${NewUser.UID}.jpg`;
         fs.writeFileSync(picture_url, image.field_file.read());
