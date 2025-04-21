@@ -97,7 +97,7 @@ export const RemoveUserProfile = async (request: FastifyRequest, reply: FastifyR
     try {
         const UpdatedInfo: UpdateUser = {
             bio: null,
-            picture_url: `/static/profile/default.png`
+            picture_url: process.env.DEFAULT_PROFILE_PATH as string
         };
         const picture_path = `/static/profile/${request.jwt.sub}.jpg`;
         if (fs.existsSync(picture_path))

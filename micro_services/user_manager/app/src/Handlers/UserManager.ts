@@ -23,7 +23,7 @@ function DownloadGoogleImage(picture_url: string, UID: string): string {
 }
 
 function CreateNewGoogleUser(jwt: JWT): UserModel {
-    var picture_route = '/static/profile/default.png'
+    var picture_route = process.env.DEFAULT_PROFILE_PATH as string
     if (jwt.picture)
         picture_route = DownloadGoogleImage(jwt.picture, jwt.sub);
     const user: UserModel = {
@@ -35,7 +35,7 @@ function CreateNewGoogleUser(jwt: JWT): UserModel {
     const insertQuery = db.persistent.prepare(`INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`);
     var res = insertQuery.run(user.UID, user.picture_url, user.bio);
     if (res.changes !== 1) {
-        if (picture_route !== '/static/profile/default.png' && fs.existsSync(picture_route))
+        if (picture_route !== (process.env.DEFAULT_PROFILE_PATH as string) && fs.existsSync(picture_route))
             fs.unlinkSync(picture_route);
         throw `Can not add Google user uid=${jwt.sub} to db`;
     }
@@ -76,11 +76,11 @@ function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
     return 'user information updated.'
 }
 
-export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+export async function HandleMessage(RMqRequest: RabbitMQRequest): Promise<RabbitMQResponse> {
     const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
     switch (RMqRequest.op) {
         case RabbitMQUserManagerOp.CREATE_GOOGLE:
-            RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));
+            RMqResponse.message = JSON.stringify(await CreateNewGoogleUser(RMqRequest.JWT));
             RMqResponse.status = 200;
             break;
         case RabbitMQUserManagerOp.CREATE_STANDARD:
