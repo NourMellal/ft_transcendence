@@ -1,0 +1,3 @@
+[submodule "front_end/pong-frontend"]
+	path = front_end/pong-frontend
+	url = https://github.com/obenchkroune/pong-frontend.git

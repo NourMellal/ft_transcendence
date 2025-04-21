@@ -23,8 +23,10 @@ create_volumes_dir:
 	@mkdir -p /home/${VOL_USER}/docker_volumes/rabbit_mq_log_volume
 #Set host to fake route domains used to localhost
 set-host-and-permission:
-	@if ! grep -q "server.transcendence.fr" /etc/hosts; then \
+	@if ! grep -q "www.transcendence.fr" /etc/hosts; then \
 		sudo sh -c 'echo "127.0.0.1	server.transcendence.fr" >> /etc/hosts'; \
+		sudo sh -c 'echo "127.0.0.1	www.transcendence.fr" >> /etc/hosts'; \
+		sudo sh -c 'echo "127.0.0.1 transcendence.fr" >> /etc/hosts'; \
 	fi
 	@if ! groups | grep -q docker; then\
 		sudo usermod -aG docker ${USER};\
