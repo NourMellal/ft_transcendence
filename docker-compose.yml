@@ -3,7 +3,7 @@ services:
         container_name: nginx
         build: ./nginx
         volumes:
-            - static_data_volume:/static:ro
+            - static_data_volume:/api/static:ro
         ports:
             - "443:443"
         networks:
