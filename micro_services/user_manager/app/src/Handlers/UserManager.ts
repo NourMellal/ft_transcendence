@@ -1,6 +1,6 @@
 import db from "../classes/Databases";
 import { UserModel, users_table_name } from "../types/DbTables";
-import { RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp, UpdateUser } from "../types/RabbitMQMessages";
+import { RabbitMQMicroServices, RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp, UpdateUser } from "../types/RabbitMQMessages";
 import https from 'https'
 import fs from 'fs'
 import { Transform } from 'stream';
@@ -77,7 +77,7 @@ function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
 }
 
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.USER_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     switch (RMqRequest.op) {
         case RabbitMQUserManagerOp.CREATE_GOOGLE:
             RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));

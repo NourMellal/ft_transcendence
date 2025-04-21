@@ -48,7 +48,16 @@ services:
         build: ./micro_services/friends_manager
         volumes:
             - friends_manager_db_volume:/database:rw
-            - static_data_volume:/static:rw
+        networks:
+            - ft_transcendence
+        depends_on:
+            - rabbitmq
+        restart: always
+    notifications:
+        container_name: notifications
+        build: ./micro_services/notifications
+        volumes:
+            - notifications_db_volume:/database:rw
         networks:
             - ft_transcendence
         depends_on:
@@ -82,6 +91,13 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '/home/simo/docker_volumes/friends_manager_db_volume'
+    notifications_db_volume:
+        name: notifications_db_volume
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/home/simo/docker_volumes/notifications_db_volume'
     static_data_volume:
         name: static_data_volume
         driver: local

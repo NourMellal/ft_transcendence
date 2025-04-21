@@ -1,10 +1,10 @@
 import db from "../classes/Databases";
 import { friends_table_name, FriendsModel, requests_table_name, RequestsModel } from "../types/DbTables";
-import { RabbitMQRequest, RabbitMQResponse, RabbitMQFriendsManagerOp } from "../types/RabbitMQMessages";
+import { RabbitMQRequest, RabbitMQResponse, RabbitMQFriendsManagerOp, RabbitMQMicroServices } from "../types/RabbitMQMessages";
 
 
 function ListFriends(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     RMqResponse.status = 200;
     const query = db.persistent.prepare(`SELECT friends FROM '${friends_table_name}' WHERE UID = ? ;`);
     const res = query.get(RMqRequest.JWT.sub) as FriendsModel;
@@ -16,7 +16,7 @@ function ListFriends(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 function ListRequests(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     RMqResponse.status = 200;
     const query = db.persistent.prepare(`SELECT * FROM '${requests_table_name}' WHERE to_uid = ? ;`);
     const res = query.all(RMqRequest.JWT.sub) as FriendsModel[];
@@ -29,7 +29,7 @@ function ListRequests(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 
 // HINT: Assumes RMqRequest.message is a valid user's uid checked for early inside api_gateway
 function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     if (!RMqRequest.message || RMqRequest.message === '' || RMqRequest.message === RMqRequest.JWT.sub)
         throw `AddFriend(): invalid request`
     // Check if request already made
@@ -76,7 +76,7 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     if (!RMqRequest.message || RMqRequest.message === '') {
         RMqResponse.message = 'Bad request';
         RMqResponse.status = 400;
@@ -107,25 +107,25 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
         const update_query = db.persistent.prepare(`UPDATE '${friends_table_name}' SET friends = ? WHERE UID = ? ;`);
 
         const first_friends = get_query.get(RMqRequest.JWT.sub) as FriendsModel;
-        if (!first_friends) {
-            const res = insert_query.run(RMqRequest.JWT.sub, request.from_uid + ';');
+        if (!first_friends || !first_friends.friends) {
+            const res = insert_query.run(RMqRequest.JWT.sub, request.from_uid);
             if (res.changes !== 1)
                 throw `AcceptRequest(): database error while adding first friend`;
         }
         else {
-            const updated_friends = first_friends.friends as string + request.from_uid + ';';
+            const updated_friends = first_friends.friends as string + ';' + request.from_uid;
             const res = update_query.run(updated_friends, RMqRequest.JWT.sub);
             if (res.changes !== 1)
                 throw `AcceptRequest(): database error while adding first friend`;
         }
         const second_friends = get_query.get(request.from_uid) as FriendsModel;
-        if (!second_friends) {
-            const res = insert_query.run(request.from_uid, request.to_uid + ';');
+        if (!second_friends || !second_friends.friends) {
+            const res = insert_query.run(request.from_uid, request.to_uid);
             if (res.changes !== 1)
                 throw `AcceptRequest(): database error while adding second friend`;
         }
         else {
-            const updated_friends = second_friends.friends as string + request.to_uid + ';';
+            const updated_friends = second_friends.friends as string + ';' + request.to_uid;
             const res = update_query.run(updated_friends, request.from_uid);
             if (res.changes !== 1)
                 throw `AcceptRequest(): database error while adding second friend`;
@@ -141,7 +141,7 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     if (!RMqRequest.message || RMqRequest.message === '') {
         RMqResponse.message = 'Bad request';
         RMqResponse.status = 400;
@@ -175,7 +175,7 @@ function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-    const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
+    const RMqResponse: RabbitMQResponse = { service: RabbitMQMicroServices.FRIENDS_MANAGER, req_id: RMqRequest.id } as RabbitMQResponse;
     if (!RMqRequest.message || RMqRequest.message === '' || RMqRequest.message === RMqRequest.JWT.sub) {
         RMqResponse.message = 'Bad request';
         RMqResponse.status = 400;

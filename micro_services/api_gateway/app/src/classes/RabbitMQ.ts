@@ -1,8 +1,9 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib/properties'
-import { RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
+import { RabbitMQMicroServices, RabbitMQNotificationsOp, RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
 import { FastifyReply } from 'fastify';
 import { JWT } from '../types/AuthProvider';
+import { pingUser } from '../controllers/microservices/notifications';
 
 
 type ReplyPayload = {
@@ -11,7 +12,6 @@ type ReplyPayload = {
     JWT_Token?: string,
 }
 
-// TODO:Handle error responses correctly
 class RabbitMQ {
     isReady = false;
     connection_option: Options.Connect =
@@ -23,9 +23,10 @@ class RabbitMQ {
         };
     connection: amqp.ChannelModel;
     channel: amqp.Channel;
-    api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME || 'ft_api_gateway';
-    user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME || 'ft_user_manager';
-    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME || 'ft_friends_manager';
+    api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
+    user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME as string;
+    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME as string;
+    notifications_queue = process.env.RABBITMQ_NOTIFICATIONS_QUEUE_NAME as string;
     reply_map = new Map<string, (response: RabbitMQResponse) => void>();
     constructor() {
         this.connection = {} as amqp.ChannelModel;
@@ -42,6 +43,8 @@ class RabbitMQ {
             this.channel = await this.connection.createChannel();
             await this.channel.assertQueue(this.api_gateway_queue, { durable: false });
             await this.channel.assertQueue(this.user_manager_queue, { durable: false });
+            await this.channel.assertQueue(this.friends_manager_queue, { durable: false });
+            await this.channel.assertQueue(this.notifications_queue, { durable: false });
             await this.channel.consume(this.api_gateway_queue, this.consumeAPIGatewayQueue.bind(this), { noAck: true });
             this.channel.on('close', async () => { await new Promise(r => setTimeout(r, 1000)); this.AttemptConnection(); });
             this.isReady = true;
@@ -52,17 +55,27 @@ class RabbitMQ {
             this.AttemptConnection();
         }
     }
+    InvokeResponseCallback(RMqResponse: RabbitMQResponse) {
+        var replyInstanceCallback = this.reply_map.get(RMqResponse.req_id);
+        if (replyInstanceCallback === undefined)
+            throw `request id ${RMqResponse.req_id} callback not found`;
+        replyInstanceCallback(RMqResponse);
+        this.reply_map.delete(RMqResponse.req_id);
+    }
+    HandleMessage(RMqResponse: RabbitMQResponse) {
+        if (RMqResponse.service === RabbitMQMicroServices.API_GATEWAY)
+            throw `request id ${RMqResponse.req_id} received invalid service response`;
+        if (RMqResponse.service === RabbitMQMicroServices.NOTIFICATIONS && RMqResponse.op === RabbitMQNotificationsOp.PING_USER)
+            return pingUser(RMqResponse.message as string);
+        this.InvokeResponseCallback(RMqResponse);
+    }
     consumeAPIGatewayQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
-        var RMqResponse = { req_id: '' } as RabbitMQResponse;
+        var RMqResponse = {} as RabbitMQResponse;
         try {
             const RMqResponse = JSON.parse(msg.content.toString()) as RabbitMQResponse;
-            var replyInstanceCallback = this.reply_map.get(RMqResponse.req_id);
-            if (replyInstanceCallback === undefined)
-                throw `request id ${RMqResponse.req_id} not found`;
-            replyInstanceCallback(RMqResponse);
-            this.reply_map.delete(RMqResponse.req_id);
+            this.HandleMessage(RMqResponse);
         } catch (error) {
             console.log(`Error: rabbitmq consumeAPIGatewayQueue(): ${error}`);
             this.reply_map.delete(RMqResponse.req_id);

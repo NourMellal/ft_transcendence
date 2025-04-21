@@ -7,28 +7,23 @@ export enum RabbitMQMicroServices {
     NOTIFICATIONS,
 }
 
-export enum RabbitMQUserManagerOp {
-    CREATE_GOOGLE = 1,
-    CREATE_STANDARD,
-    UPDATE,
+export enum RabbitMQNotificationsOp {
+    SAVE_NOTIFICATION = 1,
+    LIST_UNREAD,
+    LIST_ALL,
     DELETE,
-    FETCH
+    PING_USER
 }
 
-export type UpdateUser = {
-    picture_url: string | null,
-    bio: string | null
-};
-
 export type RabbitMQRequest = {
-    op: RabbitMQUserManagerOp,
+    op: RabbitMQNotificationsOp,
     message?: string
     id: string,
     JWT: JWT
 };
 
 export type RabbitMQResponse = {
-    op: RabbitMQUserManagerOp,
+    op: RabbitMQNotificationsOp,
     status: number,
     message?: string
     req_id: string,

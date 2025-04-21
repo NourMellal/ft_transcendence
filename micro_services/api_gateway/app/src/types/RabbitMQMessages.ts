@@ -1,5 +1,12 @@
 import { JWT } from "./AuthProvider";
 
+export enum RabbitMQMicroServices {
+    API_GATEWAY = 1,
+    USER_MANAGER,
+    FRIENDS_MANAGER,
+    NOTIFICATIONS,
+}
+
 export enum RabbitMQUserManagerOp {
     CREATE_GOOGLE = 1,
     CREATE_STANDARD,
@@ -15,6 +22,14 @@ export enum RabbitMQFriendsManagerOp {
     REMOVE_FRIEND,
     LIST_FRIENDS,
     LIST_REQUESTS,
+}
+
+export enum RabbitMQNotificationsOp {
+    SAVE_NOTIFICATION = 1,
+    LIST_UNREAD,
+    LIST_ALL,
+    DELETE,
+    PING_USER
 }
 
 export type UpdateUser = {
@@ -33,5 +48,6 @@ export type RabbitMQResponse = {
     op: number,
     status: number,
     message?: string
-    req_id: string
+    req_id: string,
+    service: RabbitMQMicroServices
 };

@@ -1,7 +1,7 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib'
-import { RabbitMQMicroServices, RabbitMQRequest, RabbitMQResponse, RabbitMQUserManagerOp } from '../types/RabbitMQMessages';
-import HandleMessage from '../Handlers/UserManager';
+import { RabbitMQMicroServices, RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
+import HandleMessage from '../Handlers/Notifications';
 
 
 class RabbitMQ {
@@ -16,7 +16,7 @@ class RabbitMQ {
     connection: amqp.ChannelModel;
     channel: amqp.Channel;
     api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
-    user_manager_queue = process.env.RABBITMQ_USER_MANAGER_QUEUE_NAME as string;
+    notifications_queue = process.env.RABBITMQ_NOTIFICATIONS_QUEUE_NAME as string;
     constructor() {
         this.connection = {} as amqp.ChannelModel;
         this.channel = {} as amqp.Channel;
@@ -31,8 +31,8 @@ class RabbitMQ {
             this.connection = await amqp.connect(this.connection_option);
             this.channel = await this.connection.createChannel();
             await this.channel.assertQueue(this.api_gateway_queue, { durable: false });
-            await this.channel.assertQueue(this.user_manager_queue, { durable: false });
-            await this.channel.consume(this.user_manager_queue, this.consumeUserManagerQueue, { noAck: true });
+            await this.channel.assertQueue(this.notifications_queue, { durable: false });
+            await this.channel.consume(this.notifications_queue, this.consumeNotificationsQueue, { noAck: true });
             this.channel.on('close', async () => { await new Promise(r => setTimeout(r, 1000)); this.AttemptConnection(); });
             this.isReady = true;
             console.log('RabbitMQ class connection established.');
@@ -42,7 +42,7 @@ class RabbitMQ {
             this.AttemptConnection();
         }
     }
-    consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
+    consumeNotificationsQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
         var RMqRequest: RabbitMQRequest;
@@ -51,16 +51,16 @@ class RabbitMQ {
             if (!RMqRequest.id || RMqRequest.id === '')
                 throw 'received request with no id';
         } catch (error) {
-            console.log(`Error: rabbitmq consumeUserManagerQueue(): parse error ${error}`);
+            console.log(`Error: rabbitmq consumeNotificationsQueue(): parse error ${error}`);
             return;
         }
         try {
             const RMqResponse = HandleMessage(RMqRequest);
             rabbitmq.sendToAPIGatewayQueue(RMqResponse);
         } catch (error) {
-            console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error} | request id: ${RMqRequest.id}`);
+            console.log(`Error: rabbitmq consumeNotificationsQueue(): ${error} | request id: ${RMqRequest.id}`);
             const RMqResponse: RabbitMQResponse = {
-                service: RabbitMQMicroServices.USER_MANAGER,
+                service: RabbitMQMicroServices.NOTIFICATIONS,
                 op: RMqRequest.op,
                 req_id: RMqRequest.id,
                 status: 500,

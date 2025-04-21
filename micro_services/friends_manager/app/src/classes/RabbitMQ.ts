@@ -1,6 +1,6 @@
 import amqp from 'amqplib'
 import { Options } from 'amqplib'
-import { RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
+import { RabbitMQMicroServices, RabbitMQRequest, RabbitMQResponse } from '../types/RabbitMQMessages';
 import HandleMessage from '../Handlers/FriendsManager';
 
 
@@ -15,8 +15,8 @@ class RabbitMQ {
         };
     connection: amqp.ChannelModel;
     channel: amqp.Channel;
-    api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME || 'ft_api_gateway';
-    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME || 'ft_friends_manager';
+    api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
+    friends_manager_queue = process.env.RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME as string;
     constructor() {
         this.connection = {} as amqp.ChannelModel;
         this.channel = {} as amqp.Channel;
@@ -60,6 +60,7 @@ class RabbitMQ {
         } catch (error) {
             console.log(`Error: rabbitmq consumeFriendsManagerQueue(): ${error} | request id: ${RMqRequest.id}`);
             const RMqResponse: RabbitMQResponse = {
+                service: RabbitMQMicroServices.FRIENDS_MANAGER,
                 op: RMqRequest.op,
                 req_id: RMqRequest.id,
                 status: 500,

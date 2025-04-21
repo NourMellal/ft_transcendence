@@ -1,5 +1,12 @@
 import { JWT } from "./common";
 
+export enum RabbitMQMicroServices {
+    API_GATEWAY = 1,
+    USER_MANAGER,
+    FRIENDS_MANAGER,
+    NOTIFICATIONS,
+}
+
 export enum RabbitMQFriendsManagerOp {
     ADD_FRIEND = 1,
     ACCEPT_REQUEST,
@@ -20,5 +27,6 @@ export type RabbitMQResponse = {
     op: RabbitMQFriendsManagerOp,
     status: number,
     message?: string
-    req_id: string
+    req_id: string,
+    service: RabbitMQMicroServices
 };
