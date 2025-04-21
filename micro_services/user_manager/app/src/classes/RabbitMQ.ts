@@ -42,7 +42,7 @@ class RabbitMQ {
             this.AttemptConnection();
         }
     }
-    async consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
+    consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
         if (!msg)
             return;
         var RMqRequest: RabbitMQRequest;
@@ -55,7 +55,7 @@ class RabbitMQ {
             return;
         }
         try {
-            const RMqResponse = await HandleMessage(RMqRequest);
+            const RMqResponse = HandleMessage(RMqRequest);
             rabbitmq.sendToAPIGatewayQueue(RMqResponse);
         } catch (error) {
             console.log(`Error: rabbitmq consumeUserManagerQueue(): ${error} | request id: ${RMqRequest.id}`);

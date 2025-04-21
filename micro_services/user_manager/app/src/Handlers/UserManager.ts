@@ -76,11 +76,11 @@ function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
     return 'user information updated.'
 }
 
-export async function HandleMessage(RMqRequest: RabbitMQRequest): Promise<RabbitMQResponse> {
+export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     const RMqResponse: RabbitMQResponse = { req_id: RMqRequest.id } as RabbitMQResponse;
     switch (RMqRequest.op) {
         case RabbitMQUserManagerOp.CREATE_GOOGLE:
-            RMqResponse.message = JSON.stringify(await CreateNewGoogleUser(RMqRequest.JWT));
+            RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));
             RMqResponse.status = 200;
             break;
         case RabbitMQUserManagerOp.CREATE_STANDARD:
