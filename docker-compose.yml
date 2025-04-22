@@ -1,120 +1,123 @@
 services:
-    nginx:
-        container_name: nginx
-        build: ./nginx
-        volumes:
-            - static_data_volume:/api/static:ro
-        ports:
-            - "443:443"
-        networks:
-            - ft_transcendence
-        depends_on:
-            - api_gateway
-        restart: always
-    rabbitmq:
-        container_name: rabbitmq
-        build: ./rabbitmq
-        volumes:
-            - rabbit_mq_log_volume:/var/log/rabbitmq:rw
-        networks:
-            - ft_transcendence
-        env_file: .env
-        init: true
-        restart: always
-    api_gateway:
-        container_name: api_gateway
-        build: ./micro_services/api_gateway
-        volumes:
-            - api_gateway_db_volume:/database:rw
-            - static_data_volume:/static:rw
-        networks:
-            - ft_transcendence
-        depends_on:
-            - rabbitmq
-        restart: always
-    user_manager:
-        container_name: user_manager
-        build: ./micro_services/user_manager
-        volumes:
-            - user_manager_db_volume:/database:rw
-            - static_data_volume:/static:rw
-        networks:
-            - ft_transcendence
-        depends_on:
-            - rabbitmq
-        restart: always
-    friends_manager:
-        container_name: friends_manager
-        build: ./micro_services/friends_manager
-        volumes:
-            - friends_manager_db_volume:/database:rw
-        networks:
-            - ft_transcendence
-        depends_on:
-            - rabbitmq
-        restart: always
-    notifications:
-        container_name: notifications
-        build: ./micro_services/notifications
-        volumes:
-            - notifications_db_volume:/database:rw
-        networks:
-            - ft_transcendence
-        depends_on:
-            - rabbitmq
-        restart: always
-    frontend:
-        container_name: frontend
-        build: ./front_end
-        networks:
-            - ft_transcendence
-        restart: always
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    volumes:
+      - static_data_volume:/api/static:ro
+    ports:
+      - "443:443"
+    networks:
+      - ft_transcendence
+    depends_on:
+      - api_gateway
+    restart: always
+  rabbitmq:
+    container_name: rabbitmq
+    build: ./rabbitmq
+    volumes:
+      - rabbit_mq_log_volume:/var/log/rabbitmq:rw
+    networks:
+      - ft_transcendence
+    env_file: .env
+    init: true
+    restart: always
+  api_gateway:
+    container_name: api_gateway
+    build: ./micro_services/api_gateway
+    volumes:
+      - api_gateway_db_volume:/database:rw
+      - static_data_volume:/static:rw
+    networks:
+      - ft_transcendence
+    depends_on:
+      - rabbitmq
+    restart: always
+  user_manager:
+    container_name: user_manager
+    build: ./micro_services/user_manager
+    volumes:
+      - user_manager_db_volume:/database:rw
+      - static_data_volume:/static:rw
+    networks:
+      - ft_transcendence
+    depends_on:
+      - rabbitmq
+    restart: always
+  friends_manager:
+    container_name: friends_manager
+    build: ./micro_services/friends_manager
+    volumes:
+      - friends_manager_db_volume:/database:rw
+    networks:
+      - ft_transcendence
+    depends_on:
+      - rabbitmq
+    restart: always
+  notifications:
+    container_name: notifications
+    build: ./micro_services/notifications
+    volumes:
+      - notifications_db_volume:/database:rw
+    networks:
+      - ft_transcendence
+    depends_on:
+      - rabbitmq
+    restart: always
+  frontend:
+    container_name: frontend
+    build: ./front_end
+    networks:
+      - ft_transcendence
+    restart: always
+    # for developement
+    volumes:
+      - ./front_end/app:/app:rw
 
 networks:
-    ft_transcendence:
-        name: inception
-        driver: bridge
+  ft_transcendence:
+    name: inception
+    driver: bridge
 
 volumes:
-    api_gateway_db_volume:
-        name: api_gateway_db_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/api_gateway_db_volume'
-    user_manager_db_volume:
-        name: user_manager_db_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/user_manager_db_volume'
-    friends_manager_db_volume:
-        name: friends_manager_db_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/friends_manager_db_volume'
-    notifications_db_volume:
-        name: notifications_db_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/notifications_db_volume'
-    static_data_volume:
-        name: static_data_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/static_data_volume'
-    rabbit_mq_log_volume:
-        name: rabbit_mq_log_volume
-        driver: local
-        driver_opts:
-            type: 'none'
-            o: 'bind'
-            device: '/home/simo/docker_volumes/rabbit_mq_log_volume'
+  api_gateway_db_volume:
+    name: api_gateway_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/api_gateway_db_volume"
+  user_manager_db_volume:
+    name: user_manager_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/user_manager_db_volume"
+  friends_manager_db_volume:
+    name: friends_manager_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/friends_manager_db_volume"
+  notifications_db_volume:
+    name: notifications_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/notifications_db_volume"
+  static_data_volume:
+    name: static_data_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/static_data_volume"
+  rabbit_mq_log_volume:
+    name: rabbit_mq_log_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/rabbit_mq_log_volume"

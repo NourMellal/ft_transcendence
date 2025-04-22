@@ -3,7 +3,7 @@ COMPOSE_FILE=./docker-compose.yml
 detach=#-d
 
 # BECAUSE THIS IS LINKED TO docker-compose.yml for the volumes path if you want to change it don't forget to change it in docker-compose.yml
-VOL_USER=simo
+VOL_USER=$(shell whoami)
 
 all: create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
@@ -27,9 +27,6 @@ set-host-and-permission:
 		sudo sh -c 'echo "127.0.0.1	server.transcendence.fr" >> /etc/hosts'; \
 		sudo sh -c 'echo "127.0.0.1	www.transcendence.fr" >> /etc/hosts'; \
 		sudo sh -c 'echo "127.0.0.1 transcendence.fr" >> /etc/hosts'; \
-	fi
-	@if ! groups | grep -q docker; then\
-		sudo usermod -aG docker ${USER};\
 	fi
 #View running services
 ps:
