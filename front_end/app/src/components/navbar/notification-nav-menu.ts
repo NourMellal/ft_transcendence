@@ -8,27 +8,31 @@ class NotificationNavMenu extends HTMLElement {
   render() {
     this.innerHTML = /*html*/ `
       <div class='relative'>
-        <button id='notification-btn' class='cursor-pointer p-2.5 rounded-full hover:bg-muted'>
+        <button id='notification-btn' class='relative cursor-pointer p-2.5 rounded-full hover:bg-muted'>
           ${BellIcon}
+          <span class='absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>3</span>
         </button>
-        <div id='notification-menu' class='hidden w-sm absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-1 [&>a]:p-1 [&>button]:p-1'>
-          <div class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-            <h5 class='font-semibold mb-1'>Notification Title</h5>
-            <p class='text-muted-foreground'>
-              Lorem ipsum dolor sit amet.
-            </p>
-          </div>
-          <div class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-            <h5 class='font-semibold mb-1'>Notification Title</h5>
-            <p class='text-muted-foreground'>
-              Lorem ipsum dolor sit amet.
-            </p>
-          </div>
-          <div class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-            <h5 class='font-semibold mb-1'>Notification Title</h5>
-            <p class='text-muted-foreground'>
-              Lorem ipsum dolor sit amet.
-            </p>
+        <div id='notification-menu' class='hidden w-sm absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-1'>
+          <div class='grid'>
+            <button class='link ms-auto'>mark as read</button>
+            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
+              <h5 class='font-semibold mb-1'>Notification Title</h5>
+              <p class='text-muted-foreground'>
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
+            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
+              <h5 class='font-semibold mb-1'>Notification Title</h5>
+              <p class='text-muted-foreground'>
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
+            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
+              <h5 class='font-semibold mb-1'>Notification Title</h5>
+              <p class='text-muted-foreground'>
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
           </div>
         </div>
       </div>
