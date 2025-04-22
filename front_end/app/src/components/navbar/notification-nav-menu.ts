@@ -5,12 +5,23 @@ class NotificationNavMenu extends HTMLElement {
     super();
   }
 
+  setNotificationCount(count: number) {
+    const notificationCount = this.querySelector(
+      "#notification-count"
+    ) as HTMLSpanElement | null;
+
+    if (notificationCount) {
+      notificationCount.textContent = count.toString();
+      notificationCount.style.display = count > 0 ? "flex" : "none";
+    }
+  }
+
   render() {
     this.innerHTML = /*html*/ `
       <div class='relative'>
         <button id='notification-btn' class='relative cursor-pointer p-2.5 rounded-full hover:bg-muted'>
           ${BellIcon}
-          <span class='absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>3</span>
+          <span id='notification-count' class='absolute -top-1 -right-1 flex w-5 h-5 p-0.5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>0</span>
         </button>
         <div id='notification-menu' class='hidden w-sm absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-1'>
           <div class='grid'>
@@ -117,6 +128,7 @@ class NotificationNavMenu extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setup();
+    this.setNotificationCount(1);
   }
 }
 
