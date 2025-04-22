@@ -4,6 +4,10 @@ import.meta.glob("./components/**/*.ts", { eager: true });
 import.meta.glob("./pages/**/*.ts", { eager: true });
 
 async function main() {
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.classList.add("dark");
+  }
+
   window._currentUser = await getUser();
   const root = document.querySelector("#app");
   if (!root) throw Error("App Root Not Found!");

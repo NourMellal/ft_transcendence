@@ -48,7 +48,8 @@ class NavigationBar extends HTMLElement {
               )
               .join("")}
           </div>
-          <div class='ms-auto flex gap-4 items-center justify-center'>
+          <div class='ms-auto flex gap-2 items-center justify-center'>
+            <theme-toggle-button></theme-toggle-button>
             ${
               window._currentUser
                 ? /*html*/ `
