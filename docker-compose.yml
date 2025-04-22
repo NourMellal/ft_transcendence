@@ -68,6 +68,7 @@ services:
     build: ./front_end
     networks:
       - ft_transcendence
+    init: true
     restart: always
     # for developement
     volumes:
@@ -75,7 +76,7 @@ services:
 
 networks:
   ft_transcendence:
-    name: inception
+    name: ft_transcendence
     driver: bridge
 
 volumes:

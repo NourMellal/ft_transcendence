@@ -61,7 +61,7 @@ class SigninPage extends HTMLElement {
         state,
         client_id:
           "752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com",
-        redirect_uri: "https://server.transcendence.fr/OAuth/code",
+        redirect_uri: "https://transcendence.fr/api/OAuth/code", // <Error 400: redirect_uri_mismatch>: Rely on discovery doc to fetch and set all routes so i don't have to fix them manually. this one should be something like: discoverDocument.ServerUrl + discoverDocument.OAuthRoutes.OAuthRedirectRoute.route
         scope:
           "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
         include_granted_scopes: "true",

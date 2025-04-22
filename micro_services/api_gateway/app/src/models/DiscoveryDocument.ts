@@ -1,5 +1,5 @@
 export const discoverDocument = {
-    ServerUrl: 'https://server.transcendence.fr',
+    ServerUrl: 'https://transcendence.fr',
     OAuthRoutes: {
         OAuthRedirectRoute:
         {

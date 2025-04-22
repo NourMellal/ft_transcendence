@@ -2,7 +2,6 @@ COMPOSE_FILE=./docker-compose.yml
 
 detach=#-d
 
-# BECAUSE THIS IS LINKED TO docker-compose.yml for the volumes path if you want to change it don't forget to change it in docker-compose.yml
 VOL_USER=$(shell whoami)
 
 all: create_volumes_dir set-host-and-permission

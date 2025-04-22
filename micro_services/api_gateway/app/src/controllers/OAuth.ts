@@ -6,6 +6,7 @@ import { OAuthCodeExchangeResponse, OAuthResponse } from '../types/OAuth'
 import rabbitmq from '../classes/RabbitMQ'
 import { RabbitMQRequest, RabbitMQUserManagerOp } from '../types/RabbitMQMessages'
 import { GetRandomString, GetTOTPRedirectionUrl, ProcessSignUpResponse, SignPayload } from './Common'
+import { discoverDocument } from '../models/DiscoveryDocument'
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     const reqOpt: RequestInit = {
@@ -18,7 +19,7 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
             'code': code,
             'client_id': process.env.GOOGLE_CLIENT_ID || '',
             'client_secret': process.env.GOOGLE_CLIENT_SECRET || '',
-            'redirect_uri': process.env.GOOGLE_REDIRECT_URL || '',
+            'redirect_uri': discoverDocument.ServerUrl + discoverDocument.OAuthRoutes.OAuthRedirectRoute.route,
             'grant_type': 'authorization_code'
         })
     };
