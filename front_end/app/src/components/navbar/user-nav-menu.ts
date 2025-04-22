@@ -1,0 +1,138 @@
+import UserIcon from "~/icons/user.svg?raw";
+import CogIcon from "~/icons/cog.svg?raw";
+import LogoutIcon from "~/icons/logout.svg?raw";
+import { navigateTo } from "../app-router";
+
+class UserNavMenu extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  render() {
+    if (!window._currentUser) return;
+    this.innerHTML = /*html*/ `
+      <div class='relative h-10 w-10'>
+        <button id='user-menu-btn' class='cursor-pointer focus-within:ring-ring'>
+          <img src='/api/${window._currentUser.picture_url}' class='ring ring-ring rounded-full' alt='${window._currentUser.username}' />
+        </button>
+        <div id='user-menu' class='hidden w-48 absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-2 [&>a]:p-1 [&>button]:p-1'>
+          <a class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors' href='/profile'>
+            ${UserIcon}
+            <span>Profile</span>
+          </a>
+          <a class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors' href='/settings'>
+            ${CogIcon}
+            <span>Settings</span>
+          </a>
+          <button type='button' id='logout-btn' class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer'>
+            ${LogoutIcon}
+            <span>Signout</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  handleLogout = () => {
+    localStorage.removeItem("uid");
+    window._currentUser = null;
+    navigateTo("/signin");
+  };
+
+  closeUserMenu = (event: MouseEvent) => {
+    const userMenu = this.querySelector("#user-menu") as HTMLDivElement | null;
+    const userMenuBtn = this.querySelector(
+      "#user-menu-btn"
+    ) as HTMLButtonElement | null;
+
+    if (userMenu && userMenuBtn) {
+      const target = event.target as HTMLElement;
+
+      const shouldClose =
+        userMenu.contains(target.closest("a")) ||
+        (!userMenu.contains(target) &&
+          !userMenuBtn.contains(target) &&
+          userMenu.classList.contains("hidden") === false);
+
+      if (shouldClose) {
+        const animation = userMenu.animate(
+          [
+            { opacity: 1, transform: "translateY(0)" },
+            { opacity: 0, transform: "translateY(-10px)" },
+          ],
+          {
+            duration: 200,
+            easing: "ease-in-out",
+            fill: "forwards",
+          }
+        );
+
+        animation.onfinish = () => userMenu.classList.add("hidden");
+      }
+    }
+  };
+
+  toggleUserMenu = () => {
+    const userMenu = this.querySelector("#user-menu") as HTMLDivElement | null;
+
+    if (!userMenu) return;
+
+    const isClosed = userMenu.classList.contains("hidden");
+    let animation: Animation;
+
+    if (isClosed) {
+      animation = userMenu.animate(
+        [
+          { opacity: 0, transform: "translateY(-10px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        {
+          duration: 200,
+          easing: "ease-in-out",
+          fill: "forwards",
+        }
+      );
+      userMenu.classList.remove("hidden");
+    } else {
+      animation = userMenu.animate(
+        [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(-10px)" },
+        ],
+        {
+          duration: 200,
+          easing: "ease-in-out",
+          fill: "forwards",
+        }
+      );
+      animation.onfinish = () => userMenu.classList.add("hidden");
+    }
+  };
+
+  setup() {
+    // user menu
+    this.querySelector("#user-menu-btn")?.addEventListener(
+      "click",
+      this.toggleUserMenu
+    );
+
+    document.addEventListener("click", this.closeUserMenu);
+
+    // logout btn
+    this.querySelector("#logout-btn")?.addEventListener(
+      "click",
+      this.handleLogout
+    );
+  }
+
+  connectedCallback() {
+    this.render();
+    this.setup();
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener("click", this.closeUserMenu);
+  }
+}
+
+customElements.define("user-nav-menu", UserNavMenu);
