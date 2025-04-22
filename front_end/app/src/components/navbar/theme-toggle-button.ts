@@ -10,7 +10,7 @@ class ThemeToggleButton extends HTMLElement {
     const isDark = document.documentElement.classList.contains("dark");
     this.innerHTML = /*html*/ `
       <button class='cursor-pointer p-2.5 rounded-full hover:bg-muted'>
-        ${isDark ? MoonIcon : SunIcon}
+        ${isDark ? SunIcon : MoonIcon}
       </button>
     `;
   }
