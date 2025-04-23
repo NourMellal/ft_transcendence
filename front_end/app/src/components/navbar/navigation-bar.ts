@@ -53,15 +53,16 @@ class NavigationBar extends HTMLElement {
             ${
               window._currentUser
                 ? /*html*/ `
+                  <friends-nav-menu></friends-nav-menu>
                   <notification-nav-menu></notification-nav-menu>
                   <user-nav-menu></user-nav-menu>
                 `
                 : /*html*/ `
-                  <a class='btn outline' href="/signin">
+                  <a class='btn btn-outlined' href="/signin">
                     ${LockIcon}
                     <span>Sign-in</span>
                   </a>
-                  <a class='btn primary' href="/signup">
+                  <a class='btn btn-primary' href="/signup">
                     ${RocketIcon}
                     <span>Sign-up</span>
                   </a>

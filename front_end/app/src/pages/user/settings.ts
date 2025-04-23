@@ -12,7 +12,7 @@ class SettingsPage extends HTMLElement {
     this.innerHTML = /*html*/ `
       <!-- HTML Markup for Settings Page -->
       <navigation-bar></navigation-bar>
-      <div class="container">
+      <div class="container pb-8">
         <h1 class="text-3xl font-bold mb-8">Settings</h1>
 
         <!-- Profile Section -->
@@ -30,8 +30,8 @@ class SettingsPage extends HTMLElement {
                   <div class="flex items-center gap-4">
                     <img id="avatar-preview" src="/api/${window._currentUser.picture_url}" alt="Avatar" class="h-16 w-16 rounded-full object-cover border">
                     <input type="file" id="avatar-input" class="hidden" accept="image/jpeg, image/png, image/webp">
-                    <button id="change-avatar-btn" class="btn outline">Change</button>
-                    <button id="remove-avatar-btn" class="btn destructive">Remove</button>
+                    <button id="change-avatar-btn" class="btn btn-outlined">Change</button>
+                    <button id="remove-avatar-btn" class="btn btn-destructive">Remove</button>
                   </div>
                   <p id="avatar-error" class="text-xs text-destructive"></p>
                 </div>
@@ -51,7 +51,7 @@ class SettingsPage extends HTMLElement {
                 </div>
               </div>
               <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
-                <button id="save-profile-btn" class="btn primary">Save Changes</button>
+                <button id="save-profile-btn" class="btn btn-primary">Save Changes</button>
               </div>
             </div>
           </div>

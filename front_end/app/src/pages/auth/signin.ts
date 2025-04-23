@@ -113,13 +113,13 @@ class SigninPage extends HTMLElement {
                   required
                 />
               </div>
-              <button class='btn primary w-full' type="submit">
+              <button class='btn btn-primary w-full' type="submit">
                 ${LockIcon}
                 <span>Submit</span>
               </button>
             </form>
             <div class="shrink-0 bg-border h-[1px] w-full my-4"></div>
-            <button id='google-auth-btn' class='btn primary w-full' type="button">
+            <button id='google-auth-btn' class='btn btn-primary w-full' type="button">
               ${GoogleIcon}
               <span>Sign-in with Google</span>
             </button>

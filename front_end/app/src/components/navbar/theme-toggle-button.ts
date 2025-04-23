@@ -9,7 +9,7 @@ class ThemeToggleButton extends HTMLElement {
   render() {
     const isDark = document.documentElement.classList.contains("dark");
     this.innerHTML = /*html*/ `
-      <button class='btn ghost'>
+      <button class='btn btn-ghost'>
         ${
           isDark
             ? /*html*/ `

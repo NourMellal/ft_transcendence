@@ -97,7 +97,7 @@ class SignupPage extends HTMLElement {
                   required
                 />
               </div>
-              <button class='btn primary w-full' type="submit">
+              <button class='btn btn-primary w-full' type="submit">
                 ${LockIcon}
                 <span>Signup</span>
               </button>
