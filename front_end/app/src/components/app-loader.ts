@@ -7,7 +7,7 @@ class AppLoader extends HTMLElement {
 
   render() {
     this.innerHTML = /*html*/ `
-      <div class="fixed inset-0 bg-background flex items-center justify-center">
+      <div class="z-50 fixed inset-0 bg-background flex items-center justify-center">
         <div class='flex flex-col gap-2'>
           ${LoadingIcon}
           <p>Loading...</p>

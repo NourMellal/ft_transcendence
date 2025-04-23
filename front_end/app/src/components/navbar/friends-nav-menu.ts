@@ -1,4 +1,3 @@
-// filepath: /home/obenchkr/Desktop/pong-backend/front_end/app/src/components/navbar/friends-nav-menu.ts
 import UsersIcon from "~/icons/users.svg?raw";
 
 class FriendsNavMenu extends HTMLElement {
