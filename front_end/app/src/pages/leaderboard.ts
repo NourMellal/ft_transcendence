@@ -19,7 +19,7 @@ class LeaderboardPage extends HTMLElement {
   render() {
     this.innerHTML = /*html*/ `
       <navigation-bar></navigation-bar>
-      <div class="container py-10">
+      <div class="container pb-10">
         <h1 class="text-3xl font-bold mb-6">Leaderboard</h1>
         <div class="border rounded-lg overflow-hidden">
           <table class="w-full caption-bottom text-sm">
