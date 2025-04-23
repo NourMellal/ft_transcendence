@@ -19,13 +19,13 @@ class NotificationNavMenu extends HTMLElement {
   render() {
     this.innerHTML = /*html*/ `
       <div class='relative'>
-        <button id='notification-btn' class='relative cursor-pointer p-2.5 rounded-full hover:bg-muted'>
+        <button id='notification-btn' class='btn outline'>
           ${BellIcon}
-          <span id='notification-count' class='absolute top-0 right-0 flex w-5 h-5 p-0.5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>0</span>
+          <span id='notification-count' class='absolute -top-2 -right-2 flex w-5 h-5 p-0.5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>0</span>
         </button>
         <div id='notification-menu' class='hidden w-sm absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-1'>
           <div class='grid'>
-            <button class='link ms-auto'>mark as read</button>
+            <button class='btn link ms-auto'>mark as read</button>
             <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
               <h5 class='font-semibold mb-1'>Notification Title</h5>
               <p class='text-muted-foreground'>

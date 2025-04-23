@@ -48,7 +48,7 @@ class NavigationBar extends HTMLElement {
               )
               .join("")}
           </div>
-          <div class='ms-auto flex gap-2 items-center justify-center'>
+          <div class='ms-auto flex gap-4 items-center justify-center'>
             <theme-toggle-button></theme-toggle-button>
             ${
               window._currentUser
@@ -57,11 +57,11 @@ class NavigationBar extends HTMLElement {
                   <user-nav-menu></user-nav-menu>
                 `
                 : /*html*/ `
-                  <a class='btn-ghost' href="/signin">
+                  <a class='btn outline' href="/signin">
                     ${LockIcon}
                     <span>Sign-in</span>
                   </a>
-                  <a class='btn' href="/signup">
+                  <a class='btn primary' href="/signup">
                     ${RocketIcon}
                     <span>Sign-up</span>
                   </a>
