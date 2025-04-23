@@ -21,7 +21,11 @@ class LeaderboardPage extends HTMLElement {
       <navigation-bar></navigation-bar>
       <div class="container pb-10">
         <h1 class="text-3xl font-bold mb-6">Leaderboard</h1>
-        <div class="border rounded-lg overflow-hidden">
+        ${
+          leaderboardData.length === 0
+            ? /*html*/ `<div class='text-muted-foreground p-4 rounded-md border'>No data available.</div>`
+            : /*html*/ `
+          <div class="border rounded-lg overflow-hidden">
           <table class="w-full caption-bottom text-sm">
             <thead class="[&_tr]:border-b">
               <tr class="border-b transition-colors hover:bg-muted/50">
@@ -69,6 +73,8 @@ class LeaderboardPage extends HTMLElement {
             </tbody>
           </table>
         </div>
+        `
+        }
       </div>
     `;
   }
