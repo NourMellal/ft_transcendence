@@ -17,7 +17,7 @@ class MobileNavigation extends HTMLElement {
     }[];
 
     this.innerHTML = /*html*/ `
-      <div class='hidden md:hidden absolute inset-0 bg-background/80 backdrop-blur-md p-4' id='mobile-menu'>
+      <div class='z-40 hidden md:hidden absolute inset-0 bg-background/80 backdrop-blur-md p-4' id='mobile-menu'>
         <div class='border-b flex items-center justify-between pb-4 mb-4'>
           <h4 class='font-bold text-lg me-8 select-none'>ft_transcendence</h4>
           <button class='cursor-pointer' id='close-menu-btn'>${XIcon}</button>
