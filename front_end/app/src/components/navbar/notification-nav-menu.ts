@@ -18,34 +18,47 @@ class NotificationNavMenu extends HTMLElement {
 
   render() {
     this.innerHTML = /*html*/ `
-      <div class='relative'>
-        <button id='notification-btn' class='relative cursor-pointer p-2.5 rounded-full hover:bg-muted'>
-          ${BellIcon}
-          <span id='notification-count' class='absolute top-0 right-0 flex w-5 h-5 p-0.5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground'>0</span>
+      <div class="relative">
+      <button id="notification-btn" class="cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent">
+        ${BellIcon}
+        <span
+          id="notification-count"
+          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
+        >0</span>
+      </button>
+      <div
+        id="notification-menu"
+        class="hidden absolute right-0 mt-2 w-sm overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+      >
+        <div class="flex justify-end px-2 pt-2">
+        <button class="text-sm text-muted-foreground hover:underline focus:outline-none">
+          Mark all as read
         </button>
-        <div id='notification-menu' class='hidden w-sm absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-1'>
-          <div class='grid'>
-            <button class='link ms-auto'>mark as read</button>
-            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-              <h5 class='font-semibold mb-1'>Notification Title</h5>
-              <p class='text-muted-foreground'>
-                Lorem ipsum dolor sit amet.
-              </p>
-            </a>
-            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-              <h5 class='font-semibold mb-1'>Notification Title</h5>
-              <p class='text-muted-foreground'>
-                Lorem ipsum dolor sit amet.
-              </p>
-            </a>
-            <a href='#' class='block text-sm p-2.5 rounded-md hover:bg-muted cursor-pointer'>
-              <h5 class='font-semibold mb-1'>Notification Title</h5>
-              <p class='text-muted-foreground'>
-                Lorem ipsum dolor sit amet.
-              </p>
-            </a>
-          </div>
         </div>
+        <div class="divide-y divide-border">
+        <a
+          href="#"
+          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+        >
+          <h4 class="text-sm font-semibold">Notification Title</h4>
+          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
+        </a>
+        <a
+          href="#"
+          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+        >
+          <h4 class="text-sm font-semibold">Notification Title</h4>
+          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
+        </a>
+        <a
+          href="#"
+          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+        >
+          <h4 class="text-sm font-semibold">Notification Title</h4>
+          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
+        </a>
+        </div>
+      </div>
       </div>
     `;
   }
@@ -128,7 +141,7 @@ class NotificationNavMenu extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setup();
-    this.setNotificationCount(1);
+    this.setNotificationCount(3);
   }
 }
 

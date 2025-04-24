@@ -48,20 +48,21 @@ class NavigationBar extends HTMLElement {
               )
               .join("")}
           </div>
-          <div class='ms-auto flex gap-2 items-center justify-center'>
+          <div class='ms-auto flex gap-4 items-center justify-center'>
             <theme-toggle-button></theme-toggle-button>
             ${
               window._currentUser
                 ? /*html*/ `
+                  <friends-nav-menu></friends-nav-menu>
                   <notification-nav-menu></notification-nav-menu>
                   <user-nav-menu></user-nav-menu>
                 `
                 : /*html*/ `
-                  <a class='btn-ghost' href="/signin">
+                  <a class='btn btn-outlined' href="/signin">
                     ${LockIcon}
                     <span>Sign-in</span>
                   </a>
-                  <a class='btn' href="/signup">
+                  <a class='btn btn-primary' href="/signup">
                     ${RocketIcon}
                     <span>Sign-up</span>
                   </a>
