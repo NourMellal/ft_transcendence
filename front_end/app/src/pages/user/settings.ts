@@ -43,7 +43,7 @@ class SettingsPage extends HTMLElement {
 
                 <!-- Username -->
                 <div class="space-y-2">
-                  <div class='flex items-center gap-2'>
+                  <div class='flex items-center justify-between gap-2'>
                     <label for="username-input" class="label">Username</label>
                     <span id='username-error-message' class="text-sm text-destructive"></span>
                   </div>
