@@ -30,6 +30,11 @@ export const routes: Route[] = [
     title: "Settings",
   },
   {
+    pathname: "/chat",
+    component: "chat-page",
+    title: "Chat",
+  },
+  {
     pathname: "/leaderboard",
     component: "leaderboard-page",
     title: "LeaderBoard",
