@@ -4,6 +4,9 @@ import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
 
 class SettingsPage extends HTMLElement {
+  // for the username check
+  debounceTimeout: number | undefined;
+
   constructor() {
     super();
   }
@@ -40,7 +43,10 @@ class SettingsPage extends HTMLElement {
 
                 <!-- Username -->
                 <div class="space-y-2">
-                  <label for="username-input" class="label">Username</label>
+                  <div class='flex items-center justify-between gap-2'>
+                    <label for="username-input" class="label">Username</label>
+                    <span id='username-error-message' class="text-sm text-destructive"></span>
+                  </div>
                   <input name='username' id="username-input" type="text" class="input w-full" placeholder="Your username" value='${window._currentUser.username}' autocomplete="off">
                   <p id="username-availability" class="text-xs text-muted-foreground">Your unique display name.</p>
                 </div>
@@ -85,7 +91,7 @@ class SettingsPage extends HTMLElement {
                   <!-- Toggle 2FA Switch -->
                   <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-sky-500 peer-checked:dark:bg-sky-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white"></div>
+                    <div class="w-11 h-6 bg-input rounded-full peer dark:bg-input peer-checked:bg-primary peer-checked:dark:bg-primary after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:dark:bg-background after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"></div>
                   </label>
                 </div>
 
@@ -187,6 +193,50 @@ class SettingsPage extends HTMLElement {
       removeAvatarBtn.disabled = true;
     }
 
+    const usernameInput = this.querySelector(
+      "input[name='username']"
+    ) as HTMLInputElement;
+    usernameInput.addEventListener("keyup", (e) => {
+      clearTimeout(this.debounceTimeout);
+      const target = e.target as HTMLInputElement;
+      const errorSpan = document.querySelector(
+        "#username-error-message"
+      ) as HTMLSpanElement;
+      errorSpan.innerText = "";
+
+      const saveBtn = this.querySelector(
+        "#save-profile-btn"
+      ) as HTMLButtonElement;
+      this.debounceTimeout = window.setTimeout(async () => {
+        if (e.key === "Enter") return;
+        if (!target.value || target.value === window._currentUser?.username) {
+          errorSpan.innerText = "";
+          saveBtn.disabled = false;
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `/api/user/namecheck?username=${target.value}`,
+            {
+              method: "GET",
+            }
+          );
+          if (!res.ok) {
+            const errorMessage = await res.text();
+            errorSpan.innerText = errorMessage || `Username already taken`;
+            saveBtn.disabled = true;
+          } else {
+            errorSpan.innerText = "";
+            saveBtn.disabled = false;
+          }
+        } catch (error) {
+          console.error("Error checking username:", error);
+          errorSpan.innerText = "Error checking username";
+        }
+      }, 500);
+    });
+
     const userDetailsForm = this.querySelector(
       "#user-details-form"
     ) as HTMLFormElement;
@@ -196,6 +246,10 @@ class SettingsPage extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setup();
+  }
+
+  disconnectedCallback() {
+    clearTimeout(this.debounceTimeout);
   }
 }
 

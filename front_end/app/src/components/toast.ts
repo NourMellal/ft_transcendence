@@ -1,5 +1,3 @@
-// toast.ts
-
 type ToastVariant = "default" | "destructive";
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -33,9 +31,13 @@ class ToastContainer extends HTMLElement {
     </svg>
   `;
 
-  connectedCallback() {
+  constructor() {
+    super();
     this.className =
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]";
+      "fixed top-0 z-[100] flex w-full flex-col [&:has(*)]:p-4 space-y-2 sm:inset-auto sm:top-0 sm:right-0 sm:max-w-[420px]";
+  }
+
+  connectedCallback() {
     window.addEventListener(TOAST_EVENT_NAME, this.handleEvent);
   }
 
@@ -52,38 +54,37 @@ class ToastContainer extends HTMLElement {
     this.toasts.push(toast);
     this.renderToast(toast);
 
-    setTimeout(() => {
-      this.removeToast(toast.id);
-    }, toast.duration ?? 5000);
+    setTimeout(() => this.removeToast(toast.id), toast.duration ?? 5000);
   }
 
   private removeToast(id: string) {
     const el = this.querySelector<HTMLElement>(`[data-id="${id}"]`);
-    if (el && !el.classList.contains("toast-leave")) {
-      el.classList.add("toast-leave");
-      el.classList.add("opacity-0", "translate-x-full"); // Exit animation classes
+    if (!el) return;
 
-      setTimeout(() => {
-        el.remove();
-        this.toasts = this.toasts.filter((t) => t.id !== id);
-      }, this.transitionDuration);
-    }
+    const leaveAnim = el.animate(
+      [
+        { transform: "translateX(0)", opacity: 1 },
+        { transform: "translateX(100%)", opacity: 0 },
+      ],
+      {
+        duration: this.transitionDuration,
+        easing: "ease-out",
+      }
+    );
+
+    leaveAnim.onfinish = () => {
+      el.remove();
+      this.toasts = this.toasts.filter((t) => t.id !== id);
+    };
   }
 
   private renderToast(toast: Toast) {
     const toastElement = document.createElement("div");
     toastElement.dataset.id = toast.id;
 
-    const variant = toast.type === "error" ? "destructive" : "default";
+    const variant: ToastVariant =
+      toast.type === "error" ? "destructive" : "default";
     toastElement.className = this.getToastClass(variant);
-
-    // Add initial animation state (invisible and slightly offset)
-    toastElement.classList.add(
-      "opacity-0",
-      "translate-y-4",
-      "sm:translate-y-0",
-      "sm:translate-x-4"
-    );
 
     const contentDiv = document.createElement("div");
     contentDiv.className = "text-sm font-semibold";
@@ -96,43 +97,39 @@ class ToastContainer extends HTMLElement {
     closeButton.innerHTML = this.closeIconSvg;
     closeButton.onclick = () => this.removeToast(toast.id);
 
-    toastElement.appendChild(contentDiv);
-    toastElement.appendChild(closeButton);
+    toastElement.append(contentDiv, closeButton);
+    this.append(toastElement);
 
-    this.prepend(toastElement);
-
-    // Trigger transition after element is added to DOM
-    requestAnimationFrame(() => {
-      toastElement.classList.remove(
-        "opacity-0",
-        "translate-y-4",
-        "sm:translate-y-0",
-        "sm:translate-x-4"
-      );
-    });
+    // enter animation via Web Animations API
+    toastElement.animate(
+      [
+        { transform: "translateY(16px)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 },
+      ],
+      {
+        duration: this.transitionDuration,
+        easing: "ease-out",
+      }
+    );
   }
 
   private getToastClass(variant: ToastVariant = "default"): string {
-    const base = `group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all duration-${this.transitionDuration} ease-out`;
-
+    const base = `group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg`;
     const themes: Record<ToastVariant, string> = {
       default: "border bg-background text-foreground",
       destructive:
-        "destructive group border-destructive bg-destructive text-destructive-foreground",
+        "border-destructive bg-destructive text-destructive-foreground",
     };
-
     return `${base} ${themes[variant]}`;
   }
 
   private getCloseButtonClass(variant: ToastVariant = "default"): string {
-    const base = `absolute right-2 top-2 rounded-md p-1 transition-opacity duration-${this.transitionDuration} focus:outline-none focus:ring-2 group-hover:opacity-100`;
-    const opacity = "opacity-0 group-focus-within:opacity-100";
+    const base = `absolute right-2 top-2 rounded-md p-1 focus:outline-none focus:ring-2 group-hover:opacity-100`;
     const variantStyles =
       variant === "destructive"
         ? "text-red-300 hover:text-red-50 focus:ring-red-400 focus:ring-offset-red-600"
         : "text-foreground/50 hover:text-foreground focus:ring-ring focus:ring-offset-background";
-
-    return `${base} ${opacity} ${variantStyles}`;
+    return `${base} ${variantStyles}`;
   }
 }
 
