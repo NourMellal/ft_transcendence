@@ -3,6 +3,7 @@ import crypto from "crypto";
 export type TOTPStatesModel = {
   totp_key: string;
   jwt_token: string;
+  UID: string;
   created: number;
 };
 

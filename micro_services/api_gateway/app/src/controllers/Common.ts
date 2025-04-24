@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { RabbitMQResponse } from "../types/RabbitMQMessages";
 import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
-import { totp_states_table_name, users_table_name } from "../types/DbTables";
+import { refresh_token_table_name, RefreshTokenModel, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoverDocument } from "../models/DiscoveryDocument";
 import Totp from "../classes/TOTP";
@@ -13,11 +13,21 @@ export type SignPayload = {
   token: string;
 };
 
+export const CreateRefreshToken = function (UID: string, IP: string): string {
+  const token = GetRandomString(30);
+  const query = db.persistent.prepare(`INSERT INTO '${refresh_token_table_name}' ( token_id , token , created , ip , UID ) VALUES( ? , ? , ? , ? , ? );`);
+  const result = query.run(crypto.randomUUID(), token, Date.now() / 1000, IP, UID);
+  if (result.changes !== 1)
+    throw 'CreateRefreshToken(): database error';
+  return token;
+}
+
 export const ProcessSignUpResponse = function (
   reply: FastifyReply,
   response: RabbitMQResponse,
   jwt: JWT,
-  jwt_token: string
+  jwt_token: string,
+  ip: string
 ) {
   reply.raw.statusCode = response.status;
   if (response.status !== 200) {
@@ -34,18 +44,19 @@ export const ProcessSignUpResponse = function (
       console.log(`ProcessSignUpResponse(): user uid=${jwt.sub} is deleted!`);
     return;
   }
-  // reply.raw.setHeader('Content-Type', 'application/json');
-  // const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-  // reply.raw.setHeader('Set-Cookie', `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-  // reply.raw.setHeader('access-control-allow-origin', '*');
-  // const payload: SignPayload = { status: 'New User Created.', decoded: jwt, token: jwt_token };
-  // reply.raw.end(reply.serialize(payload));
-  reply.raw.statusCode = 301;
-  reply.raw.setHeader(
-    "Location",
-    `${discoverDocument.ServerUrl}/signin?token=${jwt_token}`
-  );
-  reply.raw.end();
+  try {
+    const refresh_token = CreateRefreshToken(jwt.sub, ip);
+    reply.raw.statusCode = 301;
+    reply.raw.setHeader(
+      "Location",
+      `${discoverDocument.ServerUrl}/signin?token=${jwt_token}&refresh_token=${refresh_token}`
+    );
+    reply.raw.end();
+  } catch (error) {
+    console.log(error);
+    reply.raw.statusCode = 500;
+    reply.raw.end('internal server error');
+  }
 };
 
 export const isRequestAuthorizedHook = async (
@@ -78,11 +89,12 @@ export const GetRandomString = function (bytesCount: number): string {
 };
 
 export const GetTOTPRedirectionUrl = function (
+  uid: string,
   jwt_token: string,
   totp_key: string
 ): string {
   const state = GetRandomString(8);
   if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
-  Totp.states.set(state, { created: Date.now() / 1000, totp_key: totp_key, jwt_token: jwt_token });
+  Totp.states.set(state, { created: Date.now() / 1000, UID: uid, totp_key: totp_key, jwt_token: jwt_token });
   return `${discoverDocument.ServerUrl}/2fa/verify?state=${state}`;
 };

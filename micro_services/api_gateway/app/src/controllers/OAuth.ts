@@ -13,6 +13,7 @@ import {
   RabbitMQUserManagerOp,
 } from "../types/RabbitMQMessages";
 import {
+  CreateRefreshToken,
   GetRandomString,
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
@@ -46,7 +47,7 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
   return result;
 }
 
-function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
+function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply, ip: string) {
   var NewUser: UserModel;
   try {
     NewUser = db.CreateNewGoogleUser(OAuthRes);
@@ -66,7 +67,8 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply) {
         reply,
         response,
         OAuthRes.jwt,
-        OAuthRes.response.id_token
+        OAuthRes.response.id_token,
+        ip
       );
     });
   } catch (error) {
@@ -107,12 +109,13 @@ export const AuthenticateUser = async (
     const getUserResult = getUserQuery.get(OAuthRes.jwt.sub) as UserModel;
     if (getUserResult === undefined) {
       reply.hijack();
-      SignUpNewGoogleUser(OAuthRes, reply);
+      SignUpNewGoogleUser(OAuthRes, reply, request.ip);
       return Promise.resolve();
     }
     if (getUserResult.totp_key && getUserResult.totp_key !== null) {
       try {
         const redirectUrl = GetTOTPRedirectionUrl(
+          OAuthRes.jwt.sub,
           OAuthRes.response.id_token,
           getUserResult.totp_key
         );
@@ -121,14 +124,16 @@ export const AuthenticateUser = async (
         return reply.code(500).send("internal error try again");
       }
     }
-    // const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
-    // reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
-    // const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
-    const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${OAuthRes.response.id_token}`;
-    return reply.code(301).redirect(redirectUrl);
+    try {
+      const refresh_token = CreateRefreshToken(OAuthRes.jwt.sub, request.ip);
+      const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${OAuthRes.response.id_token}&refresh_token=${refresh_token}`;
+      return reply.code(301).redirect(redirectUrl);
+    } catch (error) {
+      return reply.code(500).send(`internal server error`);
+    }
   } catch (error) {
     console.log(`ERROR: AuthenticateUser(): ${error}`);
-    return reply.code(500).send(`ERROR: Invalid credentials.`);
+    return reply.code(500).send(`Invalid credentials.`);
   }
 };
 
