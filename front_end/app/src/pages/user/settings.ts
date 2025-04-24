@@ -209,6 +209,10 @@ class SettingsPage extends HTMLElement {
           errorSpan.innerText = "";
           return;
         }
+
+        const saveBtn = this.querySelector(
+          "#save-profile-btn"
+        ) as HTMLButtonElement;
         try {
           const res = await fetch(
             `/api/user/namecheck?username=${target.value}`,
@@ -219,8 +223,10 @@ class SettingsPage extends HTMLElement {
           if (!res.ok) {
             const errorMessage = await res.text();
             errorSpan.innerText = errorMessage || `Username already taken`;
+            saveBtn.disabled = true;
           } else {
-            errorSpan.innerText = ""; // Clear error if name is available
+            errorSpan.innerText = "";
+            saveBtn.disabled = false;
           }
         } catch (error) {
           console.error("Error checking username:", error);
