@@ -4,7 +4,7 @@
     headers.append('authorization', `Bearer ${jwt_token}`);
     async function checkNameAvailability() {
         const name = document.getElementById('name').value;
-        const response = await fetch(`https://server.transcendence.fr/user/name?username=${encodeURIComponent(name)}`, { method: 'GET', headers: headers });
+        const response = await fetch(`https://transcendence.fr/api/user/name?username=${encodeURIComponent(name)}`, { method: 'GET', headers: headers });
         const availabilityMessage = document.getElementById('availability-message');
         if (response.status === 200) {
             availabilityMessage.textContent = 'Name is available';
@@ -22,7 +22,7 @@
         formData.append('bio', document.getElementById('bio').value);
         formData.append('picture', document.getElementById('picture').files[0]);
 
-        const response = await fetch('https://server.transcendence.fr/user/info', {
+        const response = await fetch('https://transcendence.fr/api/user/info', {
             method: 'POST',
             headers: headers,
             body: formData,

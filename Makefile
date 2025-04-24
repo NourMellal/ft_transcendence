@@ -23,7 +23,6 @@ create_volumes_dir:
 #Set host to fake route domains used to localhost
 set-host-and-permission:
 	@if ! grep -q "www.transcendence.fr" /etc/hosts; then \
-		sudo sh -c 'echo "127.0.0.1	server.transcendence.fr" >> /etc/hosts'; \
 		sudo sh -c 'echo "127.0.0.1	www.transcendence.fr" >> /etc/hosts'; \
 		sudo sh -c 'echo "127.0.0.1 transcendence.fr" >> /etc/hosts'; \
 	fi
