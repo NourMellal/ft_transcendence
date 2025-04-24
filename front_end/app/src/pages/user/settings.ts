@@ -1,4 +1,7 @@
+import { getUser } from "~/api/user";
 import { navigateTo } from "~/components/app-router";
+import { showToast } from "~/components/toast";
+import { handleEffect } from "~/utils";
 
 class SettingsPage extends HTMLElement {
   constructor() {
@@ -13,7 +16,6 @@ class SettingsPage extends HTMLElement {
       <!-- HTML Markup for Settings Page -->
       <navigation-bar></navigation-bar>
       <div class="container pb-8">
-        <h1 class="text-3xl font-bold mb-8">Settings</h1>
 
         <!-- Profile Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -22,7 +24,7 @@ class SettingsPage extends HTMLElement {
             <p class="text-sm text-muted-foreground">Update your display name, bio, and profile picture.</p>
           </div>
           <div class="md:col-span-2">
-            <div class="card border rounded-lg shadow-sm">
+            <form class="card border rounded-lg shadow-sm" id='user-details-form'>
               <div class="card-content p-6 space-y-6">
                 <!-- Profile Picture -->
                 <div class="space-y-2">
@@ -30,8 +32,8 @@ class SettingsPage extends HTMLElement {
                   <div class="flex items-center gap-4">
                     <img id="avatar-preview" src="/api/${window._currentUser.picture_url}" alt="Avatar" class="h-16 w-16 rounded-full object-cover border">
                     <input type="file" id="avatar-input" class="hidden" accept="image/jpeg, image/png, image/webp">
-                    <button id="change-avatar-btn" class="btn btn-outlined">Change</button>
-                    <button id="remove-avatar-btn" class="btn btn-destructive">Remove</button>
+                    <button type='button' id="change-avatar-btn" class="btn btn-outlined" id='change-image-btn'>Change</button>
+                    <button type='button' id="remove-avatar-btn" class="btn btn-destructive" id='remove-image-btn'>Remove</button>
                   </div>
                   <p id="avatar-error" class="text-xs text-destructive"></p>
                 </div>
@@ -39,21 +41,21 @@ class SettingsPage extends HTMLElement {
                 <!-- Username -->
                 <div class="space-y-2">
                   <label for="username-input" class="label">Username</label>
-                  <input id="username-input" type="text" class="input w-full" placeholder="Your username" autocomplete="off">
+                  <input name='username' id="username-input" type="text" class="input w-full" placeholder="Your username" value='${window._currentUser.username}' autocomplete="off">
                   <p id="username-availability" class="text-xs text-muted-foreground">Your unique display name.</p>
                 </div>
 
                 <!-- Bio -->
                 <div class="space-y-2">
                   <label for="bio-input" class="label">Bio</label>
-                  <textarea id="bio-input" class="input w-full min-h-[80px]" placeholder="Tell us a little about yourself"></textarea>
+                  <textarea name='bio' id="bio-input" class="input w-full min-h-[80px]" placeholder="Tell us a little about yourself">${window._currentUser.bio}</textarea>
                   <p class="text-xs text-muted-foreground">A brief description about you.</p>
                 </div>
               </div>
               <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
                 <button id="save-profile-btn" class="btn btn-primary">Save Changes</button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -124,8 +126,71 @@ class SettingsPage extends HTMLElement {
     `;
   }
 
+  updateProfile = (e: SubmitEvent) => {
+    e.preventDefault();
+    const formData = new FormData(
+      this.querySelector("#user-details-form") as HTMLFormElement
+    );
+
+    handleEffect(this, async () => {
+      const res = await fetch("/api/user/info", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("uid") || ""}`,
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: "Profile updated successfully",
+        });
+      } else {
+        showToast({
+          type: "error",
+          message: await res.text(),
+        });
+      }
+    });
+  };
+
+  removeAvatar = () => {
+    handleEffect(this, async () => {
+      const res = await fetch("/api/user/remove_picture", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("uid") || ""}`,
+        },
+      });
+
+      if (res.ok) {
+        window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: "Picture removed successfully",
+        });
+        navigateTo("/settings");
+      }
+      showToast({ type: "error", message: "something went wrong" });
+    });
+  };
+
   setup() {
-    //
+    const removeAvatarBtn = this.querySelector(
+      "#remove-avatar-btn"
+    ) as HTMLButtonElement;
+    if (window._currentUser?.picture_url !== "/static/profile/default.jpg") {
+      removeAvatarBtn.addEventListener("click", this.removeAvatar);
+    } else {
+      removeAvatarBtn.disabled = true;
+    }
+
+    const userDetailsForm = this.querySelector(
+      "#user-details-form"
+    ) as HTMLFormElement;
+    userDetailsForm.addEventListener("submit", this.updateProfile);
   }
 
   connectedCallback() {

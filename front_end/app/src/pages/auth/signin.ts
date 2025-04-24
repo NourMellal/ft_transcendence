@@ -2,6 +2,8 @@ import GoogleIcon from "~/icons/google.svg?raw";
 import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
 import { getUser } from "../../api/user";
+import { showToast } from "~/components/toast";
+import { handleEffect } from "~/utils";
 
 class SigninPage extends HTMLElement {
   constructor() {
@@ -11,38 +13,42 @@ class SigninPage extends HTMLElement {
       (async () => {
         localStorage.setItem("uid", token);
         window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: `Welcome Back ${window._currentUser?.username}!`,
+        });
         navigateTo("/profile");
       })();
     }
   }
 
-  handleSumbit = async (e: SubmitEvent) => {
+  handleSumbit = (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest("form");
-    const error = this.querySelector("#error") as HTMLDivElement;
+    e.preventDefault();
 
     if (form) {
-      e.preventDefault();
-      const fieldset = form.closest("fieldset");
-      const formData = new FormData(form);
+      handleEffect(document.body, async () => {
+        const formData = new FormData(form);
 
-      error.innerHTML = "";
+        const res = await fetch("/api/user/signin", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (fieldset) fieldset.disabled = true;
+        if (!res.ok) {
+          showToast({ type: "error", message: await res.text() });
+          return;
+        }
+        const data = await res.json();
 
-      const res = await fetch("/api/user/signin", {
-        method: "POST",
-        body: formData,
+        localStorage.setItem("uid", data.token as string);
+        window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: `Welcome Back ${window._currentUser?.username}!`,
+        });
+        navigateTo("/profile");
       });
-      if (!res.ok) {
-        if (fieldset) fieldset.disabled = false;
-        error.innerHTML = /*html*/ `<p class='mb-2'>${await res.text()}</p>`;
-        return;
-      }
-      const data = await res.json();
-
-      localStorage.setItem("uid", data.token as string);
-      window._currentUser = await getUser();
-      navigateTo("/profile");
     }
   };
 
@@ -73,10 +79,11 @@ class SigninPage extends HTMLElement {
 
       const url = `https://accounts.google.com/o/oauth2/v2/auth?${queryString}`;
 
-      window.open(url, "_blank");
+      window.open(url, "_self");
     } catch (err) {
-      if (err instanceof Error) alert(err.message);
-      else console.error("Unexpected Error: ", err);
+      if (err instanceof Error)
+        showToast({ type: "error", message: err.message });
+      else showToast({ type: "error", message: "Unexpected error occured!" });
     }
   };
 
@@ -88,7 +95,6 @@ class SigninPage extends HTMLElement {
       <navigation-bar></navigation-bar>
       <fieldset class="max-w-md mx-auto my-4 flex flex-col gap-4 mt-16">
           <div class="p-6 md:rounded-md border">
-            <div id='error' class='text-red-500 text-sm'></div>
             <form class="space-y-6 [&_label]:block [&_label]:mb-4">
               <div>
                 <label for="user-name">username</label>

@@ -1,6 +1,8 @@
 import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
 import { getUser } from "~/api/user";
+import { showToast } from "~/components/toast";
+import { handleEffect } from "~/utils";
 
 class SignupPage extends HTMLElement {
   constructor() {
@@ -12,37 +14,42 @@ class SignupPage extends HTMLElement {
 
     if (form) {
       e.preventDefault();
-      const fieldset = form.closest("fieldset");
       const formData = new FormData(form);
-      const error = this.querySelector("#error") as HTMLDivElement;
 
       if (
         formData.get("password")?.toString() !==
         formData.get("password_confirmation")?.toString()
       ) {
-        error.innerHTML = /*html*/ `<p class='mb-2'>password/password confirmation doesn't match</p>`;
+        showToast({
+          type: "error",
+          message: "password/password confirmation doesn't match",
+        });
         return;
       }
       formData.delete("password_confirmation");
 
-      error.innerHTML = "";
+      handleEffect(document.body, async () => {
+        const res = await fetch("/api/user/signup", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          showToast({
+            type: "error",
+            message: await res.text(),
+          });
+          return;
+        }
+        const data = await res.json();
 
-      if (fieldset) fieldset.disabled = true;
-
-      const res = await fetch("/api/user/signup", {
-        method: "POST",
-        body: formData,
+        localStorage.setItem("uid", data.token as string);
+        window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: `Welcome to ft_transcendence ${window._currentUser?.username}!`,
+        });
+        navigateTo("/profile");
       });
-      if (!res.ok) {
-        if (fieldset) fieldset.disabled = false;
-        error.innerHTML = /*html*/ `<p class='mb-2'>${await res.text()}</p>`;
-        return;
-      }
-      const data = await res.json();
-
-      localStorage.setItem("uid", data.token as string);
-      window._currentUser = await getUser();
-      navigateTo("/profile");
     }
   };
 
@@ -61,7 +68,6 @@ class SignupPage extends HTMLElement {
       <navigation-bar></navigation-bar>
       <fieldset class="max-w-md mx-auto my-4 flex flex-col gap-4 mt-16">
           <div class="p-6 md:rounded-md border">
-            <div id='error' class='text-red-500 text-sm'></div>
             <form class="space-y-6 [&_label]:block [&_label]:mb-4">
               <div>
                 <label for="user-name">username</label>
