@@ -204,15 +204,16 @@ class SettingsPage extends HTMLElement {
       ) as HTMLSpanElement;
       errorSpan.innerText = "";
 
+      const saveBtn = this.querySelector(
+        "#save-profile-btn"
+      ) as HTMLButtonElement;
       this.debounceTimeout = window.setTimeout(async () => {
         if (!target.value || target.value === window._currentUser?.username) {
           errorSpan.innerText = "";
+          saveBtn.disabled = false;
           return;
         }
 
-        const saveBtn = this.querySelector(
-          "#save-profile-btn"
-        ) as HTMLButtonElement;
         try {
           const res = await fetch(
             `/api/user/namecheck?username=${target.value}`,
