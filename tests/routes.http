@@ -100,6 +100,37 @@ send 6 digits totp code to get jwt
 
 
 
+###### START REFRESH TOKEN TESTs ######
+
+# exchange refresh token for jwt token: (No authorization required)
+POST https://transcendence.fr/api/jwt/refresh
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="refresh_token"
+
+send refresh token here
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+
+# List active connections: (Authorization required)
+GET https://transcendence.fr/api/jwt/list
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Revoke refresh token: (Authorization required)
+POST https://transcendence.fr/api/jwt/revoke?token_id=
+Authorization: Bearer {{jwt_token}}
+
+
+###### END REFRESH TOKEN TESTs ######
+
+
+
+
+
 ###### START USER MANAGEMENT TESTs (Authorization required) ######
 
 # GET user info by uid:

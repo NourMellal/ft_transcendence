@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UserModel, users_table_name } from "../types/DbTables";
+import { refresh_token_table_name, RefreshTokenModel, state_expiree_sec, UserModel, users_table_name } from "../types/DbTables";
 import fs from "fs";
 import { multipart_fields, multipart_files } from "../types/multipart";
 import db from "../classes/Databases";
@@ -11,10 +11,13 @@ import {
 import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
 import {
+  CreateRefreshToken,
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
   SignPayload,
 } from "./Common";
+import Totp from "../classes/TOTP";
+import { discoverDocument } from "../models/DiscoveryDocument";
 
 export const IsDisplayNameAvailable = async (
   request: FastifyRequest<{ Querystring: { username: string } }>,
@@ -91,7 +94,7 @@ export const SignUpNewStandardUser = async (
       JWT: jwt,
     };
     rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
-      ProcessSignUpResponse(reply, response, jwt, jwt_token);
+      ProcessSignUpResponse(reply, response, jwt, jwt_token, request.ip);
     });
     return Promise.resolve();
   } catch (error) {
@@ -141,21 +144,15 @@ export const SignInStandardUser = async (
       const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
       if (res.totp_key && res.totp_key !== null) {
         try {
-          const redirectUrl = GetTOTPRedirectionUrl(jwt_token, res.totp_key);
+          const redirectUrl = GetTOTPRedirectionUrl(res.UID, jwt_token, res.totp_key);
           return reply.code(301).redirect(redirectUrl);
         } catch (error) {
-          return reply.code(500).send("database error");
+          return reply.code(500).send("internal error try again");
         }
       }
-      const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-      // reply.headers({ "set-cookie": `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
-      reply.code(200);
-      const payload: SignPayload = {
-        status: "User sign in.",
-        decoded: jwt,
-        token: jwt_token,
-      };
-      return reply.send(payload);
+      const refresh_token = CreateRefreshToken(jwt.sub, request.ip);
+      const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${jwt_token}&refresh_token=${refresh_token}`;
+      return reply.code(301).redirect(redirectUrl);
     }
     return reply.code(401).send("invalid credentials");
   } catch (error) {
@@ -163,3 +160,75 @@ export const SignInStandardUser = async (
     return reply.code(500).send("internal server error please try again.");
   }
 };
+
+export const Verify2FACode = async (
+  request: FastifyRequest<{ Querystring: { state: string } }>,
+  reply: FastifyReply
+) => {
+  const state = Totp.states.get(request.query.state);
+  if (!state) return reply.code(401).send("request unauthorized");
+  if (Date.now() / 1000 - state.created > state_expiree_sec) {
+    Totp.states.delete(request.query.state);
+    return reply.code(401).send("request expired");
+  }
+  const requestCode: multipart_fields | undefined = request.fields.find(
+    (field: multipart_fields, i) => field.field_name === "code"
+  );
+  if (!requestCode || requestCode.field_value.length !== 6)
+    return reply.code(401).send("invalid totp_code");
+  const code = Totp.generateTOTP(state.totp_key);
+  if (code !== requestCode.field_value)
+    return reply.code(401).send("invalid totp_code");
+  try {
+    const refresh_token = CreateRefreshToken(state.UID, request.ip);
+    Totp.states.delete(request.query.state);
+    const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${state.jwt_token}&refresh_token=${refresh_token}`;
+    return reply.code(301).redirect(redirectUrl);
+  } catch (error) {
+    console.log(error);
+    return reply.code(500).redirect('internal server error');
+  }
+};
+
+export const RefreshToken = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  const refresh_token: multipart_fields | undefined = request.fields.find(
+    (field: multipart_fields, i) => field.field_name === "refresh_token"
+  );
+  if (!refresh_token)
+    return reply.code(400).send('bad request');
+  const query = db.persistent.prepare(`SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`);
+  const res = query.get(refresh_token.field_value) as RefreshTokenModel | undefined;
+  if (!res)
+    return reply.code(401).send('request unauthorized');
+  const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, '', '');
+  const token = AuthProvider.jwtFactory.SignJWT(jwt);
+  return reply.code(301).redirect(`${discoverDocument.ServerUrl}/signin?token=${token}`);
+}
+
+export const ListActiveConnection = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  type refresh_tokens = {
+    token_id: string,
+    ip: string,
+    created: number
+  };
+  const query = db.persistent.prepare(`SELECT token_id, ip, created FROM '${refresh_token_table_name}' WHERE UID = ? ;`);
+  const res = query.all(request.jwt.sub) as refresh_tokens[];
+  return reply.send(res);
+}
+
+export const RemoveRefreshToken = async (
+  request: FastifyRequest<{ Querystring: { token_id: string } }>,
+  reply: FastifyReply
+) => {
+  const query = db.persistent.prepare(`DELETE FROM '${refresh_token_table_name}' WHERE token_id = ? ;`);
+  const res = query.run(request.query.token_id);
+  if (res.changes === 1)
+      return reply.code(200).send('token removed');
+  return reply.code(400).send('bad request');
+}

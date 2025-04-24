@@ -52,6 +52,29 @@ export const discoverDocument = {
       method: "POST",
     },
   },
+  RefreshTokenRoutes: {
+    RefreshJWT: {
+      description: "HTTP: get a fresh jwt token",
+      route: "/api/jwt/refresh",
+      multipart_params: [
+        { name: "refresh_token", type: "text/plain" },
+      ],
+      method: "POST"
+    },
+    ListActiveConnection:{
+      description: "HTTP: get a list of active connections",
+      route: "/api/jwt/list",
+      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      method: "GET"
+    },
+    RemoveAccess:{
+      description: "HTTP: remove refresh token",
+      route: "/api/jwt/revoke",
+      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      QueryParams: [{ name: "token_id" }],
+      method: "POST"
+    }
+  },
   TwoFactorAuthRoutes: {
     Enable2FA: {
       description: "HTTP: Enable TOTP codes",

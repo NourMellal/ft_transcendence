@@ -2,11 +2,9 @@ import { DatabaseSync } from "node:sqlite";
 import { users_table_name } from "../types/DbTables";
 
 class Databases {
-  transient: DatabaseSync;
   persistent: DatabaseSync;
 
   constructor(p: DatabaseSync) {
-    this.transient = new DatabaseSync(":memory:");
     this.persistent = p;
   }
   public init(): void {

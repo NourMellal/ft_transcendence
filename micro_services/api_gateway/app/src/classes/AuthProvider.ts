@@ -9,8 +9,10 @@ class OAuthProvider {
   discoveryDocument: GoogleDiscoveryDocument;
   JWTKeyCertificate: JWTKeyCert;
   jwtFactory: JWTFactory;
+  GoogleSignInStates: Map<string, number>;
 
   constructor(DiscoveryDocumentUrl: string) {
+    this.GoogleSignInStates = new Map<string, number>;
     this.discoveryDocumentURL = DiscoveryDocumentUrl;
     this.discoveryDocument = {} as GoogleDiscoveryDocument;
     this.JWTKeyCertificate = {} as JWTKeyCert;

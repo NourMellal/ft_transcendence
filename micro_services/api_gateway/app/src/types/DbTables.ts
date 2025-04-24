@@ -1,19 +1,7 @@
-export const signin_state_table_name = "signin_states";
-export const totp_states_table_name = "totp_states";
+export const refresh_token_table_name = "refresh_token";
 export const users_table_name = "users";
 export const state_expiree_sec = 60;
 
-export type SignInStatesModel = {
-  state: string;
-  created: number;
-};
-
-export type TOTPStatesModel = {
-  state: string;
-  totp_key: string;
-  jwt_token: string;
-  created: number;
-};
 
 export enum UserRoles {
   SuperAdmin = 1,
@@ -29,11 +17,19 @@ export enum UserProviders {
 export type UserModel = {
   UID: string;
   username: string;
-  password_hash?: string;
+  password_hash: string | null;
   totp_key?: string;
   provider: UserProviders;
   role: UserRoles;
-  access_token?: string;
-  refresh_token?: string;
-  ate?: number;
+  google_access_token: string | null;
+  google_refresh_token: string | null;
+  ate: number | null;
+};
+
+export type RefreshTokenModel = {
+  token_id: string;
+  UID: string;
+  token: string;
+  ip:string;
+  created: number;
 };

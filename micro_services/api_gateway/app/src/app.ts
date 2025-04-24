@@ -1,19 +1,19 @@
 import fastify from "fastify";
 import cors from "@fastify/cors";
-import OAuthRoute from "./routes/OAuth";
 import db from "./classes/Databases";
 import AuthProvider from "./classes/AuthProvider";
 import rabbitmq from "./classes/RabbitMQ";
+import OAuthRoute from "./routes/OAuth";
 import DiscoveryDocumentRoute from "./routes/DiscoveryDocument";
+import { AuthenticatorRoutes, RefreshTokenManagementRoutes } from "./routes/Authenticator";
 import UserManagerRoutes from "./routes/microservices/user_manager";
-import ParseMultipart from "./controllers/multipart";
-import AuthenticatorRoutes from "./routes/Authenticator";
 import FriendsManagerRoutes from "./routes/microservices/friends_manager";
 import TwoFactorAuthRoutes from "./routes/2FA";
 import {
   NotificationRoutes,
   SetupWebSocketServer,
 } from "./routes/microservices/notifications";
+import ParseMultipart from "./controllers/multipart";
 
 db.init();
 AuthProvider.init();
@@ -28,6 +28,7 @@ app.addContentTypeParser("multipart/form-data", ParseMultipart);
 app.register(DiscoveryDocumentRoute);
 app.register(OAuthRoute);
 app.register(AuthenticatorRoutes);
+app.register(RefreshTokenManagementRoutes);
 app.register(TwoFactorAuthRoutes);
 // Register micro_services routes:
 app.register(UserManagerRoutes);
