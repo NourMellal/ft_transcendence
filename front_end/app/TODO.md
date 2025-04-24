@@ -1,0 +1,2 @@
+- [ ] fix the navigation's dropdown for mobile devices
+- [ ] fix the chat page for mobile devices

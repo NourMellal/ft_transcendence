@@ -9,22 +9,8 @@ class ThemeToggleButton extends HTMLElement {
   render() {
     const isDark = document.documentElement.classList.contains("dark");
     this.innerHTML = /*html*/ `
-      <button class='btn btn-ghost'>
-        ${
-          isDark
-            ? /*html*/ `
-          <span class='flex items-center gap-2'>
-            ${SunIcon}
-            Light
-          </span>
-        `
-            : /*html*/ `
-          <span class='flex items-center gap-2'>
-            ${MoonIcon}
-            Dark
-          </span>
-        `
-        }
+      <button class='cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent'>
+        ${isDark ? SunIcon : MoonIcon}
       </button>
     `;
   }
