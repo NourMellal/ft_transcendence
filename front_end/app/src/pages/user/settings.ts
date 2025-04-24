@@ -208,6 +208,7 @@ class SettingsPage extends HTMLElement {
         "#save-profile-btn"
       ) as HTMLButtonElement;
       this.debounceTimeout = window.setTimeout(async () => {
+        if (e.key === "Enter") return;
         if (!target.value || target.value === window._currentUser?.username) {
           errorSpan.innerText = "";
           saveBtn.disabled = false;
