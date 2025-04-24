@@ -4,6 +4,9 @@ import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
 
 class SettingsPage extends HTMLElement {
+  // for the username check
+  debounceTimeout: number | undefined;
+
   constructor() {
     super();
   }
@@ -40,7 +43,10 @@ class SettingsPage extends HTMLElement {
 
                 <!-- Username -->
                 <div class="space-y-2">
-                  <label for="username-input" class="label">Username</label>
+                  <div class='flex items-center gap-2'>
+                    <label for="username-input" class="label">Username</label>
+                    <span id='username-error-message' class="text-sm text-destructive"></span>
+                  </div>
                   <input name='username' id="username-input" type="text" class="input w-full" placeholder="Your username" value='${window._currentUser.username}' autocomplete="off">
                   <p id="username-availability" class="text-xs text-muted-foreground">Your unique display name.</p>
                 </div>
@@ -187,6 +193,42 @@ class SettingsPage extends HTMLElement {
       removeAvatarBtn.disabled = true;
     }
 
+    const usernameInput = this.querySelector(
+      "input[name='username']"
+    ) as HTMLInputElement;
+    usernameInput.addEventListener("keyup", (e) => {
+      clearTimeout(this.debounceTimeout);
+      const target = e.target as HTMLInputElement;
+      const errorSpan = document.querySelector(
+        "#username-error-message"
+      ) as HTMLSpanElement;
+      errorSpan.innerText = "";
+
+      this.debounceTimeout = window.setTimeout(async () => {
+        if (!target.value || target.value === window._currentUser?.username) {
+          errorSpan.innerText = "";
+          return;
+        }
+        try {
+          const res = await fetch(
+            `/api/user/namecheck?username=${target.value}`,
+            {
+              method: "GET",
+            }
+          );
+          if (!res.ok) {
+            const errorMessage = await res.text();
+            errorSpan.innerText = errorMessage || `Username already taken`;
+          } else {
+            errorSpan.innerText = ""; // Clear error if name is available
+          }
+        } catch (error) {
+          console.error("Error checking username:", error);
+          errorSpan.innerText = "Error checking username";
+        }
+      }, 500);
+    });
+
     const userDetailsForm = this.querySelector(
       "#user-details-form"
     ) as HTMLFormElement;
@@ -196,6 +238,10 @@ class SettingsPage extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setup();
+  }
+
+  disconnectedCallback() {
+    clearTimeout(this.debounceTimeout);
   }
 }
 
