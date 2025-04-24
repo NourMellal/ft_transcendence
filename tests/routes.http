@@ -4,7 +4,7 @@
 
 # GET the discovery document of the server: (No authorization required)
 # READ THIS DOCUMENT FOR A DETAILED DESCRIPTION OF EACH ROUTE
-GET https://server.transcendence.fr/.well-known/discovery
+GET https://transcendence.fr/api/.well-known/discovery
 
 
 
@@ -13,7 +13,7 @@ GET https://server.transcendence.fr/.well-known/discovery
 ###### START GOOGLE OAUTH TESTs (No authorization required) ######
 
 # GET a random state_code for OAuth flow:
-GET https://server.transcendence.fr/OAuth/state
+GET https://transcendence.fr/api/OAuth/state
 
 
 ###### END GOOGLE OAUTH TESTs ######
@@ -25,7 +25,7 @@ GET https://server.transcendence.fr/OAuth/state
 ###### START USER/PWD TESTs (No authorization required) ######
 
 # Signup standard user:
-POST https://server.transcendence.fr/user/signup
+POST https://transcendence.fr/api/user/signup
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -41,7 +41,7 @@ very_hard_password
 ###
 
 # Signin standard user:
-POST https://server.transcendence.fr/user/signin
+POST https://transcendence.fr/api/user/signin
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -63,14 +63,14 @@ very_hard_password
 ###### START TOTP 2FA TESTs ######
 
 # Enable 2fa: (Authorization required)
-POST https://server.transcendence.fr/2FA/enable
+POST https://transcendence.fr/api/2FA/enable
 Authorization: Bearer {{jwt_token}}
 
 
 ###
 
 # Disable 2fa: (Authorization required)
-POST https://server.transcendence.fr/2FA/disable
+POST https://transcendence.fr/api/2FA/disable
 Authorization: Bearer {{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
@@ -84,7 +84,7 @@ send 6 digits totp code to disable
 ###
 
 # Verify totp code and obtain jwt (No authorization required):
-POST https://server.transcendence.fr/2FA/verify?state=StateObtainedFromSignIn
+POST https://transcendence.fr/api/2FA/verify?state=StateObtainedFromSignIn
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -103,24 +103,24 @@ send 6 digits totp code to get jwt
 ###### START USER MANAGEMENT TESTs (Authorization required) ######
 
 # GET user info by uid:
-GET https://server.transcendence.fr/user/info?uid=
+GET https://transcendence.fr/api/user/info?uid=
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # GET current logged user info (uid alias for me):
-GET https://server.transcendence.fr/user/info?uid=me
+GET https://transcendence.fr/api/user/info?uid=me
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Check if username is available: (No authorization required)
-GET https://server.transcendence.fr/user/namecheck?username=msitni1337
+GET https://transcendence.fr/api/user/namecheck?username=msitni1337
 
 ###
 
 # Change current logged user info:
-POST https://server.transcendence.fr/user/info
+POST https://transcendence.fr/api/user/info
 Authorization: Bearer {{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
@@ -137,7 +137,7 @@ hey everyone this is my new bio.
 ###
 
 # Delete user's profile picture
-DELETE https://server.transcendence.fr/user/remove_picture
+DELETE https://transcendence.fr/api/user/remove_picture
 Authorization: Bearer {{jwt_token}}
 
 ###
@@ -151,37 +151,37 @@ Authorization: Bearer {{jwt_token}}
 ###### START FRIENDS SYSTEM TESTs (Authorization required) ######
 
 # Get current user friends list
-GET https://server.transcendence.fr/friends
+GET https://transcendence.fr/api/friends
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Get current user friends requests
-GET https://server.transcendence.fr/friends/requests
+GET https://transcendence.fr/api/friends/requests
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Send a friend request
-POST https://server.transcendence.fr/friends/request?uid=
+POST https://transcendence.fr/api/friends/request?uid=
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Accept a friend request
-POST https://server.transcendence.fr/friends/accept?uid=
+POST https://transcendence.fr/api/friends/accept?uid=
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Deny a friend request
-POST https://server.transcendence.fr/friends/deny?uid=
+POST https://transcendence.fr/api/friends/deny?uid=
 Authorization: Bearer {{jwt_token}}
 
 ###
 
 # Remove a friend
-POST https://server.transcendence.fr/friends/remove?uid=
+POST https://transcendence.fr/api/friends/remove?uid=
 Authorization: Bearer {{jwt_token}}
  
 ###
@@ -192,7 +192,7 @@ Authorization: Bearer {{jwt_token}}
 ###### START NOTIFICATION TESTs (Authorization required) ######
 
 # Listen to notifications ping using WebSocket:
-GET wss://server.transcendence.fr/notifications/push_notification
+GET wss://transcendence.fr/api/notifications/push_notification
 Sec-WebSocket-Protocol: {{jwt_token}}
 
 ###### END NOTIFICATION TESTs ######

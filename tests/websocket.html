@@ -1,7 +1,7 @@
 <script>
 
     function ListenToNotificationPing() {
-        const socket = new WebSocket('wss://server.transcendence.fr/notifications/push_notification', ["eyJhbG...JWT_TOKEN_HERE...oBym9Y"]);
+        const socket = new WebSocket('wss://transcendence.fr/api/notifications/push_notification', ["eyJhbG...JWT_TOKEN_HERE...oBym9Y"]);
 
         socket.onmessage = (event) => {
             alert(event.type);

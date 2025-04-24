@@ -98,10 +98,11 @@ export const AuthenticateUser = async (request: FastifyRequest<{
                 return reply.code(500).send('database error');
             }
         }
-        const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
-        reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
-        const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
-        return reply.code(200).send(payload);
+        // const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
+        // reply.headers({ "set-cookie": `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+        // const payload: SignPayload = { status: 'User sign in.', decoded: OAuthRes.jwt, token: OAuthRes.response.id_token };
+        const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${OAuthRes.response.id_token}`;
+        return reply.code(301).redirect(redirectUrl);
     } catch (error) {
         console.log(`ERROR: AuthenticateUser(): ${error}`);
         return reply.code(500).send(`ERROR: Invalid credentials.`);

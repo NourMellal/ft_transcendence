@@ -1,5 +1,6 @@
 export const discoverDocument = {
     ServerUrl: 'https://transcendence.fr',
+    DiscoverDocumentRoute: '/api/.well-known/discovery',
     OAuthRoutes: {
         OAuthRedirectRoute:
         {

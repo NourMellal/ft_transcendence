@@ -4,6 +4,7 @@ import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
 import { totp_states_table_name, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
+import { discoverDocument } from "../models/DiscoveryDocument";
 
 export type SignPayload = {
     status: string,
@@ -23,12 +24,15 @@ export const ProcessSignUpResponse = function (reply: FastifyReply, response: Ra
             console.log(`ProcessSignUpResponse(): user uid=${jwt.sub} is deleted!`);
         return;
     }
-    reply.raw.setHeader('Content-Type', 'application/json');
-    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    // reply.raw.setHeader('Content-Type', 'application/json');
+    // const expiresDate = new Date(jwt.exp * 1000).toUTCString();
     // reply.raw.setHeader('Set-Cookie', `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-    reply.raw.setHeader('access-control-allow-origin', '*');
-    const payload: SignPayload = { status: 'New User Created.', decoded: jwt, token: jwt_token };
-    reply.raw.end(reply.serialize(payload));
+    // reply.raw.setHeader('access-control-allow-origin', '*');
+    // const payload: SignPayload = { status: 'New User Created.', decoded: jwt, token: jwt_token };
+    // reply.raw.end(reply.serialize(payload));
+    reply.raw.statusCode = 301;
+    reply.raw.setHeader('Location', `${discoverDocument.ServerUrl}/signin?token=${jwt_token}`);
+    reply.raw.end();
 }
 
 export const isRequestAuthorizedHook = async (request: FastifyRequest, reply: FastifyReply) => {
