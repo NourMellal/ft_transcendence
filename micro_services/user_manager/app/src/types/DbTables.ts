@@ -1,8 +1,8 @@
-export const users_table_name = 'users'; 
+export const users_table_name = "users";
 
 export type UserModel = {
-    UID: string,
-    picture_url: string,
-    bio: string,
-    friends_uids: string,
+  UID: string;
+  picture_url: string;
+  bio: string;
+  friends_uids: string;
 };

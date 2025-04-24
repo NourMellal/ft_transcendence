@@ -5,10 +5,13 @@ import { discoverDocument } from "../../models/DiscoveryDocument";
 import { PushNotificationHandler } from "../../controllers/microservices/notifications";
 
 export const SetupWebSocketServer = function (fastify: FastifyInstance) {
-    const Server = new WebSocketServer({ server: fastify.server, path: discoverDocument.Notifications.PushNotification.route });
-    Server.on('connection', PushNotificationHandler);
-}
+  const Server = new WebSocketServer({
+    server: fastify.server,
+    path: discoverDocument.Notifications.PushNotification.route,
+  });
+  Server.on("connection", PushNotificationHandler);
+};
 
 export async function NotificationRoutes(fastify: FastifyInstance) {
-    fastify.addHook('preHandler', isRequestAuthorizedHook);
+  fastify.addHook("preHandler", isRequestAuthorizedHook);
 }
