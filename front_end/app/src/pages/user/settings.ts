@@ -91,7 +91,7 @@ class SettingsPage extends HTMLElement {
                   <!-- Toggle 2FA Switch -->
                   <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-sky-500 peer-checked:dark:bg-sky-500 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white"></div>
+                    <div class="w-11 h-6 bg-input rounded-full peer dark:bg-input peer-checked:bg-primary peer-checked:dark:bg-primary after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:dark:bg-background after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"></div>
                   </label>
                 </div>
 
