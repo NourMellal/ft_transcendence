@@ -5,6 +5,7 @@ import db from "../classes/Databases";
 import { totp_states_table_name, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoverDocument } from "../models/DiscoveryDocument";
+import Totp from "../classes/TOTP";
 
 export type SignPayload = {
   status: string;
@@ -80,11 +81,8 @@ export const GetTOTPRedirectionUrl = function (
   jwt_token: string,
   totp_key: string
 ): string {
-  const state = GetRandomString(4);
-  const query = db.transient.prepare(
-    `INSERT INTO '${totp_states_table_name}' ( 'state', 'totp_key', 'jwt_token', 'created'  ) VALUES ( ? , ? , ? , ? );`
-  );
-  const res = query.run(state, totp_key, jwt_token, Date.now() / 1000);
-  if (res.changes !== 1) throw "database error";
-  return `${process.env.FRONTEND_URL}/2fa/verify?state=${state}`;
+  const state = GetRandomString(8);
+  if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
+  Totp.states.set(state, { created: Date.now() / 1000, totp_key: totp_key, jwt_token: jwt_token });
+  return `${discoverDocument.ServerUrl}/2fa/verify?state=${state}`;
 };

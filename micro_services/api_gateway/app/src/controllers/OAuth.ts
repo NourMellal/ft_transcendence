@@ -2,8 +2,6 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import db from "../classes/Databases";
 import AuthProvider from "../classes/AuthProvider";
 import {
-  signin_state_table_name,
-  SignInStatesModel,
   state_expiree_sec,
   UserModel,
   users_table_name,
@@ -96,18 +94,11 @@ export const AuthenticateUser = async (
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
     const { state, code } = request.query;
-    const getStateQuery = db.transient.prepare(
-      `SELECT * FROM '${signin_state_table_name}' WHERE state = ?;`
-    );
-    const getStateResult = getStateQuery.get(state) as SignInStatesModel;
-    if (getStateResult === undefined) throw `Invalid state_code=${state}`;
-    const runquery = db.transient.prepare(
-      `DELETE FROM '${signin_state_table_name}' WHERE state = ?;`
-    );
-    const runResult = runquery.run(state);
-    if (runResult.changes !== 1)
-      throw `did not remove state_code=${state} from the db.`;
-    if (Date.now() / 1000 - getStateResult.created > state_expiree_sec)
+    const created = AuthProvider.GoogleSignInStates.get(state);
+    if (!created)
+      throw `state_code=${state} is invalid.`;
+    AuthProvider.GoogleSignInStates.delete(state);
+    if (Date.now() / 1000 - created > state_expiree_sec)
       throw `state_code=${state} has been expired.`;
     var OAuthRes = await OAuthExchangeCode(code);
     const getUserQuery = db.persistent.prepare(
@@ -127,7 +118,7 @@ export const AuthenticateUser = async (
         );
         return reply.code(301).redirect(redirectUrl);
       } catch (error) {
-        return reply.code(500).send("database error");
+        return reply.code(500).send("internal error try again");
       }
     }
     // const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
@@ -147,13 +138,11 @@ export const GetOAuthCode = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
-    var code = GetRandomString(4);
+    var code = GetRandomString(8);
     const created = Date.now() / 1000;
-    const query = db.transient.prepare(
-      `INSERT INTO '${signin_state_table_name}' ( state , created ) VALUES( ? , ? );`
-    );
-    const res = query.run(code, created);
-    if (res.changes !== 1) throw `did not add state code to db`;
+    if (AuthProvider.GoogleSignInStates.has(code))
+      throw `Duplicate OAuth state code`;
+    AuthProvider.GoogleSignInStates.set(code, created);
     return reply.code(200).send(code);
   } catch (error) {
     console.log(`ERROR: GetOAuthCode(): ${error}`);

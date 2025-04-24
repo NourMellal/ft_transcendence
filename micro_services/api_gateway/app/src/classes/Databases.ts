@@ -1,8 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import { OAuthResponse } from "../types/OAuth";
 import {
-  signin_state_table_name,
-  totp_states_table_name,
   UserModel,
   UserProviders,
   UserRoles,
@@ -10,22 +8,14 @@ import {
 } from "../types/DbTables";
 
 class Databases {
-  transient: DatabaseSync;
   persistent: DatabaseSync;
 
   constructor(p: DatabaseSync) {
-    this.transient = new DatabaseSync(":memory:");
     this.persistent = p;
   }
   public init(): void {
     try {
-      db.transient.exec(
-        `create table IF NOT EXISTS '${signin_state_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'created' INT NOT NULL)`
-      );
-      db.transient.exec(
-        `create table IF NOT EXISTS '${totp_states_table_name}' ('state' TEXT NOT NULL PRIMARY KEY, 'totp_key' TEXT NOT NULL, 'jwt_token' TEXT NOT NULL, 'created' INT NOT NULL)`
-      );
-      db.persistent.exec(
+      this.persistent.exec(
         `create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'totp_key' TEXT , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'access_token' TEXT, 'refresh_token' TEXT, 'ate' INT)`
       );
     } catch (err) {

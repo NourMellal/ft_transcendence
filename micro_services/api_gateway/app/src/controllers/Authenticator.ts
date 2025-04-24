@@ -144,7 +144,7 @@ export const SignInStandardUser = async (
           const redirectUrl = GetTOTPRedirectionUrl(jwt_token, res.totp_key);
           return reply.code(301).redirect(redirectUrl);
         } catch (error) {
-          return reply.code(500).send("database error");
+          return reply.code(500).send("internal error try again");
         }
       }
       const expiresDate = new Date(jwt.exp * 1000).toUTCString();
