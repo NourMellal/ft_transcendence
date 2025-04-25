@@ -7,16 +7,10 @@ export type User = {
 };
 
 export const getUser = async (): Promise<User | null> => {
-  const token = localStorage.getItem("uid");
-
-  if (!token) return null;
-
   try {
     const res = await fetch("/api/user/info?uid=me", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: "include",
     });
     if (!res.ok) return null;
 

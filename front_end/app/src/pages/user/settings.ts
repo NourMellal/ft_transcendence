@@ -34,7 +34,7 @@ class SettingsPage extends HTMLElement {
                   <label class="label">Profile Picture</label>
                   <div class="flex items-center gap-4">
                     <img id="avatar-preview" src="/api/${window._currentUser.picture_url}" alt="Avatar" class="h-16 w-16 rounded-full object-cover border">
-                    <input type="file" id="avatar-input" class="hidden" accept="image/jpeg, image/png, image/webp">
+                    <input type="file" id="avatar-input" class="hidden" name='picture' accept="image/jpeg, image/png, image/webp">
                     <button type='button' id="change-avatar-btn" class="btn btn-outlined" id='change-image-btn'>Change</button>
                     <button type='button' id="remove-avatar-btn" class="btn btn-destructive" id='remove-image-btn'>Remove</button>
                   </div>
@@ -141,9 +141,7 @@ class SettingsPage extends HTMLElement {
     handleEffect(this, async () => {
       const res = await fetch("/api/user/info", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("uid") || ""}`,
-        },
+        credentials: "include",
         body: formData,
       });
 
@@ -166,9 +164,7 @@ class SettingsPage extends HTMLElement {
     handleEffect(this, async () => {
       const res = await fetch("/api/user/remove_picture", {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("uid") || ""}`,
-        },
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -187,15 +183,33 @@ class SettingsPage extends HTMLElement {
     const removeAvatarBtn = this.querySelector(
       "#remove-avatar-btn"
     ) as HTMLButtonElement;
+    const usernameInput = this.querySelector(
+      "input[name='username']"
+    ) as HTMLInputElement;
+    const changeAvatarBtn = this.querySelector(
+      "#change-avatar-btn"
+    ) as HTMLButtonElement;
+    const avatarInput = this.querySelector("#avatar-input") as HTMLInputElement;
+    const avatarPreview = this.querySelector(
+      "#avatar-preview"
+    ) as HTMLImageElement;
+
     if (window._currentUser?.picture_url !== "/static/profile/default.jpg") {
       removeAvatarBtn.addEventListener("click", this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
     }
 
-    const usernameInput = this.querySelector(
-      "input[name='username']"
-    ) as HTMLInputElement;
+    changeAvatarBtn.addEventListener("click", () => {
+      avatarInput.click();
+    });
+
+    avatarInput.addEventListener("change", () => {
+      if (avatarInput.files?.[0]) {
+        avatarPreview.src = URL.createObjectURL(avatarInput.files[0]);
+      }
+    });
+
     usernameInput.addEventListener("keyup", (e) => {
       clearTimeout(this.debounceTimeout);
       const target = e.target as HTMLInputElement;
