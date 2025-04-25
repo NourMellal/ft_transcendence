@@ -55,11 +55,9 @@ export const ParseMultipart = function (
     console.log(`ERROR: ParseMultipart(): ${error}`);
     request.is_valid_multipart = false;
   });
-  bb.on("finish", () => {
-    done(null);
-  });
   request.is_valid_multipart = true;
   payload.pipe(bb);
+  done(null);
 };
 
 export default ParseMultipart;

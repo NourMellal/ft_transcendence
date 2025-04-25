@@ -167,6 +167,7 @@ export const Verify2FACode = async (
   request: FastifyRequest<{ Querystring: { state: string } }>,
   reply: FastifyReply
 ) => {
+  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
   const state = Totp.states.get(request.query.state);
   if (!state) return reply.code(401).send("request unauthorized");
   if (Date.now() / 1000 - state.created > state_expiree_sec) {
@@ -199,6 +200,7 @@ export const RefreshToken = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
+  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
   const refresh_token: multipart_fields | undefined = request.fields.find(
     (field: multipart_fields, i) => field.field_name === "refresh_token"
   );

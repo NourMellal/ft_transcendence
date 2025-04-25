@@ -40,6 +40,7 @@ export const Disable2FA = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
+  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
   const requestCode: multipart_fields | undefined = request.fields.find(
     (field: multipart_fields, i) => field.field_name === "code"
   );
