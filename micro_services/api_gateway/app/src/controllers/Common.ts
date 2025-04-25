@@ -4,7 +4,7 @@ import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
 import { refresh_token_table_name, RefreshTokenModel, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 import Totp from "../classes/TOTP";
 
 export type SignPayload = {
@@ -49,7 +49,8 @@ export const ProcessSignUpResponse = function (
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
     reply.raw.appendHeader("set-cookie", `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
     reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
-    reply.raw.statusCode = 200;
+    reply.raw.appendHeader('Location', `${discoveryDocument.ServerUrl}/signin`);
+    reply.raw.statusCode = 301;
     reply.raw.end();
   } catch (error) {
     console.log(error);
@@ -95,5 +96,5 @@ export const GetTOTPRedirectionUrl = function (
   const state = GetRandomString(8);
   if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
   Totp.states.set(state, { created: Date.now() / 1000, UID: uid, totp_key: totp_key, jwt_token: jwt_token });
-  return `${discoverDocument.ServerUrl}/2fa/verify?state=${state}`;
+  return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
 };

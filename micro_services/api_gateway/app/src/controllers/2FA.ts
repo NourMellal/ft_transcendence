@@ -8,7 +8,7 @@ import db from "../classes/Databases";
 import base32 from "base32-encode";
 import { multipart_fields } from "../types/multipart";
 import Totp from "../classes/TOTP";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 
 
 export const Enable2FA = async (

@@ -1,8 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 import {
   IsDisplayNameAvailable,
   ListActiveConnection,
+  LogOutCurrentUser,
   RefreshToken,
   RemoveRefreshToken,
   SignInStandardUser,
@@ -51,26 +52,26 @@ const RemoveRefreshTokenOpts = {
 
 export async function AuthenticatorRoutes(fastify: FastifyInstance) {
   fastify.get(
-    discoverDocument.StandardAuthRoutes.CheckUserDisplayNameAvailableRoute
+    discoveryDocument.StandardAuthRoutes.CheckUserDisplayNameAvailableRoute
       .route,
     CheckDisplayNameOpts,
     IsDisplayNameAvailable
   );
   fastify.post(
-    discoverDocument.StandardAuthRoutes.SignUpUserRoute.route,
+    discoveryDocument.StandardAuthRoutes.SignUpUserRoute.route,
     SignUpNewStandardUser
   );
   fastify.post(
-    discoverDocument.StandardAuthRoutes.SignInUserRoute.route,
+    discoveryDocument.StandardAuthRoutes.SignInUserRoute.route,
     SignInStandardUser
   );
   fastify.post(
-    discoverDocument.TwoFactorAuthRoutes.VerifyCode.route,
+    discoveryDocument.TwoFactorAuthRoutes.VerifyCode.route,
     Verify2FAOpts,
     Verify2FACode
   );
   fastify.post(
-    discoverDocument.RefreshTokenRoutes.RefreshJWT.route,
+    discoveryDocument.RefreshTokenRoutes.RefreshJWT.route,
     RefreshToken
   );
 }
@@ -78,12 +79,17 @@ export async function AuthenticatorRoutes(fastify: FastifyInstance) {
 export async function RefreshTokenManagementRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
-    discoverDocument.RefreshTokenRoutes.ListActiveConnection.route,
+    discoveryDocument.RefreshTokenRoutes.ListActiveConnection.route,
     ListActiveConnection
   );
   fastify.post(
-    discoverDocument.RefreshTokenRoutes.RemoveAccess.route,
+    discoveryDocument.RefreshTokenRoutes.RemoveAccess.route,
     RemoveRefreshTokenOpts,
     RemoveRefreshToken
+  )
+  fastify.post(
+    discoveryDocument.LogOutRoute.route,
+    AuthHeaderValidation,
+    LogOutCurrentUser
   )
 }

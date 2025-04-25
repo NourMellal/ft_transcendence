@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { GetOAuthCode, AuthenticateUser } from "../controllers/OAuth";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 
 const AuthCodeOpts = {
   schema: {
@@ -17,9 +17,9 @@ const AuthCodeOpts = {
 };
 
 async function OAuthRoutes(fastify: FastifyInstance) {
-  fastify.get(discoverDocument.OAuthRoutes.OAuthStateRoute.route, GetOAuthCode);
+  fastify.get(discoveryDocument.OAuthRoutes.OAuthStateRoute.route, GetOAuthCode);
   fastify.get(
-    discoverDocument.OAuthRoutes.OAuthRedirectRoute.route,
+    discoveryDocument.OAuthRoutes.OAuthRedirectRoute.route,
     AuthCodeOpts,
     AuthenticateUser
   );

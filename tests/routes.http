@@ -54,6 +54,14 @@ Content-Disposition: form-data; name="password"
 very_hard_password
 --boundary13132121321H_4zdzdz90dlzkn--
 
+###
+
+# LogOut Current user:
+POST https://transcendence.fr/api/logout
+#Cookie: jwt={{jwt_token}}
+
+
+
 ###### END USER/PWD TESTs ######
 
 

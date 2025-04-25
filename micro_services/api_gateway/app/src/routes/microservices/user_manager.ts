@@ -4,7 +4,7 @@ import {
   RemoveUserProfile,
   UpdateUserInfo,
 } from "../../controllers/microservices/user_manager";
-import { discoverDocument } from "../../models/DiscoveryDocument";
+import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { AuthHeaderValidation } from "../../types/AuthProvider";
 
@@ -24,17 +24,17 @@ const GetUserInfoOpts = {
 async function UserManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
-    discoverDocument.UserManagementRoutes.FetchUserInfoRoute.route,
+    discoveryDocument.UserManagementRoutes.FetchUserInfoRoute.route,
     GetUserInfoOpts,
     FetchUserInfo
   );
   fastify.post(
-    discoverDocument.UserManagementRoutes.UpdateUserInfoRoute.route,
+    discoveryDocument.UserManagementRoutes.UpdateUserInfoRoute.route,
     AuthHeaderValidation,
     UpdateUserInfo
   );
   fastify.delete(
-    discoverDocument.UserManagementRoutes.RemoveUserProfileRoute.route,
+    discoveryDocument.UserManagementRoutes.RemoveUserProfileRoute.route,
     AuthHeaderValidation,
     RemoveUserProfile
   );
