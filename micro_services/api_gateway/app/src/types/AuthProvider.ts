@@ -34,9 +34,9 @@ export const AuthHeaderValidation = {
     headers: {
       type: "object",
       properties: {
-        Authorization: { type: "string" },
+        Cookie: { type: "string" },
       },
-      required: ["Authorization"],
+      required: ["Cookie"],
     },
   },
 };

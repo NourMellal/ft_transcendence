@@ -10,6 +10,7 @@ import {
 } from "../controllers/Authenticator";
 import { Verify2FACode } from "../controllers/Authenticator";
 import { isRequestAuthorizedHook } from "../controllers/Common";
+import { AuthHeaderValidation } from "../types/AuthProvider";
 
 const CheckDisplayNameOpts = {
   schema: {
@@ -44,6 +45,7 @@ const RemoveRefreshTokenOpts = {
       },
       required: ["token_id"],
     },
+    headers: AuthHeaderValidation.schema.headers,
   },
 };
 

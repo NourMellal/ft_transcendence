@@ -43,13 +43,19 @@ class OAuthProvider {
       process.exit(1);
     }
   }
-  public ValidateJWT_Cookie(cookie: string): JWT {
+  public ValidateJWT_Cookie(RawCookie: string): JWT {
     if (!this.isReady)
       throw `Error ValidateJWT_Cookie(): OAuthProvider class is not ready!`;
-    const cookie_part = cookie.split("=");
-    if (cookie_part.length !== 2 || cookie_part[0] !== "jwt")
-      throw `Error ValidateJWT_Cookie(): bad header!`;
-    return this.ValidateJWT_Token(cookie_part[1]);
+    const cookies = RawCookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie_part = cookies[i].split("=");
+      if (cookie_part[0] !== "jwt")
+        continue;
+      if (cookie_part.length !== 2)
+        throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
+      return this.ValidateJWT_Token(cookie_part[1]);
+    }
+    throw `Error ValidateJWT_Cookie(): bad cookies!`;
   }
   public ValidateJWT_AuthHeader(header: string): JWT {
     if (!this.isReady)
@@ -58,6 +64,12 @@ class OAuthProvider {
     if (header_part.length !== 2 || header_part[0] !== "Bearer")
       throw `Error ValidateJWT_Header(): bad header!`;
     return this.ValidateJWT_Token(header_part[1]);
+  }
+  public ParseJwt(encoded: string): JWT {
+    var jwt_parts = encoded.split(".");
+    if (jwt_parts.length !== 3)
+      throw `Error ParseJwt(): JWT token string is invalid!`;
+    return JSON.parse(Buffer.from(jwt_parts[1], "base64").toString());
   }
   public ValidateJWT_Token(encoded: string): JWT {
     if (!this.isReady)
@@ -95,7 +107,7 @@ class OAuthProvider {
 
 const AuthProvider = new OAuthProvider(
   process.env.GOOGLE_DISCOVERY_DOCUMENT_URL ||
-    "https://accounts.google.com/.well-known/openid-configuration"
+  "https://accounts.google.com/.well-known/openid-configuration"
 );
 
 export default AuthProvider;

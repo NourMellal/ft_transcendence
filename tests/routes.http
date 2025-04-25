@@ -64,14 +64,14 @@ very_hard_password
 
 # Enable 2fa: (Authorization required)
 POST https://transcendence.fr/api/2FA/enable
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 
 ###
 
 # Disable 2fa: (Authorization required)
 POST https://transcendence.fr/api/2FA/disable
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -116,13 +116,13 @@ send refresh token here
 
 # List active connections: (Authorization required)
 GET https://transcendence.fr/api/jwt/list
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Revoke refresh token: (Authorization required)
 POST https://transcendence.fr/api/jwt/revoke?token_id=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 
 ###### END REFRESH TOKEN TESTs ######
@@ -135,13 +135,13 @@ Authorization: Bearer {{jwt_token}}
 
 # GET user info by uid:
 GET https://transcendence.fr/api/user/info?uid=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # GET current logged user info (uid alias for me):
 GET https://transcendence.fr/api/user/info?uid=me
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
@@ -152,7 +152,7 @@ GET https://transcendence.fr/api/user/namecheck?username=msitni1337
 
 # Change current logged user info:
 POST https://transcendence.fr/api/user/info
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
 
 --boundary13132121321H_4zdzdz90dlzkn
@@ -169,7 +169,7 @@ hey everyone this is my new bio.
 
 # Delete user's profile picture
 DELETE https://transcendence.fr/api/user/remove_picture
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
@@ -183,37 +183,37 @@ Authorization: Bearer {{jwt_token}}
 
 # Get current user friends list
 GET https://transcendence.fr/api/friends
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Get current user friends requests
 GET https://transcendence.fr/api/friends/requests
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Send a friend request
 POST https://transcendence.fr/api/friends/request?uid=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Accept a friend request
 POST https://transcendence.fr/api/friends/accept?uid=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Deny a friend request
 POST https://transcendence.fr/api/friends/deny?uid=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
 
 ###
 
 # Remove a friend
 POST https://transcendence.fr/api/friends/remove?uid=
-Authorization: Bearer {{jwt_token}}
+#Cookie: jwt={{jwt_token}}
  
 ###
 
@@ -230,4 +230,4 @@ Sec-WebSocket-Protocol: {{jwt_token}}
 
 
 
-@jwt_token = jwt_token_here
+@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token
