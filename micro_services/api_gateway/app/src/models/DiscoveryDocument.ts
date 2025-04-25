@@ -1,6 +1,6 @@
-export const discoverDocument = {
+export const discoveryDocument = {
   ServerUrl: "https://transcendence.fr",
-  DiscoverDocumentRoute: "/api/.well-known/discovery",
+  discoveryDocumentRoute: "/api/.well-known/discovery",
   OAuthRoutes: {
     OAuthRedirectRoute: {
       description:
@@ -52,6 +52,12 @@ export const discoverDocument = {
       method: "POST",
     },
   },
+  LogOutRoute: {
+    description: "HTTP: logout current user",
+    route: "/api/logout",
+    headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+    method: "POST"
+  },
   RefreshTokenRoutes: {
     RefreshJWT: {
       description: "HTTP: get a fresh jwt token",
@@ -61,13 +67,13 @@ export const discoverDocument = {
       ],
       method: "POST"
     },
-    ListActiveConnection:{
+    ListActiveConnection: {
       description: "HTTP: get a list of active connections",
       route: "/api/jwt/list",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET"
     },
-    RemoveAccess:{
+    RemoveAccess: {
       description: "HTTP: remove refresh token",
       route: "/api/jwt/revoke",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
@@ -221,4 +227,4 @@ export const discoverDocument = {
   },
 };
 
-export const discoverDocumentSerialized = JSON.stringify(discoverDocument);
+export const discoveryDocumentSerialized = JSON.stringify(discoveryDocument);

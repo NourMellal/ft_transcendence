@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { discoverDocument } from "../../models/DiscoveryDocument";
+import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import {
   AcceptFriendRequest,
@@ -27,32 +27,32 @@ const FriendRequestOpts = {
 async function FriendsManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
-    discoverDocument.FriendsRoutes.ListFriendsRoute.route,
+    discoveryDocument.FriendsRoutes.ListFriendsRoute.route,
     AuthHeaderValidation,
     ListFriends
   );
   fastify.get(
-    discoverDocument.FriendsRoutes.ListFriendsRequestsRoute.route,
+    discoveryDocument.FriendsRoutes.ListFriendsRequestsRoute.route,
     AuthHeaderValidation,
     ListRequests
   );
   fastify.post(
-    discoverDocument.FriendsRoutes.SendFriendRequestRoute.route,
+    discoveryDocument.FriendsRoutes.SendFriendRequestRoute.route,
     FriendRequestOpts,
     SendFriendRequest
   );
   fastify.post(
-    discoverDocument.FriendsRoutes.AcceptFriendRequestRoute.route,
+    discoveryDocument.FriendsRoutes.AcceptFriendRequestRoute.route,
     FriendRequestOpts,
     AcceptFriendRequest
   );
   fastify.post(
-    discoverDocument.FriendsRoutes.DenyFriendRequestRoute.route,
+    discoveryDocument.FriendsRoutes.DenyFriendRequestRoute.route,
     FriendRequestOpts,
     DenyFriendRequest
   );
   fastify.post(
-    discoverDocument.FriendsRoutes.RemoveFriendRoute.route,
+    discoveryDocument.FriendsRoutes.RemoveFriendRoute.route,
     FriendRequestOpts,
     RemoveFriend
   );

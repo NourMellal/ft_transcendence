@@ -17,7 +17,7 @@ import {
   SignPayload,
 } from "./Common";
 import Totp from "../classes/TOTP";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 
 export const IsDisplayNameAvailable = async (
   request: FastifyRequest<{ Querystring: { username: string } }>,
@@ -238,4 +238,31 @@ export const RemoveRefreshToken = async (
   if (res.changes === 1)
     return reply.code(200).send('token removed');
   return reply.code(400).send('bad request');
+}
+
+export const LogOutCurrentUser = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  if (request.headers.cookie) {
+    const cookies = request.headers.cookie.split('; ');
+    var refresh_token: string | undefined = undefined;
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].split('=');
+      if (cookie[0] !== 'refresh_token')
+        continue;
+      if (cookie.length !== 2)
+        return reply.code(400).send('bad request');
+      refresh_token = cookie[1];
+    }
+    if (!refresh_token)
+      return reply.code(400).send('bad request');
+    const query = db.persistent.prepare(`DELETE FROM ${refresh_token_table_name} WHERE UID = ? AND token = ?`);
+    const res = query.run(request.jwt.sub, refresh_token);
+    if (res.changes !== 1)
+      return reply.code(400).send('bad request');
+  }
+  reply.raw.appendHeader("set-cookie", `jwt=; Path=/; Secure; HttpOnly`);
+  reply.raw.appendHeader("set-cookie", `refresh_token=; Path=/; Secure; HttpOnly`);
+  return reply.code(200).send();
 }

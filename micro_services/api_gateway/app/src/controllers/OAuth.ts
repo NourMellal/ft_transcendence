@@ -18,7 +18,7 @@ import {
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
 } from "./Common";
-import { discoverDocument } from "../models/DiscoveryDocument";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
   const reqOpt: RequestInit = {
@@ -32,8 +32,8 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
       client_id: process.env.GOOGLE_CLIENT_ID || "",
       client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
       redirect_uri:
-        discoverDocument.ServerUrl +
-        discoverDocument.OAuthRoutes.OAuthRedirectRoute.route,
+        discoveryDocument.ServerUrl +
+        discoveryDocument.OAuthRoutes.OAuthRedirectRoute.route,
       grant_type: "authorization_code",
     }),
   };
@@ -129,7 +129,7 @@ export const AuthenticateUser = async (
       const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
       reply.raw.appendHeader("set-cookie", `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
       reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
-      return reply.code(200).send();
+      return reply.code(301).redirect(`${discoveryDocument.ServerUrl}/signin`);
     } catch (error) {
       return reply.code(500).send(`internal server error`);
     }
