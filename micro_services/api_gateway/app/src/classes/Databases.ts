@@ -17,7 +17,7 @@ class Databases {
   public init(): void {
     try {
       this.persistent.exec(
-        `create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT, 'totp_key' TEXT , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'google_access_token' TEXT, 'google_refresh_token' TEXT, 'ate' INT)`
+        `create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT , 'totp_key' TEXT , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'google_access_token' TEXT, 'google_refresh_token' TEXT, 'ate' INT)`
       );
       this.persistent.exec(
         `create table IF NOT EXISTS '${refresh_token_table_name}' ('token_id' TEXT NOT NULL PRIMARY KEY, 'UID' TEXT NOT NULL, 'token' TEXT NOT NULL UNIQUE, 'ip' TEXT NOT NULL, 'created' INT NOT NULL)`
@@ -31,7 +31,6 @@ class Databases {
     const User: UserModel = {
       UID: response.jwt.sub,
       username: crypto.randomUUID(),
-      password_hash: null,
       provider: UserProviders.Google,
       role: UserRoles.User,
       google_access_token: response.response.access_token,
@@ -46,9 +45,9 @@ class Databases {
       User.username,
       User.provider,
       User.role,
-      User.google_access_token,
-      User.google_refresh_token,
-      User.ate
+      User.google_access_token as string,
+      User.google_refresh_token || null,
+      User.ate as number
     );
     if (res.changes !== 1) throw `Did not add user ${response.jwt.sub} to db`;
     return User;
@@ -63,9 +62,6 @@ class Databases {
       password_hash: password_hash,
       provider: UserProviders.PASSWD,
       role: UserRoles.User,
-      google_access_token: null,
-      google_refresh_token: null,
-      ate: null
     };
     const query = this.persistent.prepare(
       `INSERT INTO '${users_table_name}' ( UID , username , password_hash , provider , role  ) VALUES( ? , ? , ? , ? , ? );`
@@ -73,7 +69,7 @@ class Databases {
     const res = query.run(
       User.UID,
       User.username,
-      User.password_hash,
+      User.password_hash as string,
       User.provider,
       User.role
     );

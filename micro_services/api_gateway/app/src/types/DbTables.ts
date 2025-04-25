@@ -17,13 +17,13 @@ export enum UserProviders {
 export type UserModel = {
   UID: string;
   username: string;
-  password_hash: string | null;
+  password_hash?: string;
   totp_key?: string;
   provider: UserProviders;
   role: UserRoles;
-  google_access_token: string | null;
-  google_refresh_token: string | null;
-  ate: number | null;
+  google_access_token?: string;
+  google_refresh_token?: string;
+  ate?: number;
 };
 
 export type RefreshTokenModel = {
