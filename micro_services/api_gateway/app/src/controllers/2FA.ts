@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { GetRandomString, isRequestAuthorizedHook } from "./Common";
+import { GetRandomString } from "./Common";
 import {
-  state_expiree_sec,
   UserModel,
   users_table_name,
 } from "../types/DbTables";

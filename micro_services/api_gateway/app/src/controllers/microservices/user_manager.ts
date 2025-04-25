@@ -15,8 +15,10 @@ export const FetchUserInfo = async (
   reply: FastifyReply
 ) => {
   try {
-    reply.hijack();
     const { uid } = request.query;
+    if (!uid)
+      return reply.code(400).send('bad request');
+    reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
       op: RabbitMQUserManagerOp.FETCH,
       message: uid === "me" ? request.jwt.sub : uid,

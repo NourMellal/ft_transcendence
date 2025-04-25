@@ -64,13 +64,13 @@ export const discoverDocument = {
     ListActiveConnection:{
       description: "HTTP: get a list of active connections",
       route: "/api/jwt/list",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET"
     },
     RemoveAccess:{
       description: "HTTP: remove refresh token",
       route: "/api/jwt/revoke",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       QueryParams: [{ name: "token_id" }],
       method: "POST"
     }
@@ -79,7 +79,7 @@ export const discoverDocument = {
     Enable2FA: {
       description: "HTTP: Enable TOTP codes",
       route: "/api/2FA/enable",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     Disable2FA: {
@@ -88,7 +88,7 @@ export const discoverDocument = {
       multipart_params: [
         { name: "code", type: "text/plain", constraint: "=6 digits" },
       ],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     VerifyCode: {
@@ -107,7 +107,7 @@ export const discoverDocument = {
       description: "HTTP: Get information about the user with uid.",
       route: "/api/user/info",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     UpdateUserInfoRoute: {
@@ -119,13 +119,13 @@ export const discoverDocument = {
         { name: "bio", type: "text/plain" },
         { name: "picture", type: "image/jpeg" },
       ],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     RemoveUserProfileRoute: {
       description: "HTTP: remove user's profile picture.",
       route: "/api/user/remove_picture",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "DELETE",
     },
   },
@@ -133,13 +133,13 @@ export const discoverDocument = {
     ListFriendsRoute: {
       description: "HTTP: Get current user friends list.",
       route: "/api/friends",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     ListFriendsRequestsRoute: {
       description: "HTTP: Get current user friends requests.",
       route: "/api/friends/requests",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     SendFriendRequestRoute: {
@@ -147,7 +147,7 @@ export const discoverDocument = {
         "HTTP: send a request to the user with uid specified in query param.",
       route: "/api/friends/request",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     AcceptFriendRequestRoute: {
@@ -155,7 +155,7 @@ export const discoverDocument = {
         "HTTP: accept a request specified by uid of the request in query param.",
       route: "/api/friends/accept",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     DenyFriendRequestRoute: {
@@ -163,14 +163,14 @@ export const discoverDocument = {
         "HTTP: deny a request specified by uid of the request in query param.",
       route: "/api/friends/deny",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     RemoveFriendRoute: {
       description: "HTTP: remove friend specified by uid in query param.",
       route: "/api/friends/remove",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
   },
@@ -186,13 +186,13 @@ export const discoverDocument = {
     ListUnread: {
       description: "HTTP: list unread notifications.",
       route: "/api/notifications/list_unread",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     ListAll: {
       description: "HTTP: list all notifications.",
       route: "/api/notifications/list_all",
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     MarkAsRead: {
@@ -200,7 +200,7 @@ export const discoverDocument = {
         "HTTP: mark one or multiple notifications as read separated by ';'.",
       route: "/api/notifications/mark_as_read",
       QueryParams: [{ name: "uids" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     Delete: {
@@ -208,14 +208,14 @@ export const discoverDocument = {
         "HTTP: delete one or multiple notifications separated by ';'.",
       route: "/api/notifications/delete",
       QueryParams: [{ name: "uids" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
     PokeFriend: {
       description: "HTTP: send a poke notification to a friend.",
       route: "/api/poke",
       QueryParams: [{ name: "uid" }],
-      headers: [{ name: "Authorization", value: "Bearer {{jwt_token}}" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
   },

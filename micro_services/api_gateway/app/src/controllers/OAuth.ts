@@ -126,8 +126,10 @@ export const AuthenticateUser = async (
     }
     try {
       const refresh_token = CreateRefreshToken(OAuthRes.jwt.sub, request.ip);
-      const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${OAuthRes.response.id_token}&refresh_token=${refresh_token}`;
-      return reply.code(301).redirect(redirectUrl);
+      const expiresDate = new Date(OAuthRes.jwt.exp * 1000).toUTCString();
+      reply.raw.appendHeader("set-cookie", `jwt=${OAuthRes.response.id_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
+      reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+      return reply.code(200).send();
     } catch (error) {
       return reply.code(500).send(`internal server error`);
     }

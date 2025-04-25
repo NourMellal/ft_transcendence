@@ -46,11 +46,10 @@ export const ProcessSignUpResponse = function (
   }
   try {
     const refresh_token = CreateRefreshToken(jwt.sub, ip);
-    reply.raw.statusCode = 301;
-    reply.raw.setHeader(
-      "Location",
-      `${discoverDocument.ServerUrl}/signin?token=${jwt_token}&refresh_token=${refresh_token}`
-    );
+    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    reply.raw.appendHeader("set-cookie", `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
+    reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+    reply.raw.statusCode = 200;
     reply.raw.end();
   } catch (error) {
     console.log(error);
@@ -65,10 +64,10 @@ export const isRequestAuthorizedHook = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
-    // request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
-    request.jwt = AuthProvider.ValidateJWT_AuthHeader(
-      request.headers.authorization as string
-    );
+    request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
+    // request.jwt = AuthProvider.ValidateJWT_AuthHeader(
+    //   request.headers.authorization as string
+    // );
   } catch (error) {
     console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
     reply.code(401);

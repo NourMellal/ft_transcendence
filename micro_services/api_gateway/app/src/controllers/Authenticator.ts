@@ -150,9 +150,11 @@ export const SignInStandardUser = async (
           return reply.code(500).send("internal error try again");
         }
       }
+      const expiresDate = new Date(jwt.exp * 1000).toUTCString();
       const refresh_token = CreateRefreshToken(jwt.sub, request.ip);
-      const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${jwt_token}&refresh_token=${refresh_token}`;
-      return reply.code(301).redirect(redirectUrl);
+      reply.raw.appendHeader("set-cookie", `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
+      reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+      return reply.code(200).send();
     }
     return reply.code(401).send("invalid credentials");
   } catch (error) {
@@ -182,8 +184,11 @@ export const Verify2FACode = async (
   try {
     const refresh_token = CreateRefreshToken(state.UID, request.ip);
     Totp.states.delete(request.query.state);
-    const redirectUrl = `${discoverDocument.ServerUrl}/signin?token=${state.jwt_token}&refresh_token=${refresh_token}`;
-    return reply.code(301).redirect(redirectUrl);
+    const jwt = AuthProvider.ParseJwt(state.jwt_token);
+    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    reply.raw.appendHeader("set-cookie", `jwt=${state.jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
+    reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+    return reply.code(200).send();
   } catch (error) {
     console.log(error);
     return reply.code(500).redirect('internal server error');
@@ -205,7 +210,9 @@ export const RefreshToken = async (
     return reply.code(401).send('request unauthorized');
   const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, '', '');
   const token = AuthProvider.jwtFactory.SignJWT(jwt);
-  return reply.code(301).redirect(`${discoverDocument.ServerUrl}/signin?token=${token}`);
+  const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+  reply.headers({ "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+  return reply.code(200).send();
 }
 
 export const ListActiveConnection = async (
@@ -229,6 +236,6 @@ export const RemoveRefreshToken = async (
   const query = db.persistent.prepare(`DELETE FROM '${refresh_token_table_name}' WHERE token_id = ? ;`);
   const res = query.run(request.query.token_id);
   if (res.changes === 1)
-      return reply.code(200).send('token removed');
+    return reply.code(200).send('token removed');
   return reply.code(400).send('bad request');
 }
