@@ -32,10 +32,17 @@ export const FetchUserInfo = async (
         return reply.raw.end(response.message);
       var payload = JSON.parse(response.message);
       const query = db.persistent.prepare(
-        `SELECT username FROM '${users_table_name}' WHERE UID = ? ;`
+        `SELECT username, totp_enabled FROM '${users_table_name}' WHERE UID = ? ;`
       );
-      const res = query.get(RabbitMQReq.message as string) as UserModel;
-      if (res) payload.username = res.username;
+      const res = query.get(request.jwt.sub) as UserModel;
+      if (!res) {
+        reply.raw.statusCode = 500;
+        reply.raw.end('database error');
+        return;
+      }
+      payload.username = res.username;
+      if (uid === 'me' || request.jwt.sub === uid)
+        payload.totp_enabled = res.totp_enabled;
       reply.raw.end(reply.serialize(payload));
     });
   } catch (error) {
