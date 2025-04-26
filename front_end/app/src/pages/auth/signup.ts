@@ -40,9 +40,6 @@ class SignupPage extends HTMLElement {
           });
           return;
         }
-        const data = await res.json();
-
-        localStorage.setItem("uid", data.token as string);
         window._currentUser = await getUser();
         showToast({
           type: "success",

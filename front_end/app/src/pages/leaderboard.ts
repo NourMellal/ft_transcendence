@@ -9,14 +9,27 @@ const leaderboardData = [
   { rank: 8, name: "Player Eight", wins: 8, losses: 22 },
   { rank: 9, name: "Player Nine", wins: 5, losses: 25 },
   { rank: 10, name: "Player Ten", wins: 2, losses: 28 },
+  { rank: 11, name: "Player Eleven", wins: 1, losses: 29 },
+  { rank: 12, name: "Player Twelve", wins: 0, losses: 30 },
 ];
 
 class LeaderboardPage extends HTMLElement {
+  private currentPage: number = 1;
+  private itemsPerPage: number = 10;
+  private totalPages: number = 1;
+
   constructor() {
     super();
+    this.totalPages = Math.ceil(leaderboardData.length / this.itemsPerPage);
   }
 
   render() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    const paginatedData = leaderboardData.slice(startIndex, endIndex);
+    const isFirstPage = this.currentPage === 1;
+    const isLastPage = this.currentPage === this.totalPages;
+
     this.innerHTML = /*html*/ `
       <navigation-bar></navigation-bar>
       <div class="container pb-10">
@@ -25,54 +38,79 @@ class LeaderboardPage extends HTMLElement {
           leaderboardData.length === 0
             ? /*html*/ `<div class='text-muted-foreground p-4 rounded-md border'>No data available.</div>`
             : /*html*/ `
-          <div class="border rounded-lg overflow-hidden">
-          <table class="w-full caption-bottom text-sm">
-            <thead class="[&_tr]:border-b">
-              <tr class="border-b transition-colors hover:bg-muted/50">
-                <th
-                  class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]"
-                >
-                  Rank
-                </th>
-                <th
-                  class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
-                >
-                  Player
-                </th>
-                <th
-                  class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
-                >
-                  Wins
-                </th>
-                <th
-                  class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
-                >
-                  Losses
-                </th>
-              </tr>
-            </thead>
-            <tbody class="[&_tr:last-child]:border-0">
-              ${leaderboardData
-                .map(
-                  (player) => /*html*/ `
-                    <tr class="border-b transition-colors hover:bg-muted/50">
-                      <td class="p-4 align-middle font-medium">
-                        ${player.rank}
-                      </td>
-                      <td class="p-4 align-middle">${player.name}</td>
-                      <td class="p-4 align-middle text-right">
-                        ${player.wins}
-                      </td>
-                      <td class="p-4 align-middle text-right">
-                        ${player.losses}
-                      </td>
-                    </tr>
-                  `
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </div>
+          <div class="border rounded-lg overflow-hidden mb-4">
+            <table class="w-full caption-bottom text-sm">
+              <thead class="[&_tr]:border-b">
+                <tr class="border-b transition-colors hover:bg-muted/50">
+                  <th
+                    class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]"
+                  >
+                    Rank
+                  </th>
+                  <th
+                    class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+                  >
+                    Player
+                  </th>
+                  <th
+                    class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
+                  >
+                    Wins
+                  </th>
+                  <th
+                    class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
+                  >
+                    Losses
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="[&_tr:last-child]:border-0">
+                ${paginatedData
+                  .map(
+                    (player) => /*html*/ `
+                      <tr class="border-b transition-colors hover:bg-muted/50">
+                        <td class="p-4 align-middle font-medium">
+                          ${player.rank}
+                        </td>
+                        <td class="p-4 align-middle">${player.name}</td>
+                        <td class="p-4 align-middle text-right">
+                          ${player.wins}
+                        </td>
+                        <td class="p-4 align-middle text-right">
+                          ${player.losses}
+                        </td>
+                      </tr>
+                    `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+          ${
+            this.totalPages > 1
+              ? /*html*/ `
+            <div class="flex items-center justify-end space-x-2">
+              <button
+                id="prev-page"
+                class="btn btn-sm btn-outlined"
+                ${isFirstPage ? "disabled" : ""}
+              >
+                Previous
+              </button>
+              <span class="text-sm text-muted-foreground">
+                Page ${this.currentPage} of ${this.totalPages}
+              </span>
+              <button
+                id="next-page"
+                class="btn btn-sm btn-outlined"
+                ${isLastPage ? "disabled" : ""}
+              >
+                Next
+              </button>
+            </div>
+          `
+              : ""
+          }
         `
         }
       </div>
@@ -80,7 +118,24 @@ class LeaderboardPage extends HTMLElement {
   }
 
   setup() {
-    //
+    const prevButton = this.querySelector("#prev-page");
+    const nextButton = this.querySelector("#next-page");
+
+    prevButton?.addEventListener("click", () => {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.render();
+        this.setup(); // Re-attach listeners after re-render
+      }
+    });
+
+    nextButton?.addEventListener("click", () => {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.render();
+        this.setup(); // Re-attach listeners after re-render
+      }
+    });
   }
 
   connectedCallback() {
