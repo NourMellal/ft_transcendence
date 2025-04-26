@@ -82,6 +82,12 @@ export const discoveryDocument = {
     }
   },
   TwoFactorAuthRoutes: {
+    Get2FAString: {
+      description: "HTTP: get TOTP uri string",
+      route: "/api/2FA/geturi",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
     Enable2FA: {
       description: "HTTP: Enable TOTP codes",
       route: "/api/2FA/enable",

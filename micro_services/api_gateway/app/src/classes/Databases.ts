@@ -17,7 +17,7 @@ class Databases {
   public init(): void {
     try {
       this.persistent.exec(
-        `create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT , 'totp_key' TEXT , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'google_access_token' TEXT, 'google_refresh_token' TEXT, 'ate' INT)`
+        `create table IF NOT EXISTS '${users_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'username' TEXT NOT NULL UNIQUE, 'password_hash' TEXT , 'totp_key' TEXT , 'totp_enabled' INT NOT NULL , 'provider' TEXT NOT NULL, 'role' INT NOT NULL, 'google_access_token' TEXT, 'google_refresh_token' TEXT, 'ate' INT)`
       );
       this.persistent.exec(
         `create table IF NOT EXISTS '${refresh_token_table_name}' ('token_id' TEXT NOT NULL PRIMARY KEY, 'UID' TEXT NOT NULL, 'token' TEXT NOT NULL UNIQUE, 'ip' TEXT NOT NULL, 'created' INT NOT NULL)`
@@ -31,6 +31,7 @@ class Databases {
     const User: UserModel = {
       UID: response.jwt.sub,
       username: crypto.randomUUID(),
+      totp_enabled: 0,
       provider: UserProviders.Google,
       role: UserRoles.User,
       google_access_token: response.response.access_token,
@@ -38,11 +39,12 @@ class Databases {
       ate: response.response.expires_in + Date.now() / 1000,
     };
     const query = this.persistent.prepare(
-      `INSERT INTO '${users_table_name}' ( UID , username , provider , role , google_access_token , google_refresh_token , ate ) VALUES( ? , ? , ? , ? , ? , ? , ? );`
+      `INSERT INTO '${users_table_name}' ( UID , username, totp_enabled , provider , role , google_access_token , google_refresh_token , ate ) VALUES( ? , ? , ? , ? , ? , ? , ? , ? );`
     );
     const res = query.run(
       User.UID,
       User.username,
+      User.totp_enabled,
       User.provider,
       User.role,
       User.google_access_token as string,
@@ -60,16 +62,18 @@ class Databases {
       UID: crypto.randomUUID(),
       username: username,
       password_hash: password_hash,
+      totp_enabled: 0,
       provider: UserProviders.PASSWD,
       role: UserRoles.User,
     };
     const query = this.persistent.prepare(
-      `INSERT INTO '${users_table_name}' ( UID , username , password_hash , provider , role  ) VALUES( ? , ? , ? , ? , ? );`
+      `INSERT INTO '${users_table_name}' ( UID , username , password_hash , totp_enabled , provider , role  ) VALUES( ? , ? , ? , ? , ? , ? );`
     );
     const res = query.run(
       User.UID,
       User.username,
       User.password_hash as string,
+      User.totp_enabled,
       User.provider,
       User.role
     );
