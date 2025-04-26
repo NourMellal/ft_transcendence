@@ -26,13 +26,10 @@ class Settings2FA extends HTMLElement {
     `;
   }
 
-  async setup() {
+  setup() {
     const container = this.querySelector("#totp-container") as HTMLDivElement;
-    const res = await fetch("/api/2FA/geturi", {
-      method: "GET",
-    });
 
-    if (!res.ok) {
+    if (window._currentUser?.totp_enabled) {
       container.appendChild(document.createElement("disable-2fa"));
     } else {
       container.appendChild(document.createElement("enable-2fa"));

@@ -38,6 +38,7 @@ class Disable2FA extends HTMLElement {
           type: "success",
           message: "2FA disabled successfully.",
         });
+        window._currentUser!.totp_enabled = false;
         return navigateTo("/settings");
       }
 

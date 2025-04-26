@@ -33,8 +33,7 @@ class AppRouter extends HTMLElement {
     if (match) {
       document.title = match.title ?? "ft_transcendence";
       const element = document.createElement(match.component);
-      this.childNodes.forEach((child) => child.remove());
-      this.appendChild(element);
+      this.replaceChildren(element);
     }
   };
 

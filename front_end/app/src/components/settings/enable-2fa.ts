@@ -56,6 +56,7 @@ class Enable2Fa extends HTMLElement {
           type: "success",
           message: "2FA enabled successfully.",
         });
+        window._currentUser!.totp_enabled = true;
         return navigateTo("/settings");
       }
 
