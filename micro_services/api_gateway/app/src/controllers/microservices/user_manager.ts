@@ -9,6 +9,7 @@ import fs from "fs";
 import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
+import crypto from "crypto";
 
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string } }>,
@@ -111,6 +112,49 @@ export const UpdateUserInfo = async (
   }
   return Promise.resolve();
 };
+
+export const UpdateUserPassword = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
+  try {
+    const new_password: multipart_fields | undefined = request.fields.find(
+      (field: multipart_fields, i) => field.field_name === "new_password"
+    );
+    {
+      if (!new_password || new_password.field_value.length < 8)
+        return reply.code(401).send('provide valid credentials > 7 chars');
+      const query = db.persistent.prepare(
+        `SELECT password_hash FROM '${users_table_name}' WHERE UID = ? ;`
+      );
+      const result = query.get(request.jwt.sub) as UserModel;
+      if (result && result.password_hash && result.password_hash != null) {
+        const old_password: multipart_fields | undefined = request.fields.find(
+          (field: multipart_fields, i) => field.field_name === "old_password"
+        );
+        if (!old_password || old_password.field_value.length < 8)
+          return reply.code(401).send('provide valid credentials > 7 chars');
+        const hasher = crypto.createHash("sha256");
+        hasher.update(Buffer.from(old_password.field_value));
+        if (hasher.digest().toString() !== result.password_hash)
+          return reply.code(401).send('invalid old password');
+      }
+    }
+    const hasher = crypto.createHash("sha256");
+    hasher.update(Buffer.from(new_password.field_value));
+    const query = db.persistent.prepare(
+      `UPDATE '${users_table_name}' SET password_hash = ? WHERE UID = ? ;`
+    );
+    const result = query.run(hasher.digest().toString(), request.jwt.sub);
+    if (result.changes !== 1) return reply.code(500).send("database error");
+    return reply.code(200).send('password updated');
+  } catch (error) {
+    console.log(`ERROR: UpdateUserPassword(): ${error}`);
+    reply.raw.statusCode = 500;
+    reply.raw.end("ERROR: internal error, try again later.");
+  }
+}
 
 export const RemoveUserProfile = async (
   request: FastifyRequest,

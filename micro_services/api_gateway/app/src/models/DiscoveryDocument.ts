@@ -134,6 +134,17 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
+    UpdateUserPassword: {
+      description:
+        "HTTP: update user password.",
+      route: "/api/user/passwd",
+      multipart_params: [
+        { name: "old_password", note: 'can be left blank for new google user', type: "text/plain", constraint: ">7 chars | null" },
+        { name: "new_password", type: "text/plain", constraint: ">7 chars" },
+      ],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "POST",
+    },
     RemoveUserProfileRoute: {
       description: "HTTP: remove user's profile picture.",
       route: "/api/user/remove_picture",

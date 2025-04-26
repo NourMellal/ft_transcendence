@@ -3,6 +3,7 @@ import {
   FetchUserInfo,
   RemoveUserProfile,
   UpdateUserInfo,
+  UpdateUserPassword,
 } from "../../controllers/microservices/user_manager";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
@@ -32,6 +33,11 @@ async function UserManagerRoutes(fastify: FastifyInstance) {
     discoveryDocument.UserManagementRoutes.UpdateUserInfoRoute.route,
     AuthHeaderValidation,
     UpdateUserInfo
+  );
+  fastify.post(
+    discoveryDocument.UserManagementRoutes.UpdateUserPassword.route,
+    AuthHeaderValidation,
+    UpdateUserPassword
   );
   fastify.delete(
     discoveryDocument.UserManagementRoutes.RemoveUserProfileRoute.route,
