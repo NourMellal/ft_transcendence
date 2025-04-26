@@ -112,7 +112,7 @@ export const AuthenticateUser = async (
       SignUpNewGoogleUser(OAuthRes, reply, request.ip);
       return Promise.resolve();
     }
-    if (getUserResult.totp_key && getUserResult.totp_key !== null) {
+    if (getUserResult.totp_key && getUserResult.totp_enabled === 1) {
       try {
         const redirectUrl = GetTOTPRedirectionUrl(
           OAuthRes.jwt.sub,

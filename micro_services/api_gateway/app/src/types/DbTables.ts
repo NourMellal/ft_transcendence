@@ -19,6 +19,7 @@ export type UserModel = {
   username: string;
   password_hash?: string;
   totp_key?: string;
+  totp_enabled: number;
   provider: UserProviders;
   role: UserRoles;
   google_access_token?: string;
@@ -30,6 +31,6 @@ export type RefreshTokenModel = {
   token_id: string;
   UID: string;
   token: string;
-  ip:string;
+  ip: string;
   created: number;
 };

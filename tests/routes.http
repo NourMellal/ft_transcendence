@@ -70,10 +70,15 @@ POST https://transcendence.fr/api/logout
 
 ###### START TOTP 2FA TESTs ######
 
+# Get 2fa string: (Authorization required)
+GET https://transcendence.fr/api/2FA/geturi
+#Cookie: jwt={{jwt_token}}
+
+###
+
 # Enable 2fa: (Authorization required)
 POST https://transcendence.fr/api/2FA/enable
 #Cookie: jwt={{jwt_token}}
-
 
 ###
 

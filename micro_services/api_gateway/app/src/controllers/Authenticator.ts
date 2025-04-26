@@ -142,7 +142,7 @@ export const SignInStandardUser = async (
     if (res) {
       const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, res.username);
       const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
-      if (res.totp_key && res.totp_key !== null) {
+      if (res.totp_key && res.totp_enabled === 1) {
         try {
           const redirectUrl = GetTOTPRedirectionUrl(res.UID, jwt_token, res.totp_key);
           return reply.code(301).redirect(redirectUrl);
