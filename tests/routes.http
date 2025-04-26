@@ -180,6 +180,23 @@ hey everyone this is my new bio.
 
 ###
 
+# Update current user password:
+POST https://transcendence.fr/api/user/passwd
+#Cookie: jwt={{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="old_password"
+
+very_hard_password
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="new_password"
+
+eeXtr3meLy_hard_dworssap=123
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+
 # Delete user's profile picture
 DELETE https://transcendence.fr/api/user/remove_picture
 #Cookie: jwt={{jwt_token}}
