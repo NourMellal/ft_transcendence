@@ -65,6 +65,7 @@ export const isRequestAuthorizedHook = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
+    console.log(request.raw.headers.cookie);
     request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
     // request.jwt = AuthProvider.ValidateJWT_AuthHeader(
     //   request.headers.authorization as string

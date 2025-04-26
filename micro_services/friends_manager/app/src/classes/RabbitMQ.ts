@@ -12,8 +12,8 @@ class RabbitMQ {
   connection_option: Options.Connect = {
     hostname: process.env.RABBITMQ_HOST,
     port: (process.env.RABBITMQ_PORT || 5577) as number,
-    username: process.env.RABBITMQ_USER || "",
-    password: process.env.RABBITMQ_PASSWORD || "",
+    username: process.env.RABBITMQ_FRIENDS_MANAGER_USER || "",
+    password: process.env.RABBITMQ_FRIENDS_MANAGER_PASSWORD || "",
   };
   connection: amqp.ChannelModel;
   channel: amqp.Channel;

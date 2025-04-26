@@ -18,7 +18,7 @@ import ParseMultipart from "./controllers/multipart";
 db.init();
 AuthProvider.init();
 rabbitmq.init();
-const port: number = (process.env.LISTEN_PORT || 3000) as number;
+const port: number = (process.env.API_GATEWAY_PORT || 5566) as number;
 const app = fastify({ logger: true });
 
 // Register cors module to allow traffic from all hosts:
