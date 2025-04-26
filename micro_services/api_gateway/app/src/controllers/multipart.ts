@@ -1,6 +1,7 @@
 import Busboy, { BusboyFileStream, BusboyHeaders } from "@fastify/busboy";
 import { FastifyRequest } from "fastify";
 import { multipart_fields, multipart_files } from "../types/multipart";
+import { Transform } from "node:stream";
 
 export const ParseMultipart = function (
   request: FastifyRequest,
@@ -35,11 +36,17 @@ export const ParseMultipart = function (
       transferEncoding: string,
       mimeType: string
     ) => {
-      request.files_uploaded.push({
+      const file: multipart_files = {
         field_name: fieldname,
         mime_type: mimeType,
-        field_file: stream,
+        field_file: new Transform(),
+      };
+      stream.on("data", (chunk) => file.field_file.push(chunk));
+      stream.on("error", (err: Error) => {
+        console.log(`ParseMultipart(): ${err}`);
+        request.is_valid_multipart = false;
       });
+      request.files_uploaded.push(file);
     }
   );
   bb.on("fieldsLimit", () => {
@@ -54,10 +61,13 @@ export const ParseMultipart = function (
   bb.on("error", (error: Error) => {
     console.log(`ERROR: ParseMultipart(): ${error}`);
     request.is_valid_multipart = false;
+    done(null);
+  });
+  bb.on("finish", () => {
+    done(null);
   });
   request.is_valid_multipart = true;
   payload.pipe(bb);
-  done(null);
 };
 
 export default ParseMultipart;

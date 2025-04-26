@@ -1,9 +1,9 @@
-import { BusboyFileStream } from "@fastify/busboy";
+import { Transform } from "node:stream";
 
 export type multipart_files = {
   field_name: string;
   mime_type: string;
-  field_file: BusboyFileStream;
+  field_file: Transform;
 };
 
 export type multipart_fields = {
