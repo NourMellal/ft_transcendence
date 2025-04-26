@@ -33,20 +33,20 @@ class SigninPage extends HTMLElement {
         const res = await fetch("/api/user/signin", {
           method: "POST",
           body: formData,
+          credentials: "include",
+          redirect: "follow",
         });
+
+        if (res.redirected) {
+          const url = new URL(res.url);
+          return navigateTo(url.pathname + url.search);
+        }
 
         if (!res.ok) {
           showToast({ type: "error", message: await res.text() });
           return;
         }
-        const data = await res.json();
-
-        localStorage.setItem("uid", data.token as string);
         window._currentUser = await getUser();
-        showToast({
-          type: "success",
-          message: `Welcome Back ${window._currentUser?.username}!`,
-        });
         navigateTo("/profile");
       });
     }

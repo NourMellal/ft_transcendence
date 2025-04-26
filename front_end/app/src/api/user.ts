@@ -4,6 +4,7 @@ export type User = {
   bio: string;
   friends_uids: string[] | null;
   username: string;
+  totp_enabled: boolean;
 };
 
 export const getUser = async (): Promise<User | null> => {

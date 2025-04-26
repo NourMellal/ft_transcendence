@@ -20,6 +20,11 @@ export const routes: Route[] = [
     title: "Sign-up",
   },
   {
+    pathname: "/2fa/verify",
+    component: "totp-verify-page",
+    title: "Two Factor Authentication",
+  },
+  {
     pathname: "/profile",
     component: "profile-page",
     title: "Profile",

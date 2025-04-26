@@ -11,9 +11,9 @@ class UserNavMenu extends HTMLElement {
   render() {
     if (!window._currentUser) return;
     this.innerHTML = /*html*/ `
-      <div class='relative h-10 w-10'>
+      <div class='relative'>
         <button id='user-menu-btn' class='cursor-pointer focus-within:ring-ring'>
-          <img src='/api/${window._currentUser.picture_url}' class='ring ring-ring rounded-full ring-offset-1' alt='${window._currentUser.username}' />
+          <img src='/api/${window._currentUser.picture_url}' class='ring ring-ring rounded-full ring-offset-1 object-cover h-10 w-10' alt='${window._currentUser.username}' />
         </button>
         <div id='user-menu' class='hidden w-48 absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-2 [&>a]:p-1 [&>button]:p-1'>
           <a class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors' href='/profile'>
@@ -33,8 +33,11 @@ class UserNavMenu extends HTMLElement {
     `;
   }
 
-  handleLogout = () => {
-    localStorage.removeItem("uid");
+  handleLogout = async () => {
+    await fetch("/api/logout", {
+      method: "POST",
+      credentials: "include",
+    });
     window._currentUser = null;
     navigateTo("/signin");
   };
