@@ -4,9 +4,16 @@ detach=#-d
 
 VOL_USER=$(shell whoami)
 
-all: create_volumes_dir set-host-and-permission
+MICRO_SERVICES=$(shell find micro_services -mindepth 1 -maxdepth 1 -type d)
+
+ENV_FILES=$(addsuffix /app/.env, ${MICRO_SERVICES})
+
+%.env:
+	ln .env $@
+
+all: ${ENV_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
-build: create_volumes_dir set-host-and-permission
+build: ${ENV_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up --build ${detach}
 clean:
 	docker compose -f ${COMPOSE_FILE} down
