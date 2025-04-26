@@ -4,5 +4,4 @@ export type UserModel = {
   UID: string;
   picture_url: string;
   bio: string;
-  friends_uids: string;
 };

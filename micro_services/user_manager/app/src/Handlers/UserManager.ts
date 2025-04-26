@@ -39,7 +39,6 @@ function CreateNewGoogleUser(jwt: JWT): UserModel {
     bio:
       process.env.DEFAULT_NEW_USER_BIO ||
       "Hello everyone, new PING-PONG player here.",
-    friends_uids: "",
   };
   const insertQuery = db.persistent.prepare(
     `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`
@@ -65,7 +64,6 @@ function CreateNewStandardUser(jwt: JWT): UserModel {
     bio:
       process.env.DEFAULT_NEW_USER_BIO ||
       "Hello everyone, new PING-PONG player here.",
-    friends_uids: "",
   };
   const insertQuery = db.persistent.prepare(
     `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`
