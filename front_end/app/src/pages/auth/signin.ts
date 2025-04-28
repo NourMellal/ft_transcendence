@@ -24,15 +24,16 @@ class SigninPage extends HTMLElement {
           redirect: "follow",
         });
 
+        if (!res.ok) {
+          showToast({ type: "error", message: await res.text() });
+          return;
+        }
+
         if (res.redirected) {
           const url = new URL(res.url);
           return navigateTo(url.pathname + url.search);
         }
 
-        if (!res.ok) {
-          showToast({ type: "error", message: await res.text() });
-          return;
-        }
         showToast({
           type: "success",
           message: `Welcome back!`,
