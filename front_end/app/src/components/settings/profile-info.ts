@@ -83,6 +83,7 @@ class ProfileInfo extends HTMLElement {
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: "no-store",
       });
 
       if (res.ok) {
@@ -105,6 +106,7 @@ class ProfileInfo extends HTMLElement {
       const res = await fetch("/api/user/remove_picture", {
         method: "DELETE",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (res.ok) {
@@ -174,6 +176,7 @@ class ProfileInfo extends HTMLElement {
             `/api/user/namecheck?username=${target.value}`,
             {
               method: "GET",
+              cache: "no-store",
             }
           );
           if (!res.ok) {

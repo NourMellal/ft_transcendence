@@ -28,6 +28,7 @@ class ProfilePage extends HTMLElement {
         // Fetch the specified user's info
         const res = await fetch(`/api/user/info?uid=${uid}`, {
           credentials: "include",
+          cache: "no-store",
         });
         if (!res.ok) {
           navigateTo("/profile");
@@ -39,6 +40,7 @@ class ProfilePage extends HTMLElement {
         // Fetch friends list
         const friendsRes = await fetch("/api/friends", {
           credentials: "include",
+          cache: "no-store",
         });
         if (friendsRes.ok) {
           const friends = await friendsRes.json();
@@ -48,6 +50,7 @@ class ProfilePage extends HTMLElement {
         // Check for pending friend requests
         const requestsRes = await fetch("/api/friends/requests", {
           credentials: "include",
+          cache: "no-store",
         });
         if (requestsRes.ok) {
           const requests = await requestsRes.json();
@@ -66,6 +69,7 @@ class ProfilePage extends HTMLElement {
         // Check for sent friend requests
         const sentRequestsRes = await fetch("/api/friends/sent_requests", {
           credentials: "include",
+          cache: "no-store",
         });
         if (sentRequestsRes.ok) {
           const sentRequests = await sentRequestsRes.json();
@@ -279,6 +283,7 @@ class ProfilePage extends HTMLElement {
       const response = await fetch(`/api/friends/request?uid=${uid}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -298,6 +303,7 @@ class ProfilePage extends HTMLElement {
       const response = await fetch(`/api/friends/accept?uid=${uid}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -317,6 +323,7 @@ class ProfilePage extends HTMLElement {
       const response = await fetch(`/api/friends/deny?uid=${uid}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -336,6 +343,7 @@ class ProfilePage extends HTMLElement {
       const response = await fetch(`/api/friends/remove?uid=${uid}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {

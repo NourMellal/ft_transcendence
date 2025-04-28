@@ -75,6 +75,7 @@ class TotpVerify extends HTMLElement {
         {
           method: "POST",
           body: new FormData(target),
+          cache: "no-store",
         }
       );
 

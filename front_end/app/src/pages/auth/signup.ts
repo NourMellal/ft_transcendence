@@ -39,6 +39,7 @@ class SignupPage extends HTMLElement {
         const res = await fetch("/api/user/signup", {
           method: "POST",
           body: formData,
+          cache: "no-store",
         });
         if (!res.ok) {
           showToast({
@@ -57,7 +58,10 @@ class SignupPage extends HTMLElement {
   };
 
   getAuthState = async () => {
-    const res = await fetch("/api/OAuth/state");
+    const res = await fetch("/api/OAuth/state", {
+      cache: "no-store",
+      method: "GET",
+    });
     if (!res.ok) throw Error("Unexpected error occured!");
 
     return res.text();

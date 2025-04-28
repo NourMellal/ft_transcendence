@@ -37,6 +37,7 @@ class UserNavMenu extends HTMLElement {
     await fetch("/api/logout", {
       method: "POST",
       credentials: "include",
+      cache: "no-store",
     });
     navigateTo("/signin");
   };

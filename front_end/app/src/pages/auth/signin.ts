@@ -22,6 +22,7 @@ class SigninPage extends HTMLElement {
           body: formData,
           credentials: "include",
           redirect: "follow",
+          cache: "no-store",
         });
 
         if (!res.ok) {
@@ -44,7 +45,10 @@ class SigninPage extends HTMLElement {
   };
 
   getAuthState = async () => {
-    const res = await fetch("/api/OAuth/state");
+    const res = await fetch("/api/OAuth/state", {
+      cache: "no-store",
+      method: "GET",
+    });
     if (!res.ok) throw Error("Unexpected error occured!");
 
     return res.text();

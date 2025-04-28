@@ -11,6 +11,7 @@ export const getUser = async (): Promise<User | null> => {
     const res = await fetch("/api/user/info?uid=me", {
       method: "GET",
       credentials: "include",
+      cache: "no-store",
     });
     if (!res.ok) return null;
 

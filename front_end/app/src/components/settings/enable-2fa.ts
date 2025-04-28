@@ -30,6 +30,7 @@ class Enable2Fa extends HTMLElement {
     const res = await fetch("/api/2FA/geturi", {
       method: "GET",
       credentials: "include",
+      cache: "no-store",
     });
     const code = await res.text();
     const qrCodeCanvas = this.querySelector("#qr-code") as HTMLCanvasElement;
@@ -49,6 +50,7 @@ class Enable2Fa extends HTMLElement {
       const res = await fetch("/api/2FA/enable", {
         method: "POST",
         body: new FormData(target),
+        cache: "no-store",
       });
 
       if (res.ok) {

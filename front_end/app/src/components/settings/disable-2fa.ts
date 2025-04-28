@@ -31,6 +31,7 @@ class Disable2FA extends HTMLElement {
         method: "POST",
         credentials: "include",
         body: new FormData(target),
+        cache: "no-store",
       });
 
       if (res.ok) {

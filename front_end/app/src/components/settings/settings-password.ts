@@ -67,6 +67,7 @@ class SettingsPassword extends HTMLElement {
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: "no-store",
       });
 
       if (res.ok) {

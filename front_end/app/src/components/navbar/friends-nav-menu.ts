@@ -30,6 +30,7 @@ class FriendsNavMenu extends HTMLElement {
     try {
       const response = await fetch("/api/friends/requests", {
         credentials: "include",
+        cache: "no-store",
       });
       if (!response.ok) {
         throw new Error("Failed to fetch friend requests");
@@ -43,6 +44,7 @@ class FriendsNavMenu extends HTMLElement {
             `/api/user/info?uid=${request.from_uid}`,
             {
               credentials: "include",
+              cache: "no-store",
             }
           );
           if (userResponse.ok) {
@@ -73,6 +75,7 @@ class FriendsNavMenu extends HTMLElement {
       const response = await fetch(`/api/friends/accept?uid=${reqId}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -95,6 +98,7 @@ class FriendsNavMenu extends HTMLElement {
       const response = await fetch(`/api/friends/deny?uid=${reqId}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
