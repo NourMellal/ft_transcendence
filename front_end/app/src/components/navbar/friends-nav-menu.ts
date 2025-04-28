@@ -1,4 +1,5 @@
 import UsersIcon from "~/icons/users.svg?raw";
+import { showToast } from "~/components/toast";
 
 interface FriendRequest {
   REQ_ID: string;
@@ -22,7 +23,6 @@ class FriendsNavMenu extends HTMLElement {
     ) as HTMLSpanElement | null;
     if (countEl) {
       countEl.textContent = count.toString();
-      countEl.style.display = count > 0 ? "flex" : "none";
     }
   }
 
@@ -50,15 +50,21 @@ class FriendsNavMenu extends HTMLElement {
             request.username = userInfo.username;
             request.picture_url = userInfo.picture_url;
           }
-        } catch (error) {
-          console.error("Error fetching user info:", error);
+        } catch {
+          showToast({
+            type: "error",
+            message: "Failed to load user info",
+          });
         }
       }
 
       this.render();
       this.setFriendsCount(this.friendRequests.length);
-    } catch (error) {
-      console.error("Error fetching friend requests:", error);
+    } catch {
+      showToast({
+        type: "error",
+        message: "Failed to load friend requests",
+      });
     }
   }
 
@@ -72,11 +78,15 @@ class FriendsNavMenu extends HTMLElement {
       if (!response.ok) {
         throw new Error("Failed to accept friend request");
       }
-
-      // Refresh the friend requests list
-      await this.fetchFriendRequests();
-    } catch (error) {
-      console.error("Error accepting friend request:", error);
+    } catch {
+      showToast({
+        type: "error",
+        message: "Failed to accept request",
+      });
+    } finally {
+      this.disconnectedCallback();
+      this.render();
+      this.setup();
     }
   }
 
@@ -90,11 +100,15 @@ class FriendsNavMenu extends HTMLElement {
       if (!response.ok) {
         throw new Error("Failed to deny friend request");
       }
-
-      // Refresh the friend requests list
-      await this.fetchFriendRequests();
-    } catch (error) {
-      console.error("Error denying friend request:", error);
+    } catch {
+      showToast({
+        type: "error",
+        message: "Failed to deny request",
+      });
+    } finally {
+      this.disconnectedCallback();
+      this.render();
+      this.setup();
     }
   }
 
@@ -164,36 +178,24 @@ class FriendsNavMenu extends HTMLElement {
                     .join("")
             }
           </ul>
-          <div class="px-4 py-2 border-t border-muted text-center">
-            <a href="/profile" class="text-sm font-medium text-primary hover:underline">
-              View All Requests
-            </a>
-          </div>
         </div>
       </div>
     `;
   }
 
-  setup() {
-    const btn = this.querySelector("#friends-btn") as HTMLButtonElement | null;
-    const menu = this.querySelector("#friends-menu") as HTMLDivElement | null;
-    if (btn && menu) {
-      // Remove existing event listeners to prevent duplicates
-      btn.removeEventListener("click", this.toggle);
-      document.removeEventListener("click", this.handleOutsideClick);
+  async setup() {
+    await this.fetchFriendRequests();
+    const btn = this.querySelector("#friends-btn") as HTMLButtonElement;
 
-      // Add new event listeners
-      btn.addEventListener("click", this.toggle);
-      document.addEventListener("click", this.handleOutsideClick);
-    }
+    btn.addEventListener("click", this.toggle);
+    document.addEventListener("click", this.handleOutsideClick);
   }
 
   private handleOutsideClick = (e: MouseEvent) => {
-    const menu = this.querySelector("#friends-menu") as HTMLDivElement | null;
-    const btn = this.querySelector("#friends-btn") as HTMLButtonElement | null;
-    if (!menu || !btn) return;
-
+    const menu = this.querySelector("#friends-menu") as HTMLDivElement;
+    const btn = this.querySelector("#friends-btn") as HTMLButtonElement;
     const target = e.target as HTMLElement;
+
     if (
       !menu.classList.contains("hidden") &&
       !menu.contains(target) &&
@@ -205,9 +207,7 @@ class FriendsNavMenu extends HTMLElement {
 
   // show with slide‐down & hide with slide‐up
   toggle = () => {
-    const menu = this.querySelector("#friends-menu") as HTMLDivElement | null;
-    if (!menu) return;
-
+    const menu = this.querySelector("#friends-menu") as HTMLDivElement;
     const hidden = menu.classList.contains("hidden");
     const animOpts: KeyframeAnimationOptions = {
       duration: 200,
@@ -230,9 +230,7 @@ class FriendsNavMenu extends HTMLElement {
   };
 
   close = () => {
-    const menu = this.querySelector("#friends-menu") as HTMLDivElement | null;
-    if (!menu) return;
-
+    const menu = this.querySelector("#friends-menu") as HTMLDivElement;
     const animation = menu.animate(
       [
         { opacity: 1, transform: "translateY(0)" },
@@ -254,10 +252,8 @@ class FriendsNavMenu extends HTMLElement {
 
   // Add disconnectedCallback to clean up event listeners
   disconnectedCallback() {
-    const btn = this.querySelector("#friends-btn") as HTMLButtonElement | null;
-    if (btn) {
-      btn.removeEventListener("click", this.toggle);
-    }
+    const btn = this.querySelector("#friends-btn") as HTMLButtonElement;
+    btn.removeEventListener("click", this.toggle);
     document.removeEventListener("click", this.handleOutsideClick);
   }
 }

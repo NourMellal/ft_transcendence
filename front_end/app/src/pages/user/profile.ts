@@ -21,6 +21,7 @@ class ProfilePage extends HTMLElement {
     let hasPendingRequest = false;
     let isRequestFromUser = false;
     let pendingRequestId: string | null = null;
+    let hasSentRequest = false;
 
     try {
       if (uid) {
@@ -60,6 +61,21 @@ class ProfilePage extends HTMLElement {
           hasPendingRequest = !!pendingRequest;
           isRequestFromUser = pendingRequest?.from_uid === user.UID;
           pendingRequestId = pendingRequest?.REQ_ID || null;
+        }
+
+        // Check for sent friend requests
+        const sentRequestsRes = await fetch("/api/friends/sent_requests", {
+          credentials: "include",
+        });
+        if (sentRequestsRes.ok) {
+          const sentRequests = await sentRequestsRes.json();
+          const sentRequest = sentRequests.find(
+            (request: any) => request.to_uid === user.UID
+          );
+          hasSentRequest = !!sentRequest;
+          if (sentRequest) {
+            pendingRequestId = sentRequest.REQ_ID;
+          }
         }
       } else {
         // If no uid provided, show current user's profile
@@ -167,11 +183,32 @@ class ProfilePage extends HTMLElement {
                     : /*html*/ `
                         <button class="btn btn-disabled" disabled>
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            <path d="M20 6L9 17l-5-5"></path>
                           </svg>
                           <span>Request Sent</span>
                         </button>
                       `
+                  : hasSentRequest
+                  ? /*html*/ `
+                      <div class="flex gap-2">
+                        <button class="btn btn-disabled" disabled>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                          <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                        <span>Request Sent</span>
+                      </button>
+                      <button
+                        class="btn btn-destructive"
+                        onclick="this.closest('profile-page').denyFriendRequest('${pendingRequestId}')"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>Cancel Request</span>
+                      </button>
+                    </div>
+                  `
                   : /*html*/ `
                     <button
                       class="btn btn-outlined"
