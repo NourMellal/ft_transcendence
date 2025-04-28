@@ -5,7 +5,7 @@ class Settings2FA extends HTMLElement {
 
   render() {
     this.innerHTML = /*html*/ `
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
           <h2 class="text-xl font-semibold mb-1">Security</h2>
           <p class="text-sm text-muted-foreground">Manage your account security settings.</p>

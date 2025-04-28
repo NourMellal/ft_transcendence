@@ -1,3 +1,4 @@
+import { getUser } from "~/api/user";
 import { routes } from "~/routes";
 
 function normalizePath(path: string) {
@@ -11,11 +12,14 @@ function normalizePath(path: string) {
 }
 
 export function navigateTo(pathname: string) {
-  const appRouter = document.querySelector("app-router") as AppRouter | null;
-  if (pathname !== normalizePath(window.location.pathname)) {
-    window.history.pushState({ pathname }, "", pathname);
-  }
-  appRouter?.renderPage();
+  getUser().then((user) => {
+    window._currentUser = user;
+    const appRouter = document.querySelector("app-router") as AppRouter | null;
+    if (pathname !== normalizePath(window.location.pathname)) {
+      window.history.pushState({ pathname }, "", pathname);
+    }
+    appRouter?.renderPage();
+  });
 }
 
 class AppRouter extends HTMLElement {

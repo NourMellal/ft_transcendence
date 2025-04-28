@@ -1,4 +1,3 @@
-import { getUser } from "~/api/user";
 import { handleEffect } from "~/utils";
 import { navigateTo } from "../app-router";
 import { showToast } from "../toast";
@@ -48,7 +47,12 @@ class ProfileInfo extends HTMLElement {
               <!-- Bio -->
               <div class="space-y-2">
                 <label for="bio-input" class="label">Bio</label>
-                <textarea name='bio' id="bio-input" class="input w-full min-h-[80px]" placeholder="Tell us a little about yourself">${window._currentUser.bio}</textarea>
+                <textarea
+                  name='bio'
+                  id="bio-input"
+                  class="input w-full min-h-[80px]"
+                  placeholder="Tell us a little about yourself"
+                >${window._currentUser.bio}</textarea>
                 <p class="text-xs text-muted-foreground">A brief description about you.</p>
               </div>
             </div>
@@ -82,7 +86,6 @@ class ProfileInfo extends HTMLElement {
       });
 
       if (res.ok) {
-        window._currentUser = await getUser();
         showToast({
           type: "success",
           message: "Profile updated successfully",
@@ -105,7 +108,6 @@ class ProfileInfo extends HTMLElement {
       });
 
       if (res.ok) {
-        window._currentUser = await getUser();
         showToast({
           type: "success",
           message: "Picture removed successfully",
