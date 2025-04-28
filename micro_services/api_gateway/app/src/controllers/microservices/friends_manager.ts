@@ -55,6 +55,30 @@ export const ListRequests = async (
   return Promise.resolve();
 };
 
+export const ListSentRequests = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    reply.hijack();
+    const RabbitMQReq: RabbitMQRequest = {
+      op: RabbitMQFriendsManagerOp.LIST_SENT_REQUESTS,
+      id: "",
+      JWT: request.jwt,
+    };
+    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+      reply.raw.statusCode = response.status;
+      reply.raw.setHeader("Content-Type", "application/json");
+      reply.raw.end(response.message);
+    });
+  } catch (error) {
+    console.log(`ERROR: RemoveUserProfile(): ${error}`);
+    reply.raw.statusCode = 500;
+    reply.raw.end("ERROR: internal error, try again later.");
+  }
+  return Promise.resolve();
+};
+
 export const SendFriendRequest = async (
   request: FastifyRequest<{ Querystring: { uid: string } }>,
   reply: FastifyReply

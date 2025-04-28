@@ -14,6 +14,7 @@ export enum RabbitMQFriendsManagerOp {
   REMOVE_FRIEND,
   LIST_FRIENDS,
   LIST_REQUESTS,
+  LIST_SENT_REQUESTS,
 }
 
 export type RabbitMQRequest = {
