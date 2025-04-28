@@ -6,6 +6,7 @@ import {
   DenyFriendRequest,
   ListFriends,
   ListRequests,
+  ListSentRequests,
   RemoveFriend,
   SendFriendRequest,
 } from "../../controllers/microservices/friends_manager";
@@ -35,6 +36,11 @@ async function FriendsManagerRoutes(fastify: FastifyInstance) {
     discoveryDocument.FriendsRoutes.ListFriendsRequestsRoute.route,
     AuthHeaderValidation,
     ListRequests
+  );
+  fastify.get(
+    discoveryDocument.FriendsRoutes.ListSentFriendsRequestsRoute.route,
+    AuthHeaderValidation,
+    ListSentRequests
   );
   fastify.post(
     discoveryDocument.FriendsRoutes.SendFriendRequestRoute.route,

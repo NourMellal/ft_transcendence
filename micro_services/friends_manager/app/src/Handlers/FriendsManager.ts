@@ -43,6 +43,21 @@ function ListRequests(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   return RMqResponse;
 }
 
+function ListSentRequests(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  const RMqResponse: RabbitMQResponse = {
+    service: RabbitMQMicroServices.FRIENDS_MANAGER,
+    req_id: RMqRequest.id,
+  } as RabbitMQResponse;
+  RMqResponse.status = 200;
+  const query = db.persistent.prepare(
+    `SELECT * FROM '${requests_table_name}' WHERE from_uid = ? ;`
+  );
+  const res = query.all(RMqRequest.JWT.sub) as FriendsModel[];
+  if (res && res.length > 0) RMqResponse.message = JSON.stringify(res);
+  else RMqResponse.message = "[]";
+  return RMqResponse;
+}
+
 // HINT: Assumes RMqRequest.message is a valid user's uid checked for early inside api_gateway
 function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   const RMqResponse: RabbitMQResponse = {
@@ -302,6 +317,8 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       return ListFriends(RMqRequest);
     case RabbitMQFriendsManagerOp.LIST_REQUESTS:
       return ListRequests(RMqRequest);
+    case RabbitMQFriendsManagerOp.LIST_SENT_REQUESTS:
+      return ListSentRequests(RMqRequest);
     case RabbitMQFriendsManagerOp.ADD_FRIEND:
       return AddFriendRequest(RMqRequest);
     case RabbitMQFriendsManagerOp.ACCEPT_REQUEST:

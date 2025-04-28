@@ -165,6 +165,12 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
+    ListSentFriendsRequestsRoute:{
+      description: "HTTP: Get current user sent friends requests.",
+      route: "/api/friends/sent_requests",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
     SendFriendRequestRoute: {
       description:
         "HTTP: send a request to the user with uid specified in query param.",

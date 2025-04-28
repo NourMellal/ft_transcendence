@@ -223,6 +223,12 @@ GET https://transcendence.fr/api/friends/requests
 
 ###
 
+# Get current user sent friends requests
+GET https://transcendence.fr/api/friends/sent_requests
+#Cookie: jwt={{jwt_token}}
+
+###
+
 # Send a friend request
 POST https://transcendence.fr/api/friends/request?uid=
 #Cookie: jwt={{jwt_token}}
