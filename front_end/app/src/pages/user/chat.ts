@@ -1,6 +1,6 @@
-import "~/components/navbar/navigation-bar"; // Ensure the navigation bar component is registered
-
 class ChatPage extends HTMLElement {
+  private isFriendsListOpen: boolean = false;
+
   constructor() {
     super();
   }
@@ -38,10 +38,23 @@ class ChatPage extends HTMLElement {
     this.innerHTML = /*html*/ `
       <navigation-bar></navigation-bar>
       <div class="container mx-auto">
-        <div class="flex h-[calc(100vh-10rem)] border rounded-lg overflow-hidden">
+        <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
+
+
           <!-- Sidebar - Friends List -->
-          <aside class="w-1/4 border-r bg-card p-4 flex flex-col">
-            <h2 class="text-lg font-semibold mb-4 text-card-foreground">Friends</h2>
+          <aside id="friendsList" class="fixed md:relative w-3/4 md:w-1/4 h-full border-r bg-card p-4 flex flex-col transform transition-transform duration-300 ease-in-out ${
+            this.isFriendsListOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }" style="z-index: 20;">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-card-foreground">Friends</h2>
+              <button class="md:hidden p-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <div class="flex-1 overflow-y-auto space-y-2">
               ${friends
                 .map(
@@ -57,9 +70,15 @@ class ChatPage extends HTMLElement {
           </aside>
 
           <!-- Main Chat Area -->
-          <main class="w-3/4 flex flex-col bg-background">
+          <main class="w-full md:w-3/4 flex flex-col bg-background">
             <!-- Chat Header -->
-            <header class="border-b p-4 bg-card">
+            <header class="flex items-center gap-4 border-b p-4 bg-card">
+              <!-- Mobile Toggle Button -->
+              <button id="friendsToggle" class="md:hidden ">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
               <h3 class="text-lg font-semibold text-card-foreground">Chat with Alice</h3>
             </header>
 
@@ -105,8 +124,25 @@ class ChatPage extends HTMLElement {
   }
 
   setup() {
-    // Add event listeners or other setup logic here
-    // e.g., handle clicking on friend links, sending messages
+    const friendsToggle = this.querySelector("#friendsToggle");
+    const friendsList = this.querySelector("#friendsList");
+    const closeButton = this.querySelector("#friendsList button");
+
+    if (friendsToggle && friendsList) {
+      friendsToggle.addEventListener("click", () => {
+        this.isFriendsListOpen = true;
+        friendsList.classList.remove("-translate-x-full");
+        friendsList.classList.add("translate-x-0");
+      });
+    }
+
+    if (closeButton && friendsList) {
+      closeButton.addEventListener("click", () => {
+        this.isFriendsListOpen = false;
+        friendsList.classList.add("-translate-x-full");
+        friendsList.classList.remove("translate-x-0");
+      });
+    }
   }
 
   connectedCallback() {

@@ -1,4 +1,3 @@
-import { getUser } from "~/api/user";
 import { routes } from "~/routes";
 
 function normalizePath(path: string) {
@@ -12,28 +11,21 @@ function normalizePath(path: string) {
 }
 
 export function navigateTo(pathname: string) {
-  getUser().then((user) => {
-    window._currentUser = user;
-    const appRouter = document.querySelector("app-router") as AppRouter | null;
+  const appRouter = document.querySelector("app-router") as AppRouter | null;
 
-    // Split pathname and search params
-    const [path, search] = pathname.split("?");
-    const normalizedPath = normalizePath(path);
-    const currentPath = normalizePath(window.location.pathname);
-    const currentSearch = window.location.search;
+  // Split pathname and search params
+  const [path, search] = pathname.split("?");
+  const normalizedPath = normalizePath(path);
+  const currentPath = normalizePath(window.location.pathname);
+  const currentSearch = window.location.search;
 
-    // Only update if path or search params have changed
-    if (normalizedPath !== currentPath || search !== currentSearch.slice(1)) {
-      const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
-      window.history.pushState(
-        { pathname: normalizedPath, search },
-        "",
-        newUrl
-      );
-    }
+  // Only update if path or search params have changed
+  if (normalizedPath !== currentPath || search !== currentSearch.slice(1)) {
+    const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
+    window.history.pushState({ pathname: normalizedPath, search }, "", newUrl);
+  }
 
-    appRouter?.renderPage();
-  });
+  appRouter?.renderPage();
 }
 
 class AppRouter extends HTMLElement {

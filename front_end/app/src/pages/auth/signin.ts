@@ -3,6 +3,7 @@ import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
 import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
+import { getUser } from "~/api/user";
 
 class SigninPage extends HTMLElement {
   constructor() {
@@ -34,6 +35,8 @@ class SigninPage extends HTMLElement {
           const url = new URL(res.url);
           return navigateTo(url.pathname + url.search);
         }
+
+        window._currentUser = await getUser();
 
         showToast({
           type: "success",

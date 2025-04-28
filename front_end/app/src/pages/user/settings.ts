@@ -1,3 +1,4 @@
+import { getUser } from "~/api/user";
 import { navigateTo } from "~/components/app-router";
 
 class SettingsPage extends HTMLElement {
@@ -5,7 +6,8 @@ class SettingsPage extends HTMLElement {
     super();
   }
 
-  render() {
+  render = async () => {
+    window._currentUser = await getUser();
     if (!window._currentUser) {
       return navigateTo("/signin");
     }
@@ -17,7 +19,7 @@ class SettingsPage extends HTMLElement {
         <settings-2fa></settings-2fa>
       </div>
     `;
-  }
+  };
 
   setup() {
     //
