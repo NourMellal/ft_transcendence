@@ -129,7 +129,7 @@ class FriendsNavMenu extends HTMLElement {
         </button>
         <div
           id="friends-menu"
-          class="hidden w-sm absolute right-0 top-full mt-2 bg-background border border-muted rounded-lg shadow-lg overflow-hidden"
+          class="hidden fixed sm:absolute right-0 w-[280px] sm:w-[320px] max-w-[90vw] bg-background border border-muted rounded-lg shadow-lg overflow-hidden z-40"
         >
           <div class="px-4 py-2 border-b border-muted">
             <h4 class="text-sm font-semibold">Friend Requests</h4>
