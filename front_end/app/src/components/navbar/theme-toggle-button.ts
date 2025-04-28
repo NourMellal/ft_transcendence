@@ -17,6 +17,8 @@ class ThemeToggleButton extends HTMLElement {
 
   toggle = () => {
     document.documentElement.classList.toggle("dark");
+    const isDark = document.documentElement.classList.contains("dark");
+    window.localStorage.setItem("theme", isDark ? "dark" : "light");
     this.render();
     this.setup();
   };

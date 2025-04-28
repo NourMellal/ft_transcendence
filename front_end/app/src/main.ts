@@ -5,7 +5,14 @@ import.meta.glob("./components/**/*.ts", { eager: true });
 import.meta.glob("./pages/**/*.ts", { eager: true });
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  let isDarkMode = true;
+  if (window.localStorage.getItem("theme")) {
+    isDarkMode = window.localStorage.getItem("theme") === "dark";
+  } else {
+    isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  if (isDarkMode) {
     document.documentElement.classList.add("dark");
   }
 
