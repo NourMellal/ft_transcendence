@@ -13,6 +13,7 @@ class SettingsPage extends HTMLElement {
       <navigation-bar></navigation-bar>
       <div class="container pb-8">
         <profile-info></profile-info>
+        <settings-password></settings-password>
         <settings-2fa></settings-2fa>
       </div>
     `;

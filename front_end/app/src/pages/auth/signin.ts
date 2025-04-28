@@ -1,25 +1,12 @@
 import GoogleIcon from "~/icons/google.svg?raw";
 import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
-import { getUser } from "../../api/user";
 import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
 
 class SigninPage extends HTMLElement {
   constructor() {
     super();
-    const token = new URL(window.location.href).searchParams.get("token");
-    if (token) {
-      (async () => {
-        localStorage.setItem("uid", token);
-        window._currentUser = await getUser();
-        showToast({
-          type: "success",
-          message: `Welcome Back ${window._currentUser?.username}!`,
-        });
-        navigateTo("/profile");
-      })();
-    }
   }
 
   handleSumbit = (e: SubmitEvent) => {
@@ -46,7 +33,10 @@ class SigninPage extends HTMLElement {
           showToast({ type: "error", message: await res.text() });
           return;
         }
-        window._currentUser = await getUser();
+        showToast({
+          type: "success",
+          message: `Welcome back!`,
+        });
         navigateTo("/profile");
       });
     }

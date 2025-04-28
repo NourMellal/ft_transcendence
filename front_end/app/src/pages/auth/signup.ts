@@ -1,6 +1,5 @@
 import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
-import { getUser } from "~/api/user";
 import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
 
@@ -40,10 +39,9 @@ class SignupPage extends HTMLElement {
           });
           return;
         }
-        window._currentUser = await getUser();
         showToast({
           type: "success",
-          message: `Welcome to ft_transcendence ${window._currentUser?.username}!`,
+          message: `Welcome to ft_transcendence!`,
         });
         navigateTo("/profile");
       });

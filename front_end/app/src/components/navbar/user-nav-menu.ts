@@ -38,7 +38,6 @@ class UserNavMenu extends HTMLElement {
       method: "POST",
       credentials: "include",
     });
-    window._currentUser = null;
     navigateTo("/signin");
   };
 
