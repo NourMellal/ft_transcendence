@@ -154,10 +154,9 @@ class FriendsNavMenu extends HTMLElement {
                         class="w-8 h-8 rounded-full"
                       />
                       <div class="ml-3 flex-1 min-w-0">
-                        <p class="text-sm font-medium">${
-                          request.username || "Unknown User"
-                        }</p>
-                        <p class="text-xs text-muted-foreground">Sent you a friend request</p>
+                        <p class="text-sm font-medium">
+                        ${request.username || "Unknown User"}
+                        </p>
                       </div>
                       <div class="flex space-x-2">
                         <button
