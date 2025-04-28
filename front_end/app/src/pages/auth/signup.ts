@@ -15,6 +15,14 @@ class SignupPage extends HTMLElement {
       e.preventDefault();
       const formData = new FormData(form);
 
+      // Remove picture field if no image was selected
+      const avatarInput = this.querySelector(
+        "#avatar-input"
+      ) as HTMLInputElement;
+      if (!avatarInput.files?.length) {
+        formData.delete("picture");
+      }
+
       if (
         formData.get("password")?.toString() !==
         formData.get("password_confirmation")?.toString()
@@ -64,6 +72,22 @@ class SignupPage extends HTMLElement {
       <fieldset class="max-w-md mx-auto my-4 flex flex-col gap-4 mt-16">
           <div class="p-6 md:rounded-md border">
             <form class="space-y-6 [&_label]:block [&_label]:mb-4">
+              <!-- Profile Picture -->
+              <div class="space-y-2">
+                <label class="label">Profile Picture</label>
+                <div class="flex items-center gap-4">
+                  <img id="avatar-preview" src="/api/static/profile/default.jpg" alt="Avatar" class="h-16 w-16 rounded-full object-cover border">
+                  <input type="file" id="avatar-input" class="hidden" name='picture' accept="image/jpeg, image/png, image/webp">
+                  <button type='button' id="change-avatar-btn" class="btn btn-outlined">
+                    Select
+                  </button>
+                  <button type='button' id="remove-avatar-btn" class="btn btn-destructive">
+                    Remove
+                  </button>
+                </div>
+                <p id="avatar-error" class="text-xs text-destructive"></p>
+              </div>
+
               <div>
                 <label for="user-name">username</label>
                 <input
@@ -114,9 +138,39 @@ class SignupPage extends HTMLElement {
     const userInput = this.querySelector("#user-name") as
       | HTMLInputElement
       | undefined;
+    const changeAvatarBtn = this.querySelector(
+      "#change-avatar-btn"
+    ) as HTMLButtonElement;
+    const avatarInput = this.querySelector("#avatar-input") as HTMLInputElement;
+    const avatarPreview = this.querySelector(
+      "#avatar-preview"
+    ) as HTMLImageElement;
+    const removeAvatarBtn = this.querySelector(
+      "#remove-avatar-btn"
+    ) as HTMLButtonElement;
+
+    // Initially hide the remove button
+    removeAvatarBtn.style.display = "none";
 
     signinForm?.addEventListener("submit", this.handleSumbit);
     userInput?.focus();
+
+    changeAvatarBtn.addEventListener("click", () => {
+      avatarInput.click();
+    });
+
+    avatarInput.addEventListener("change", () => {
+      if (avatarInput.files?.[0]) {
+        avatarPreview.src = URL.createObjectURL(avatarInput.files[0]);
+        removeAvatarBtn.style.display = "inline-flex";
+      }
+    });
+
+    removeAvatarBtn.addEventListener("click", () => {
+      avatarPreview.src = "/api/static/profile/default.jpg";
+      avatarInput.value = "";
+      removeAvatarBtn.style.display = "none";
+    });
   }
 
   connectedCallback() {
