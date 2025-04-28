@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "~/api/auth";
 import { navigateTo } from "../app-router";
 import { showToast } from "../toast";
 
@@ -27,7 +28,7 @@ class Disable2FA extends HTMLElement {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const target = e.target as HTMLFormElement;
-      const res = await fetch("/api/2FA/disable", {
+      const res = await fetchWithAuth("/api/2FA/disable", {
         method: "POST",
         credentials: "include",
         body: new FormData(target),

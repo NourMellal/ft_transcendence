@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "~/api/auth";
 import { navigateTo } from "~/components/app-router";
 import { showToast } from "~/components/toast";
 
@@ -70,7 +71,7 @@ class TotpVerify extends HTMLElement {
       e.preventDefault();
       const target = e.target as HTMLFormElement;
       const url = new URL(window.location.href);
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `/api/2FA/verify?state=${url.searchParams.get("state")}`,
         {
           method: "POST",

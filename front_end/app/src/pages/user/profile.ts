@@ -1,6 +1,7 @@
 import { navigateTo } from "~/components/app-router";
 import { User } from "~/api/user";
 import { showToast } from "~/components/toast";
+import { fetchWithAuth } from "~/api/auth";
 
 class ProfilePage extends HTMLElement {
   constructor() {
@@ -26,7 +27,7 @@ class ProfilePage extends HTMLElement {
     try {
       if (uid) {
         // Fetch the specified user's info
-        const res = await fetch(`/api/user/info?uid=${uid}`, {
+        const res = await fetchWithAuth(`/api/user/info?uid=${uid}`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -38,7 +39,7 @@ class ProfilePage extends HTMLElement {
         isOwnProfile = user.UID === window._currentUser.UID;
 
         // Fetch friends list
-        const friendsRes = await fetch("/api/friends", {
+        const friendsRes = await fetchWithAuth("/api/friends", {
           credentials: "include",
           cache: "no-store",
         });
@@ -48,7 +49,7 @@ class ProfilePage extends HTMLElement {
         }
 
         // Check for pending friend requests
-        const requestsRes = await fetch("/api/friends/requests", {
+        const requestsRes = await fetchWithAuth("/api/friends/requests", {
           credentials: "include",
           cache: "no-store",
         });
@@ -67,10 +68,13 @@ class ProfilePage extends HTMLElement {
         }
 
         // Check for sent friend requests
-        const sentRequestsRes = await fetch("/api/friends/sent_requests", {
-          credentials: "include",
-          cache: "no-store",
-        });
+        const sentRequestsRes = await fetchWithAuth(
+          "/api/friends/sent_requests",
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
         if (sentRequestsRes.ok) {
           const sentRequests = await sentRequestsRes.json();
           const sentRequest = sentRequests.find(
@@ -280,7 +284,7 @@ class ProfilePage extends HTMLElement {
 
   async addFriend(uid: string) {
     try {
-      const response = await fetch(`/api/friends/request?uid=${uid}`, {
+      const response = await fetchWithAuth(`/api/friends/request?uid=${uid}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",
@@ -300,7 +304,7 @@ class ProfilePage extends HTMLElement {
 
   async acceptFriendRequest(uid: string) {
     try {
-      const response = await fetch(`/api/friends/accept?uid=${uid}`, {
+      const response = await fetchWithAuth(`/api/friends/accept?uid=${uid}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",
@@ -320,7 +324,7 @@ class ProfilePage extends HTMLElement {
 
   async denyFriendRequest(uid: string) {
     try {
-      const response = await fetch(`/api/friends/deny?uid=${uid}`, {
+      const response = await fetchWithAuth(`/api/friends/deny?uid=${uid}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",
@@ -340,7 +344,7 @@ class ProfilePage extends HTMLElement {
 
   async removeFriend(uid: string) {
     try {
-      const response = await fetch(`/api/friends/remove?uid=${uid}`, {
+      const response = await fetchWithAuth(`/api/friends/remove?uid=${uid}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",

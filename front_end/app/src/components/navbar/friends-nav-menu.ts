@@ -1,5 +1,6 @@
 import UsersIcon from "~/icons/users.svg?raw";
 import { showToast } from "~/components/toast";
+import { fetchWithAuth } from "~/api/auth";
 
 interface FriendRequest {
   REQ_ID: string;
@@ -28,7 +29,7 @@ class FriendsNavMenu extends HTMLElement {
 
   async fetchFriendRequests() {
     try {
-      const response = await fetch("/api/friends/requests", {
+      const response = await fetchWithAuth("/api/friends/requests", {
         credentials: "include",
         cache: "no-store",
       });
@@ -40,7 +41,7 @@ class FriendsNavMenu extends HTMLElement {
       // Fetch user info for each request
       for (const request of this.friendRequests) {
         try {
-          const userResponse = await fetch(
+          const userResponse = await fetchWithAuth(
             `/api/user/info?uid=${request.from_uid}`,
             {
               credentials: "include",
@@ -72,7 +73,7 @@ class FriendsNavMenu extends HTMLElement {
 
   async acceptFriendRequest(reqId: string) {
     try {
-      const response = await fetch(`/api/friends/accept?uid=${reqId}`, {
+      const response = await fetchWithAuth(`/api/friends/accept?uid=${reqId}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",
@@ -95,7 +96,7 @@ class FriendsNavMenu extends HTMLElement {
 
   async denyFriendRequest(reqId: string) {
     try {
-      const response = await fetch(`/api/friends/deny?uid=${reqId}`, {
+      const response = await fetchWithAuth(`/api/friends/deny?uid=${reqId}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",

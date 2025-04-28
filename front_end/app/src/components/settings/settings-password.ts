@@ -1,6 +1,7 @@
 import { handleEffect } from "~/utils";
 import { navigateTo } from "../app-router";
 import { showToast } from "../toast";
+import { fetchWithAuth } from "~/api/auth";
 
 class SettingsPassword extends HTMLElement {
   constructor() {
@@ -63,7 +64,7 @@ class SettingsPassword extends HTMLElement {
     }
 
     handleEffect(document.body, async () => {
-      const res = await fetch("/api/user/passwd", {
+      const res = await fetchWithAuth("/api/user/passwd", {
         method: "POST",
         credentials: "include",
         body: formData,

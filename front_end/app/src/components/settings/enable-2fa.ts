@@ -1,6 +1,7 @@
 import QrCode from "qrcode";
 import { showToast } from "../toast";
 import { navigateTo } from "../app-router";
+import { fetchWithAuth } from "~/api/auth";
 
 class Enable2Fa extends HTMLElement {
   constructor() {
@@ -27,7 +28,7 @@ class Enable2Fa extends HTMLElement {
 
   async setup() {
     const form = this.querySelector("#verify-2fa-form") as HTMLFormElement;
-    const res = await fetch("/api/2FA/geturi", {
+    const res = await fetchWithAuth("/api/2FA/geturi", {
       method: "GET",
       credentials: "include",
       cache: "no-store",
@@ -47,7 +48,7 @@ class Enable2Fa extends HTMLElement {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const target = e.target as HTMLFormElement;
-      const res = await fetch("/api/2FA/enable", {
+      const res = await fetchWithAuth("/api/2FA/enable", {
         method: "POST",
         body: new FormData(target),
         cache: "no-store",
