@@ -2,7 +2,6 @@ export type User = {
   UID: string;
   picture_url: string;
   bio: string;
-  friends_uids: string[] | null;
   username: string;
   totp_enabled: boolean;
 };

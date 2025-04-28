@@ -20,7 +20,7 @@ class SettingsPassword extends HTMLElement {
               <!-- Current Password -->
               <div class="space-y-2">
                 <label for="current-password" class="label">Current Password</label>
-                <input type="password" id="current-password" name="old_password" class="input w-full" placeholder="Enter your current password" required>
+                <input type="password" id="current-password" name="old_password" class="input w-full" placeholder="Enter your current password">
               </div>
 
               <!-- New Password -->

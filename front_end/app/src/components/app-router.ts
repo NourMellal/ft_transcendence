@@ -15,9 +15,23 @@ export function navigateTo(pathname: string) {
   getUser().then((user) => {
     window._currentUser = user;
     const appRouter = document.querySelector("app-router") as AppRouter | null;
-    if (pathname !== normalizePath(window.location.pathname)) {
-      window.history.pushState({ pathname }, "", pathname);
+
+    // Split pathname and search params
+    const [path, search] = pathname.split("?");
+    const normalizedPath = normalizePath(path);
+    const currentPath = normalizePath(window.location.pathname);
+    const currentSearch = window.location.search;
+
+    // Only update if path or search params have changed
+    if (normalizedPath !== currentPath || search !== currentSearch.slice(1)) {
+      const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
+      window.history.pushState(
+        { pathname: normalizedPath, search },
+        "",
+        newUrl
+      );
     }
+
     appRouter?.renderPage();
   });
 }
@@ -64,7 +78,10 @@ class AppRouter extends HTMLElement {
 
     if (href.startsWith(origin)) {
       event.preventDefault();
-      if (anchor.pathname !== window.location.pathname) {
+      if (
+        anchor.pathname !== window.location.pathname ||
+        anchor.search !== window.location.search
+      ) {
         navigateTo(href.replace(origin, ""));
       }
     }
@@ -73,7 +90,7 @@ class AppRouter extends HTMLElement {
   connectedCallback() {
     this.addEventListener("click", this.onLinkClick);
     window.addEventListener("popstate", this.renderPage);
-    navigateTo(window.location.pathname);
+    navigateTo(window.location.pathname + window.location.search);
   }
 
   disconnectedCallback() {
