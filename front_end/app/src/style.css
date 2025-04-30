@@ -126,7 +126,11 @@
   }
 
   body {
-    @apply relative mb-8 md:mt-20 mt-16 bg-background text-foreground;
+    @apply bg-background text-foreground;
+  }
+
+  #app {
+    @apply relative pb-8 md:pt-20 pt-16;
   }
 }
 
