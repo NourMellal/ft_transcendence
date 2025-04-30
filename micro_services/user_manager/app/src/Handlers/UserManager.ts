@@ -82,6 +82,16 @@ function FetchUser(UID: string): UserModel | string {
   return res as UserModel;
 }
 
+function escapeHtml(unsafe: string | null): string | null {
+  if (!unsafe) return null;
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
   if (!updatedFields.bio && !updatedFields.picture_url)
     throw "bad UpdateUser request: no field is supplied";
@@ -90,7 +100,7 @@ function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
   );
   const query_result = query.run(
     updatedFields.picture_url,
-    updatedFields.bio,
+    escapeHtml(updatedFields.bio),
     jwt.sub
   );
   if (query_result.changes !== 1)

@@ -2,7 +2,12 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { RabbitMQResponse } from "../types/RabbitMQMessages";
 import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
-import { refresh_token_table_name, RefreshTokenModel, state_expiree_sec, users_table_name } from "../types/DbTables";
+import {
+  refresh_token_table_name,
+  RefreshTokenModel,
+  state_expiree_sec,
+  users_table_name,
+} from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoveryDocument } from "../models/DiscoveryDocument";
 import Totp from "../classes/TOTP";
@@ -15,12 +20,19 @@ export type SignPayload = {
 
 export const CreateRefreshToken = function (UID: string, IP: string): string {
   const token = GetRandomString(30);
-  const query = db.persistent.prepare(`INSERT INTO '${refresh_token_table_name}' ( token_id , token , created , ip , UID ) VALUES( ? , ? , ? , ? , ? );`);
-  const result = query.run(crypto.randomUUID(), token, Date.now() / 1000, IP, UID);
-  if (result.changes !== 1)
-    throw 'CreateRefreshToken(): database error';
+  const query = db.persistent.prepare(
+    `INSERT INTO '${refresh_token_table_name}' ( token_id , token , created , ip , UID ) VALUES( ? , ? , ? , ? , ? );`
+  );
+  const result = query.run(
+    crypto.randomUUID(),
+    token,
+    Date.now() / 1000,
+    IP,
+    UID
+  );
+  if (result.changes !== 1) throw "CreateRefreshToken(): database error";
   return token;
-}
+};
 
 export const ProcessSignUpResponse = function (
   reply: FastifyReply,
@@ -47,15 +59,24 @@ export const ProcessSignUpResponse = function (
   try {
     const refresh_token = CreateRefreshToken(jwt.sub, ip);
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-    reply.raw.appendHeader("set-cookie", `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-    reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
-    reply.raw.appendHeader('Location', `${discoveryDocument.ServerUrl}/signin`);
+    reply.raw.appendHeader(
+      "set-cookie",
+      `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    );
+    reply.raw.appendHeader(
+      "set-cookie",
+      `refresh_token=${refresh_token}; Path=/; Expires=${new Date(
+        2100,
+        0
+      ).toUTCString()}; Secure; HttpOnly`
+    );
+    reply.raw.appendHeader("Location", `${discoveryDocument.ServerUrl}/signin`);
     reply.raw.statusCode = 301;
     reply.raw.end();
   } catch (error) {
     console.log(error);
     reply.raw.statusCode = 500;
-    reply.raw.end('internal server error');
+    reply.raw.end("internal server error");
   }
 };
 
@@ -65,7 +86,9 @@ export const isRequestAuthorizedHook = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
-    request.jwt = AuthProvider.ValidateJWT_Cookie(request.headers.cookie as string);
+    request.jwt = AuthProvider.ValidateJWT_Cookie(
+      request.headers.cookie as string
+    );
     // request.jwt = AuthProvider.ValidateJWT_AuthHeader(
     //   request.headers.authorization as string
     // );
@@ -95,7 +118,22 @@ export const GetTOTPRedirectionUrl = function (
 ): string {
   const state = GetRandomString(8);
   if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
-  Totp.states.set(state, { created: Date.now() / 1000, UID: uid, totp_key: totp_key, jwt_token: jwt_token });
+  Totp.states.set(state, {
+    created: Date.now() / 1000,
+    UID: uid,
+    totp_key: totp_key,
+    jwt_token: jwt_token,
+  });
   setTimeout(() => Totp.states.delete(state), state_expiree_sec * 1000);
   return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
+};
+
+export const escapeHtml = function (unsafe: string | null): string | null {
+  if (!unsafe) return null;
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 };

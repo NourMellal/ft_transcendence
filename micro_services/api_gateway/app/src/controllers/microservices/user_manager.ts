@@ -10,6 +10,7 @@ import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
+import { escapeHtml } from "../Common";
 
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
@@ -109,7 +110,7 @@ export const UpdateUserInfo = async (
         const query = db.persistent.prepare(
           `UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`
         );
-        const res = query.run(username.field_value, request.jwt.sub);
+        const res = query.run(escapeHtml(username.field_value), request.jwt.sub);
         if (res.changes !== 1) throw "UpdateUserInfo(): database error";
       } catch (error) {
         console.log(`ERROR: UpdateUserInfo(): query.run(): ${error}`);
