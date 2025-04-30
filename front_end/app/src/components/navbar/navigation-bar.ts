@@ -25,6 +25,10 @@ class NavigationBar extends HTMLElement {
         ]
       : [
           {
+            name: "Home",
+            href: "/",
+          },
+          {
             name: "LeaderBoard",
             href: "/leaderboard",
           },
