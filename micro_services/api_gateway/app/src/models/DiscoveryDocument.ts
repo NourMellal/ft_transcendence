@@ -204,12 +204,18 @@ export const discoveryDocument = {
     },
   },
   Notifications: {
+    GetPushNotificationTicket:{
+      description: "HTTP: get a notification ticket to use with wss.",
+      route: "/api/notifications/ticket",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
     PushNotification: {
       description: "WebSocket(wss): listen on notifications for ui update.",
       notes:
         "due to limitations of ws, awkward protocol header is used to inject auth token, luckily this is easy to pass using vanilla JS WebSocket (see tests/websocket).",
       route: "/api/notifications/push_notification",
-      headers: [{ name: "Sec-WebSocket-Protocol", value: "{{jwt_token}}" }],
+      headers: [{ name: "Sec-WebSocket-Protocol", value: "{{Ticket}}" }],
       method: "GET",
     },
     ListUnread: {

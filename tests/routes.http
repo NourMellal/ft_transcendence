@@ -259,6 +259,12 @@ POST https://transcendence.fr/api/friends/remove?uid=
 ###### START NOTIFICATION TESTs (Authorization required) ######
 
 # Listen to notifications ping using WebSocket:
+GET https://transcendence.fr/api/notifications/ticket
+#Cookie: jwt={{jwt_token}}
+
+
+###
+# Listen to notifications ping using WebSocket:
 GET wss://transcendence.fr/api/notifications/push_notification
 Sec-WebSocket-Protocol: {{jwt_token}}
 

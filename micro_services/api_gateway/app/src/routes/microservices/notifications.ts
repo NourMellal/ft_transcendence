@@ -2,7 +2,8 @@ import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { WebSocketServer } from "ws";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
-import { PushNotificationHandler } from "../../controllers/microservices/notifications";
+import { GetPushNotificationTicket, PushNotificationHandler } from "../../controllers/microservices/notifications";
+import { AuthHeaderValidation } from "../../types/AuthProvider";
 
 export const SetupWebSocketServer = function (fastify: FastifyInstance) {
   const Server = new WebSocketServer({
@@ -14,4 +15,6 @@ export const SetupWebSocketServer = function (fastify: FastifyInstance) {
 
 export async function NotificationRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
+  fastify.get(discoveryDocument.Notifications.GetPushNotificationTicket.route, AuthHeaderValidation, GetPushNotificationTicket);
 }
+
