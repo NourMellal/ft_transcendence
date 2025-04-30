@@ -25,8 +25,8 @@ class NavigationBar extends HTMLElement {
         ]
       : [
           {
-            name: "Home",
-            href: "/",
+            name: "LeaderBoard",
+            href: "/leaderboard",
           },
         ];
     this.innerHTML = /*html*/ `
@@ -36,7 +36,7 @@ class NavigationBar extends HTMLElement {
             ${MenuIcon}
             <span class='sr-only'>menu</span>
           </button>
-          <h4 class='hidden md:block font-bold text-lg me-8 select-none'>ft_transcendence</h4>
+          <a href='/' class='hidden md:block font-bold text-lg me-8'>ft_transcendence</a>
           <div class='hidden md:flex gap-2 [&>a]:text-muted-foreground [&>a]:hover:text-foreground transition-colors [&>a]:p-2 [&>a]:py-4'>
             ${pages
               .map(
