@@ -30,7 +30,7 @@ class NavigationBar extends HTMLElement {
           },
         ];
     this.innerHTML = /*html*/ `
-      <div class='fixed top-0 inset-x-0 z-40 px-2 py-2 border-b mb-8 bg-background/20 backdrop-blur-sm'>
+      <div class='fixed top-0 inset-x-0 z-40 px-2 py-2 border-b bg-background/20 backdrop-blur-sm'>
         <div class='container flex items-center'>
           <button id='open-menu-btn' class='me-4 md:hidden cursor-pointer'>
             ${MenuIcon}

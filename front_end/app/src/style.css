@@ -128,11 +128,6 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  /* select the first next element after the navigation bar and apply md:pt-32 pt-24 */
-  navigation-bar + * {
-    @apply md:pt-32 pt-24;
-  }
 }
 
 @layer components {
