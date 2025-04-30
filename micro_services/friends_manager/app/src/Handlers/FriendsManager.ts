@@ -173,7 +173,7 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     );
 
     const first_friends = get_query.get(RMqRequest.JWT.sub) as FriendsModel;
-    if (!first_friends || !first_friends.friends) {
+    if (!first_friends) {
       const res = insert_query.run(RMqRequest.JWT.sub, request.from_uid);
       if (res.changes !== 1)
         throw `AcceptRequest(): database error while adding first friend`;
@@ -185,7 +185,7 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
         throw `AcceptRequest(): database error while adding first friend`;
     }
     const second_friends = get_query.get(request.from_uid) as FriendsModel;
-    if (!second_friends || !second_friends.friends) {
+    if (!second_friends) {
       const res = insert_query.run(request.from_uid, request.to_uid);
       if (res.changes !== 1)
         throw `AcceptRequest(): database error while adding second friend`;
