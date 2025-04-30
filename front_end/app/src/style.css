@@ -126,7 +126,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply relative mb-8 md:mt-20 mt-16 bg-background text-foreground;
   }
 }
 

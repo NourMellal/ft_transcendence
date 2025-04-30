@@ -26,7 +26,6 @@ class ProfilePage extends HTMLElement {
 
     try {
       if (uid) {
-        // Fetch the specified user's info
         const res = await fetchWithAuth(`/api/user/info?uid=${uid}`, {
           credentials: "include",
           cache: "no-store",
@@ -38,7 +37,6 @@ class ProfilePage extends HTMLElement {
         user = await res.json();
         isOwnProfile = user.UID === window._currentUser.UID;
 
-        // Fetch friends list
         const friendsRes = await fetchWithAuth("/api/friends", {
           credentials: "include",
           cache: "no-store",
@@ -48,7 +46,6 @@ class ProfilePage extends HTMLElement {
           isFriend = friends.includes(user.UID);
         }
 
-        // Check for pending friend requests
         const requestsRes = await fetchWithAuth("/api/friends/requests", {
           credentials: "include",
           cache: "no-store",
@@ -67,7 +64,6 @@ class ProfilePage extends HTMLElement {
           pendingRequestId = pendingRequest?.REQ_ID || null;
         }
 
-        // Check for sent friend requests
         const sentRequestsRes = await fetchWithAuth(
           "/api/friends/sent_requests",
           {
@@ -86,7 +82,6 @@ class ProfilePage extends HTMLElement {
           }
         }
       } else {
-        // If no uid provided, show current user's profile
         user = window._currentUser;
         isOwnProfile = true;
       }
@@ -294,11 +289,9 @@ class ProfilePage extends HTMLElement {
         throw new Error("Failed to send friend request");
       }
 
-      // Refresh the page to update the friend status
       this.render();
     } catch (error) {
       console.error("Error adding friend:", error);
-      // You might want to show a toast notification here
     }
   }
 
@@ -314,11 +307,9 @@ class ProfilePage extends HTMLElement {
         throw new Error("Failed to accept friend request");
       }
 
-      // Refresh the page to update the friend status
       this.render();
     } catch (error) {
       console.error("Error accepting friend request:", error);
-      // You might want to show a toast notification here
     }
   }
 
@@ -334,11 +325,9 @@ class ProfilePage extends HTMLElement {
         throw new Error("Failed to deny friend request");
       }
 
-      // Refresh the page to update the friend status
       this.render();
     } catch (error) {
       console.error("Error denying friend request:", error);
-      // You might want to show a toast notification here
     }
   }
 
@@ -359,7 +348,6 @@ class ProfilePage extends HTMLElement {
         message: "Friend removed successfully",
       });
 
-      // Refresh the page to update the friend status
       this.render();
     } catch (error) {
       showToast({

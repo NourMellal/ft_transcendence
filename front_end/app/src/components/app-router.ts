@@ -13,13 +13,11 @@ function normalizePath(path: string) {
 export function navigateTo(pathname: string, preserveScroll = false) {
   const appRouter = document.querySelector("app-router") as AppRouter | null;
 
-  // Split pathname and search params
   const [path, search] = pathname.split("?");
   const normalizedPath = normalizePath(path);
   const currentPath = normalizePath(window.location.pathname);
   const currentSearch = window.location.search;
 
-  // Only update if path or search params have changed
   if (normalizedPath !== currentPath || search !== currentSearch.slice(1)) {
     const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
     window.history.pushState({ pathname: normalizedPath, search }, "", newUrl);
