@@ -7,6 +7,7 @@ import {
   UserRoles,
   users_table_name,
 } from "../types/DbTables";
+import { escapeHtml } from "../controllers/Common";
 
 class Databases {
   persistent: DatabaseSync;
@@ -60,7 +61,7 @@ class Databases {
   ): UserModel {
     const User: UserModel = {
       UID: crypto.randomUUID(),
-      username: username,
+      username: escapeHtml(username) as string,
       password_hash: password_hash,
       totp_enabled: 0,
       provider: UserProviders.PASSWD,
@@ -78,7 +79,7 @@ class Databases {
       User.role
     );
     if (res.changes !== 1)
-      throw `Did not add user with username=${username} to db`;
+      throw `Did not add user with username=${User.username} to db`;
     return User;
   }
 }

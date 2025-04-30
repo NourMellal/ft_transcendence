@@ -12,7 +12,7 @@ class OAuthProvider {
   GoogleSignInStates: Map<string, number>;
 
   constructor(DiscoveryDocumentUrl: string) {
-    this.GoogleSignInStates = new Map<string, number>;
+    this.GoogleSignInStates = new Map<string, number>();
     this.discoveryDocumentURL = DiscoveryDocumentUrl;
     this.discoveryDocument = {} as GoogleDiscoveryDocument;
     this.JWTKeyCertificate = {} as JWTKeyCert;
@@ -46,11 +46,10 @@ class OAuthProvider {
   public ValidateJWT_Cookie(RawCookie: string): JWT {
     if (!this.isReady)
       throw `Error ValidateJWT_Cookie(): OAuthProvider class is not ready!`;
-    const cookies = RawCookie.split(';');
+    const cookies = RawCookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie_part = cookies[i].split("=");
-      if (cookie_part[0] !== "jwt")
-        continue;
+      if (cookie_part[0] !== "jwt") continue;
       if (cookie_part.length !== 2)
         throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
       return this.ValidateJWT_Token(cookie_part[1]);
@@ -107,7 +106,7 @@ class OAuthProvider {
 
 const AuthProvider = new OAuthProvider(
   process.env.GOOGLE_DISCOVERY_DOCUMENT_URL ||
-  "https://accounts.google.com/.well-known/openid-configuration"
+    "https://accounts.google.com/.well-known/openid-configuration"
 );
 
 export default AuthProvider;

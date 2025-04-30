@@ -41,7 +41,7 @@ function CreateNewGoogleUser(jwt: JWT): UserModel {
       "Hello everyone, new PING-PONG player here.",
   };
   const insertQuery = db.persistent.prepare(
-    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`
+    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
   );
   var res = insertQuery.run(user.UID, user.picture_url, user.bio);
   if (res.changes !== 1) {
@@ -66,7 +66,7 @@ function CreateNewStandardUser(jwt: JWT): UserModel {
       "Hello everyone, new PING-PONG player here.",
   };
   const insertQuery = db.persistent.prepare(
-    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`
+    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
   );
   var res = insertQuery.run(user.UID, user.picture_url, user.bio);
   if (res.changes !== 1) throw `Can not add standard user uid=${jwt.sub} to db`;
@@ -75,33 +75,23 @@ function CreateNewStandardUser(jwt: JWT): UserModel {
 
 function FetchUser(UID: string): UserModel | string {
   const getQuery = db.persistent.prepare(
-    `SELECT * FROM '${users_table_name}' WHERE UID = ?;`
+    `SELECT * FROM '${users_table_name}' WHERE UID = ?;`,
   );
   const res = getQuery.get(UID);
   if (res === undefined) return `No record for user uid ${UID} in db`;
   return res as UserModel;
 }
 
-function escapeHtml(unsafe: string | null): string | null {
-  if (!unsafe) return null;
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
   if (!updatedFields.bio && !updatedFields.picture_url)
     throw "bad UpdateUser request: no field is supplied";
   const query = db.persistent.prepare(
-    `UPDATE '${users_table_name}' SET picture_url = IFNULL(?, picture_url), bio = IFNULL(?, bio) WHERE UID = ?;`
+    `UPDATE '${users_table_name}' SET picture_url = IFNULL(?, picture_url), bio = IFNULL(?, bio) WHERE UID = ?;`,
   );
   const query_result = query.run(
     updatedFields.picture_url,
-    escapeHtml(updatedFields.bio),
-    jwt.sub
+    updatedFields.bio,
+    jwt.sub,
   );
   if (query_result.changes !== 1)
     throw `UpdateUser request: user ${jwt.sub} not updated`;
@@ -120,7 +110,7 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       break;
     case RabbitMQUserManagerOp.CREATE_STANDARD:
       RMqResponse.message = JSON.stringify(
-        CreateNewStandardUser(RMqRequest.JWT)
+        CreateNewStandardUser(RMqRequest.JWT),
       );
       RMqResponse.status = 200;
       break;
@@ -145,7 +135,7 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       break;
     default:
       console.log(
-        "WARNING: rabbitmq HandleMessage(): operation not implemented."
+        "WARNING: rabbitmq HandleMessage(): operation not implemented.",
       );
       throw "operation not implemented";
   }

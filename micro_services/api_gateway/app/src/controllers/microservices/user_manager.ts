@@ -19,7 +19,7 @@ export const FetchUserInfo = async (
   try {
     const { uid, uname } = request.query;
     if (!uid && !uname) return reply.code(400).send("bad request");
-    var UID: string = '';
+    var UID: string = "";
     if (uid) {
       if (uid === "me") UID = request.jwt.sub;
       else UID = uid;
@@ -28,7 +28,7 @@ export const FetchUserInfo = async (
         const query = db.persistent.prepare(
           `SELECT UID FROM '${users_table_name}' WHERE username = ? ;`
         );
-        const res = query.get(uname) as UserModel;
+        const res = query.get(escapeHtml(uname)) as UserModel;
         if (!res) throw "no user found";
         UID = res.UID;
       } catch (err) {
@@ -57,8 +57,7 @@ export const FetchUserInfo = async (
         return;
       }
       payload.username = res.username;
-      if (UID === request.jwt.sub)
-        payload.totp_enabled = res.totp_enabled;
+      if (UID === request.jwt.sub) payload.totp_enabled = res.totp_enabled;
       reply.raw.end(reply.serialize(payload));
     });
   } catch (error) {
@@ -95,7 +94,7 @@ export const UpdateUserInfo = async (
       fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
     }
     if (bio) {
-      UpdatedInfo.bio = bio.field_value;
+      UpdatedInfo.bio = escapeHtml(bio.field_value);
     }
     if (
       username === undefined &&
@@ -110,7 +109,10 @@ export const UpdateUserInfo = async (
         const query = db.persistent.prepare(
           `UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`
         );
-        const res = query.run(escapeHtml(username.field_value), request.jwt.sub);
+        const res = query.run(
+          escapeHtml(username.field_value),
+          request.jwt.sub
+        );
         if (res.changes !== 1) throw "UpdateUserInfo(): database error";
       } catch (error) {
         console.log(`ERROR: UpdateUserInfo(): query.run(): ${error}`);
