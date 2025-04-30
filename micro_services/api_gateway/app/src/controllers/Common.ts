@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { RabbitMQResponse } from "../types/RabbitMQMessages";
 import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
-import { refresh_token_table_name, RefreshTokenModel, users_table_name } from "../types/DbTables";
+import { refresh_token_table_name, RefreshTokenModel, state_expiree_sec, users_table_name } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoveryDocument } from "../models/DiscoveryDocument";
 import Totp from "../classes/TOTP";
@@ -96,5 +96,6 @@ export const GetTOTPRedirectionUrl = function (
   const state = GetRandomString(8);
   if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
   Totp.states.set(state, { created: Date.now() / 1000, UID: uid, totp_key: totp_key, jwt_token: jwt_token });
+  setTimeout(() => Totp.states.delete(state), state_expiree_sec * 1000);
   return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
 };
