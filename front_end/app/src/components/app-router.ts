@@ -10,7 +10,7 @@ function normalizePath(path: string) {
   return normalized;
 }
 
-export function navigateTo(pathname: string) {
+export function navigateTo(pathname: string, preserveScroll = false) {
   const appRouter = document.querySelector("app-router") as AppRouter | null;
 
   // Split pathname and search params
@@ -24,7 +24,9 @@ export function navigateTo(pathname: string) {
     const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
     window.history.pushState({ pathname: normalizedPath, search }, "", newUrl);
   }
-
+  if (!preserveScroll) {
+    window.scrollTo(0, 0);
+  }
   appRouter?.renderPage();
 }
 
