@@ -104,7 +104,7 @@ class ProfilePage extends HTMLElement {
 
     this.innerHTML = /*html*/ `
       <navigation-bar></navigation-bar>
-      <div class="container py-8 space-y-8">
+      <div class="container pb-8 space-y-8">
         <!-- Profile Header -->
         <div class="flex flex-col items-center space-y-4">
           <div class="relative">
