@@ -1,6 +1,7 @@
 import { handleEffect } from "~/utils";
 import { navigateTo } from "../app-router";
 import { showToast } from "../toast";
+import { fetchWithAuth } from "~/api/auth";
 
 class ProfileInfo extends HTMLElement {
   // for the username check
@@ -79,10 +80,11 @@ class ProfileInfo extends HTMLElement {
     }
 
     handleEffect(document.body, async () => {
-      const res = await fetch("/api/user/info", {
+      const res = await fetchWithAuth("/api/user/info", {
         method: "POST",
         credentials: "include",
         body: formData,
+        cache: "no-store",
       });
 
       if (res.ok) {
@@ -102,9 +104,10 @@ class ProfileInfo extends HTMLElement {
 
   removeAvatar = () => {
     handleEffect(this, async () => {
-      const res = await fetch("/api/user/remove_picture", {
+      const res = await fetchWithAuth("/api/user/remove_picture", {
         method: "DELETE",
         credentials: "include",
+        cache: "no-store",
       });
 
       if (res.ok) {
@@ -170,10 +173,11 @@ class ProfileInfo extends HTMLElement {
         }
 
         try {
-          const res = await fetch(
+          const res = await fetchWithAuth(
             `/api/user/namecheck?username=${target.value}`,
             {
               method: "GET",
+              cache: "no-store",
             }
           );
           if (!res.ok) {

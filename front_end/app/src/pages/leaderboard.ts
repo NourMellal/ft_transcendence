@@ -32,7 +32,7 @@ class LeaderboardPage extends HTMLElement {
 
     this.innerHTML = /*html*/ `
       <navigation-bar></navigation-bar>
-      <div class="container pb-10">
+      <div class="container mt-16">
         <h1 class="text-3xl font-bold mb-6">Leaderboard</h1>
         ${
           leaderboardData.length === 0

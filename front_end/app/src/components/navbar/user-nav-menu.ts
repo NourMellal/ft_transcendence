@@ -2,6 +2,7 @@ import UserIcon from "~/icons/user.svg?raw";
 import CogIcon from "~/icons/cog.svg?raw";
 import LogoutIcon from "~/icons/logout.svg?raw";
 import { navigateTo } from "../app-router";
+import { fetchWithAuth } from "~/api/auth";
 
 class UserNavMenu extends HTMLElement {
   constructor() {
@@ -34,11 +35,24 @@ class UserNavMenu extends HTMLElement {
   }
 
   handleLogout = async () => {
-    await fetch("/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    navigateTo("/signin");
+    try {
+      const response = await fetchWithAuth("/api/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      window._currentUser = null;
+
+      navigateTo("/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigateTo("/signin");
+    }
   };
 
   closeUserMenu = (event: MouseEvent) => {

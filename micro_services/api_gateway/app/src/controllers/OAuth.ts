@@ -98,10 +98,10 @@ export const AuthenticateUser = async (
     const { state, code } = request.query;
     const created = AuthProvider.GoogleSignInStates.get(state);
     if (!created)
-      throw `state_code=${state} is invalid.`;
+      return reply.code(401).send(`state_code=${state} is invalid.`);
     AuthProvider.GoogleSignInStates.delete(state);
     if (Date.now() / 1000 - created > state_expiree_sec)
-      throw `state_code=${state} has been expired.`;
+      return reply.code(401).send(`state_code=${state} has been expired.`);
     var OAuthRes = await OAuthExchangeCode(code);
     const getUserQuery = db.persistent.prepare(
       `SELECT * FROM '${users_table_name}' WHERE UID = ?;`
@@ -145,12 +145,13 @@ export const GetOAuthCode = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
-    var code = GetRandomString(8);
+    var state = GetRandomString(8);
     const created = Date.now() / 1000;
-    if (AuthProvider.GoogleSignInStates.has(code))
+    if (AuthProvider.GoogleSignInStates.has(state))
       throw `Duplicate OAuth state code`;
-    AuthProvider.GoogleSignInStates.set(code, created);
-    return reply.code(200).send(code);
+    AuthProvider.GoogleSignInStates.set(state, created);
+    setTimeout(() => AuthProvider.GoogleSignInStates.delete(state), state_expiree_sec * 1000);
+    return reply.code(200).send(state);
   } catch (error) {
     console.log(`ERROR: GetOAuthCode(): ${error}`);
     return reply.code(500).send("ERROR: internal error, try again later.");

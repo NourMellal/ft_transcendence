@@ -3,6 +3,7 @@ import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
 import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
+import { getUser } from "~/api/user";
 
 class SigninPage extends HTMLElement {
   constructor() {
@@ -22,6 +23,7 @@ class SigninPage extends HTMLElement {
           body: formData,
           credentials: "include",
           redirect: "follow",
+          cache: "no-store",
         });
 
         if (!res.ok) {
@@ -34,6 +36,8 @@ class SigninPage extends HTMLElement {
           return navigateTo(url.pathname + url.search);
         }
 
+        window._currentUser = await getUser();
+
         showToast({
           type: "success",
           message: `Welcome back!`,
@@ -44,7 +48,10 @@ class SigninPage extends HTMLElement {
   };
 
   getAuthState = async () => {
-    const res = await fetch("/api/OAuth/state");
+    const res = await fetch("/api/OAuth/state", {
+      cache: "no-store",
+      method: "GET",
+    });
     if (!res.ok) throw Error("Unexpected error occured!");
 
     return res.text();

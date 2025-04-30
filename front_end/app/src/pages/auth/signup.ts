@@ -2,6 +2,7 @@ import LockIcon from "~/icons/lock.svg?raw";
 import { navigateTo } from "~/components/app-router";
 import { showToast } from "~/components/toast";
 import { handleEffect } from "~/utils";
+import { getUser } from "~/api/user";
 
 class SignupPage extends HTMLElement {
   constructor() {
@@ -39,6 +40,7 @@ class SignupPage extends HTMLElement {
         const res = await fetch("/api/user/signup", {
           method: "POST",
           body: formData,
+          cache: "no-store",
         });
         if (!res.ok) {
           showToast({
@@ -47,6 +49,7 @@ class SignupPage extends HTMLElement {
           });
           return;
         }
+        window._currentUser = await getUser();
         showToast({
           type: "success",
           message: `Welcome to ft_transcendence!`,
@@ -57,7 +60,10 @@ class SignupPage extends HTMLElement {
   };
 
   getAuthState = async () => {
-    const res = await fetch("/api/OAuth/state");
+    const res = await fetch("/api/OAuth/state", {
+      cache: "no-store",
+      method: "GET",
+    });
     if (!res.ok) throw Error("Unexpected error occured!");
 
     return res.text();

@@ -28,7 +28,7 @@ class NotificationNavMenu extends HTMLElement {
       </button>
       <div
         id="notification-menu"
-        class="hidden absolute right-0 mt-2 w-sm overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+        class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
       >
         <div class="flex justify-end px-2 pt-2">
         <button class="text-sm text-muted-foreground hover:underline focus:outline-none">

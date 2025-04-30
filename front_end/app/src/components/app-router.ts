@@ -1,4 +1,3 @@
-import { getUser } from "~/api/user";
 import { routes } from "~/routes";
 
 function normalizePath(path: string) {
@@ -11,15 +10,22 @@ function normalizePath(path: string) {
   return normalized;
 }
 
-export function navigateTo(pathname: string) {
-  getUser().then((user) => {
-    window._currentUser = user;
-    const appRouter = document.querySelector("app-router") as AppRouter | null;
-    if (pathname !== normalizePath(window.location.pathname)) {
-      window.history.pushState({ pathname }, "", pathname);
-    }
-    appRouter?.renderPage();
-  });
+export function navigateTo(pathname: string, preserveScroll = false) {
+  const appRouter = document.querySelector("app-router") as AppRouter | null;
+
+  const [path, search] = pathname.split("?");
+  const normalizedPath = normalizePath(path);
+  const currentPath = normalizePath(window.location.pathname);
+  const currentSearch = window.location.search;
+
+  if (normalizedPath !== currentPath || search !== currentSearch.slice(1)) {
+    const newUrl = search ? `${normalizedPath}?${search}` : normalizedPath;
+    window.history.pushState({ pathname: normalizedPath, search }, "", newUrl);
+  }
+  if (!preserveScroll) {
+    window.scrollTo(0, 0);
+  }
+  appRouter?.renderPage();
 }
 
 class AppRouter extends HTMLElement {
@@ -64,7 +70,10 @@ class AppRouter extends HTMLElement {
 
     if (href.startsWith(origin)) {
       event.preventDefault();
-      if (anchor.pathname !== window.location.pathname) {
+      if (
+        anchor.pathname !== window.location.pathname ||
+        anchor.search !== window.location.search
+      ) {
         navigateTo(href.replace(origin, ""));
       }
     }
@@ -73,7 +82,7 @@ class AppRouter extends HTMLElement {
   connectedCallback() {
     this.addEventListener("click", this.onLinkClick);
     window.addEventListener("popstate", this.renderPage);
-    navigateTo(window.location.pathname);
+    navigateTo(window.location.pathname + window.location.search);
   }
 
   disconnectedCallback() {

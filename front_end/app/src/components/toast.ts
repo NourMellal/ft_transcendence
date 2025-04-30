@@ -34,7 +34,7 @@ class ToastContainer extends HTMLElement {
   constructor() {
     super();
     this.className =
-      "fixed top-0 z-[100] flex w-full flex-col [&:has(*)]:p-4 space-y-2 sm:inset-auto sm:top-0 sm:right-0 sm:max-w-[420px]";
+      "fixed top-0 z-[100] flex w-full flex-col [&:has(*)]:p-4 space-y-2 sm:inset-auto sm:bottom-0 sm:right-0 sm:max-w-[420px]";
   }
 
   connectedCallback() {

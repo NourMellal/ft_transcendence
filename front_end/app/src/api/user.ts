@@ -1,17 +1,18 @@
+import { fetchWithAuth } from "./auth";
+
 export type User = {
   UID: string;
   picture_url: string;
   bio: string;
-  friends_uids: string[] | null;
   username: string;
   totp_enabled: boolean;
 };
 
 export const getUser = async (): Promise<User | null> => {
   try {
-    const res = await fetch("/api/user/info?uid=me", {
+    const res = await fetchWithAuth("/api/user/info?uid=me", {
       method: "GET",
-      credentials: "include",
+      cache: "no-store",
     });
     if (!res.ok) return null;
 
