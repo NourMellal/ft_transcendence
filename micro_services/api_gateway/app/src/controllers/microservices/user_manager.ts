@@ -10,22 +10,38 @@ import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
+import { escapeHtml } from "../Common";
 
 export const FetchUserInfo = async (
-  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
   reply: FastifyReply
 ) => {
   try {
-    const { uid } = request.query;
-    if (!uid)
-      return reply.code(400).send('bad request');
-    reply.hijack();
+    const { uid, uname } = request.query;
+    if (!uid && !uname) return reply.code(400).send("bad request");
+    var UID: string = "";
+    if (uid) {
+      if (uid === "me") UID = request.jwt.sub;
+      else UID = uid;
+    } else if (uname) {
+      try {
+        const query = db.persistent.prepare(
+          `SELECT UID FROM '${users_table_name}' WHERE username = ? ;`
+        );
+        const res = query.get(escapeHtml(uname)) as UserModel;
+        if (!res) throw "no user found";
+        UID = res.UID;
+      } catch (err) {
+        return reply.code(404).send("user not found");
+      }
+    }
     const RabbitMQReq: RabbitMQRequest = {
       op: RabbitMQUserManagerOp.FETCH,
-      message: uid === "me" ? request.jwt.sub : uid,
+      message: UID,
       id: "",
       JWT: request.jwt,
     };
+    reply.hijack();
     rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       if (response.status !== 200 || response.message === undefined)
@@ -34,15 +50,14 @@ export const FetchUserInfo = async (
       const query = db.persistent.prepare(
         `SELECT username, totp_enabled FROM '${users_table_name}' WHERE UID = ? ;`
       );
-      const res = query.get(request.jwt.sub) as UserModel;
+      const res = query.get(UID) as UserModel;
       if (!res) {
         reply.raw.statusCode = 500;
-        reply.raw.end('database error');
+        reply.raw.end("database error");
         return;
       }
       payload.username = res.username;
-      if (uid === 'me' || request.jwt.sub === uid)
-        payload.totp_enabled = res.totp_enabled;
+      if (UID === request.jwt.sub) payload.totp_enabled = res.totp_enabled;
       reply.raw.end(reply.serialize(payload));
     });
   } catch (error) {
@@ -79,7 +94,7 @@ export const UpdateUserInfo = async (
       fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
     }
     if (bio) {
-      UpdatedInfo.bio = bio.field_value;
+      UpdatedInfo.bio = escapeHtml(bio.field_value);
     }
     if (
       username === undefined &&
@@ -94,7 +109,10 @@ export const UpdateUserInfo = async (
         const query = db.persistent.prepare(
           `UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`
         );
-        const res = query.run(username.field_value, request.jwt.sub);
+        const res = query.run(
+          escapeHtml(username.field_value),
+          request.jwt.sub
+        );
         if (res.changes !== 1) throw "UpdateUserInfo(): database error";
       } catch (error) {
         console.log(`ERROR: UpdateUserInfo(): query.run(): ${error}`);
@@ -131,7 +149,7 @@ export const UpdateUserPassword = async (
     );
     {
       if (!new_password || new_password.field_value.length < 8)
-        return reply.code(401).send('provide valid credentials > 7 chars');
+        return reply.code(401).send("provide valid credentials > 7 chars");
       const query = db.persistent.prepare(
         `SELECT password_hash FROM '${users_table_name}' WHERE UID = ? ;`
       );
@@ -141,11 +159,11 @@ export const UpdateUserPassword = async (
           (field: multipart_fields, i) => field.field_name === "old_password"
         );
         if (!old_password || old_password.field_value.length < 8)
-          return reply.code(401).send('provide valid credentials > 7 chars');
+          return reply.code(401).send("provide valid credentials > 7 chars");
         const hasher = crypto.createHash("sha256");
         hasher.update(Buffer.from(old_password.field_value));
         if (hasher.digest().toString() !== result.password_hash)
-          return reply.code(401).send('invalid old password');
+          return reply.code(401).send("invalid old password");
       }
     }
     const hasher = crypto.createHash("sha256");
@@ -155,13 +173,13 @@ export const UpdateUserPassword = async (
     );
     const result = query.run(hasher.digest().toString(), request.jwt.sub);
     if (result.changes !== 1) return reply.code(500).send("database error");
-    return reply.code(200).send('password updated');
+    return reply.code(200).send("password updated");
   } catch (error) {
     console.log(`ERROR: UpdateUserPassword(): ${error}`);
     reply.raw.statusCode = 500;
     reply.raw.end("ERROR: internal error, try again later.");
   }
-}
+};
 
 export const RemoveUserProfile = async (
   request: FastifyRequest,

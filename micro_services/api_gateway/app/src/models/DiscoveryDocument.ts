@@ -118,7 +118,7 @@ export const discoveryDocument = {
     FetchUserInfoRoute: {
       description: "HTTP: Get information about the user with uid.",
       route: "/api/user/info",
-      QueryParams: [{ name: "uid" }],
+      QueryParams: [{ name: "uid" }, { name: "uname" }],
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },

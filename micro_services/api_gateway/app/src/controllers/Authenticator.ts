@@ -1,5 +1,11 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { refresh_token_table_name, RefreshTokenModel, state_expiree_sec, UserModel, users_table_name } from "../types/DbTables";
+import {
+  refresh_token_table_name,
+  RefreshTokenModel,
+  state_expiree_sec,
+  UserModel,
+  users_table_name,
+} from "../types/DbTables";
 import fs from "fs";
 import { multipart_fields, multipart_files } from "../types/multipart";
 import db from "../classes/Databases";
@@ -12,12 +18,11 @@ import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
 import {
   CreateRefreshToken,
+  escapeHtml,
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
-  SignPayload,
 } from "./Common";
 import Totp from "../classes/TOTP";
-import { discoveryDocument } from "../models/DiscoveryDocument";
 
 export const IsDisplayNameAvailable = async (
   request: FastifyRequest<{ Querystring: { username: string } }>,
@@ -29,7 +34,7 @@ export const IsDisplayNameAvailable = async (
     const query = db.persistent.prepare(
       `SELECT username FROM '${users_table_name}' where username = ? ;`
     );
-    const res = query.get(username);
+    const res = query.get(escapeHtml(username));
     if (res === undefined) return reply.code(200).send();
     return reply.code(406).send();
   } catch (error) {
@@ -136,7 +141,7 @@ export const SignInStandardUser = async (
       `SELECT * from '${users_table_name}' WHERE username = ? AND password_hash = ? ;`
     );
     const res = query.get(
-      username.field_value,
+      escapeHtml(username.field_value),
       hasher.digest().toString()
     ) as UserModel;
     if (res) {
@@ -144,7 +149,11 @@ export const SignInStandardUser = async (
       const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
       if (res.totp_key && res.totp_enabled === 1) {
         try {
-          const redirectUrl = GetTOTPRedirectionUrl(res.UID, jwt_token, res.totp_key);
+          const redirectUrl = GetTOTPRedirectionUrl(
+            res.UID,
+            jwt_token,
+            res.totp_key
+          );
           return reply.code(301).redirect(redirectUrl);
         } catch (error) {
           return reply.code(500).send("internal error try again");
@@ -152,8 +161,17 @@ export const SignInStandardUser = async (
       }
       const expiresDate = new Date(jwt.exp * 1000).toUTCString();
       const refresh_token = CreateRefreshToken(jwt.sub, request.ip);
-      reply.raw.appendHeader("set-cookie", `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-      reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+      reply.raw.appendHeader(
+        "set-cookie",
+        `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+      );
+      reply.raw.appendHeader(
+        "set-cookie",
+        `refresh_token=${refresh_token}; Path=/; Expires=${new Date(
+          2100,
+          0
+        ).toUTCString()}; Secure; HttpOnly`
+      );
       return reply.code(200).send();
     }
     return reply.code(401).send("invalid credentials");
@@ -187,12 +205,21 @@ export const Verify2FACode = async (
     Totp.states.delete(request.query.state);
     const jwt = AuthProvider.ParseJwt(state.jwt_token);
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-    reply.raw.appendHeader("set-cookie", `jwt=${state.jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`);
-    reply.raw.appendHeader("set-cookie", `refresh_token=${refresh_token}; Path=/; Expires=${new Date(2100, 0).toUTCString()}; Secure; HttpOnly`);
+    reply.raw.appendHeader(
+      "set-cookie",
+      `jwt=${state.jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    );
+    reply.raw.appendHeader(
+      "set-cookie",
+      `refresh_token=${refresh_token}; Path=/; Expires=${new Date(
+        2100,
+        0
+      ).toUTCString()}; Secure; HttpOnly`
+    );
     return reply.code(200).send();
   } catch (error) {
     console.log(error);
-    return reply.code(500).redirect('internal server error');
+    return reply.code(500).redirect("internal server error");
   }
 };
 
@@ -204,67 +231,75 @@ export const RefreshToken = async (
   const refresh_token: multipart_fields | undefined = request.fields.find(
     (field: multipart_fields, i) => field.field_name === "refresh_token"
   );
-  if (!refresh_token)
-    return reply.code(400).send('bad request');
-  const query = db.persistent.prepare(`SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`);
-  const res = query.get(refresh_token.field_value) as RefreshTokenModel | undefined;
-  if (!res)
-    return reply.code(401).send('request unauthorized');
-  const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, '', '');
+  if (!refresh_token) return reply.code(400).send("bad request");
+  const query = db.persistent.prepare(
+    `SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`
+  );
+  const res = query.get(refresh_token.field_value) as
+    | RefreshTokenModel
+    | undefined;
+  if (!res) return reply.code(401).send("request unauthorized");
+  const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
   const token = AuthProvider.jwtFactory.SignJWT(jwt);
   const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-  reply.headers({ "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly` });
+  reply.headers({
+    "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`,
+  });
   return reply.code(200).send();
-}
+};
 
 export const ListActiveConnection = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
   type refresh_tokens = {
-    token_id: string,
-    ip: string,
-    created: number
+    token_id: string;
+    ip: string;
+    created: number;
   };
-  const query = db.persistent.prepare(`SELECT token_id, ip, created FROM '${refresh_token_table_name}' WHERE UID = ? ;`);
+  const query = db.persistent.prepare(
+    `SELECT token_id, ip, created FROM '${refresh_token_table_name}' WHERE UID = ? ;`
+  );
   const res = query.all(request.jwt.sub) as refresh_tokens[];
   return reply.send(res);
-}
+};
 
 export const RemoveRefreshToken = async (
   request: FastifyRequest<{ Querystring: { token_id: string } }>,
   reply: FastifyReply
 ) => {
-  const query = db.persistent.prepare(`DELETE FROM '${refresh_token_table_name}' WHERE token_id = ? ;`);
+  const query = db.persistent.prepare(
+    `DELETE FROM '${refresh_token_table_name}' WHERE token_id = ? ;`
+  );
   const res = query.run(request.query.token_id);
-  if (res.changes === 1)
-    return reply.code(200).send('token removed');
-  return reply.code(400).send('bad request');
-}
+  if (res.changes === 1) return reply.code(200).send("token removed");
+  return reply.code(400).send("bad request");
+};
 
 export const LogOutCurrentUser = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
   if (request.headers.cookie) {
-    const cookies = request.headers.cookie.split('; ');
+    const cookies = request.headers.cookie.split("; ");
     var refresh_token: string | undefined = undefined;
     for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].split('=');
-      if (cookie[0] !== 'refresh_token')
-        continue;
-      if (cookie.length !== 2)
-        return reply.code(400).send('bad request');
+      const cookie = cookies[i].split("=");
+      if (cookie[0] !== "refresh_token") continue;
+      if (cookie.length !== 2) return reply.code(400).send("bad request");
       refresh_token = cookie[1];
     }
-    if (!refresh_token)
-      return reply.code(400).send('bad request');
-    const query = db.persistent.prepare(`DELETE FROM ${refresh_token_table_name} WHERE UID = ? AND token = ?`);
+    if (!refresh_token) return reply.code(400).send("bad request");
+    const query = db.persistent.prepare(
+      `DELETE FROM ${refresh_token_table_name} WHERE UID = ? AND token = ?`
+    );
     const res = query.run(request.jwt.sub, refresh_token);
-    if (res.changes !== 1)
-      return reply.code(400).send('bad request');
+    if (res.changes !== 1) return reply.code(400).send("bad request");
   }
   reply.raw.appendHeader("set-cookie", `jwt=; Path=/; Secure; HttpOnly`);
-  reply.raw.appendHeader("set-cookie", `refresh_token=; Path=/; Secure; HttpOnly`);
+  reply.raw.appendHeader(
+    "set-cookie",
+    `refresh_token=; Path=/; Secure; HttpOnly`
+  );
   return reply.code(200).send();
-}
+};

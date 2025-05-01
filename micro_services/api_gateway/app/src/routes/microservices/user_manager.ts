@@ -15,8 +15,8 @@ const GetUserInfoOpts = {
       type: "object",
       properties: {
         uid: { type: "string" },
+        uname: { type: "string" },
       },
-      required: ["uid"],
     },
     headers: AuthHeaderValidation.schema.headers,
   },
