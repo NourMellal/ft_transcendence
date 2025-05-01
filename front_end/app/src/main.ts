@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   handleEffect(document.body, async () => {
-    window._currentUser = await getUser();
+    await getUser();
     const root = document.querySelector("#app");
     if (!root) throw Error("App Root Not Found!");
 

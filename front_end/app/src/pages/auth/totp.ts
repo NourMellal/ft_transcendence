@@ -82,7 +82,7 @@ class TotpVerify extends HTMLElement {
       );
 
       if (res.ok) {
-        window._currentUser = await getUser();
+        await getUser();
         showToast({
           message: `Welcome back!`,
           type: "success",

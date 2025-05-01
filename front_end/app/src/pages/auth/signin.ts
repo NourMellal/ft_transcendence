@@ -36,7 +36,7 @@ class SigninPage extends HTMLElement {
           return navigateTo(url.pathname + url.search);
         }
 
-        window._currentUser = await getUser();
+        await getUser();
 
         showToast({
           type: "success",
