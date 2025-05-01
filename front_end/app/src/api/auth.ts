@@ -1,43 +1,11 @@
-let refreshInProgress = false;
-let refreshPromise: Promise<void> | null = null;
+import { navigateTo } from "~/components/app-router";
 
-export const refreshToken = async (): Promise<void> => {
-  if (refreshInProgress) {
-    return refreshPromise!;
-  }
-
-  refreshInProgress = true;
-  refreshPromise = (async () => {
-    try {
-      const refreshToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("refresh_token="))
-        ?.split("=")[1];
-
-      if (!refreshToken) {
-        throw new Error("No refresh token found");
-      }
-
-      const formData = new FormData();
-      formData.append("refresh_token", refreshToken);
-
-      const res = await fetch("/api/jwt/refresh", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to refresh token");
-      }
-    } finally {
-      refreshInProgress = false;
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-};
+async function refreshToken() {
+  return await fetch("/api/auth/refresh", {
+    method: "POST",
+    credentials: "include",
+  });
+}
 
 export const fetchWithAuth = async (
   url: string,
@@ -49,7 +17,12 @@ export const fetchWithAuth = async (
   });
 
   if (response.status === 401) {
-    await refreshToken();
+    const refreshRes = await refreshToken();
+    if (refreshRes.status === 401) {
+      navigateTo("/signin");
+      return refreshRes;
+    }
+
     return fetch(url, {
       ...options,
       credentials: "include",

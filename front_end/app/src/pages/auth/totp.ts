@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "~/api/auth";
+import { getUser } from "~/api/user";
 import { navigateTo } from "~/components/app-router";
 import { showToast } from "~/components/toast";
 
@@ -81,6 +82,7 @@ class TotpVerify extends HTMLElement {
       );
 
       if (res.ok) {
+        window._currentUser = await getUser();
         showToast({
           message: `Welcome back!`,
           type: "success",
