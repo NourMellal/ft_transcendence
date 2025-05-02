@@ -4,7 +4,7 @@ import { handleEffect } from "./utils";
 import.meta.glob("./components/**/*.ts", { eager: true });
 import.meta.glob("./pages/**/*.ts", { eager: true });
 
-document.addEventListener("DOMContentLoaded", () => {
+function initTheme() {
   let isDarkMode = true;
   if (window.localStorage.getItem("theme")) {
     isDarkMode = window.localStorage.getItem("theme") === "dark";
@@ -15,6 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isDarkMode) {
     document.documentElement.classList.add("dark");
   }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
 
   handleEffect(document.body, async () => {
     await getUser();
