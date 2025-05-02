@@ -2,6 +2,7 @@ import amqp from "amqplib";
 import { Options } from "amqplib";
 import {
   RabbitMQMicroServices,
+  RabbitMQNotificationsOp,
   RabbitMQRequest,
   RabbitMQResponse,
 } from "../types/RabbitMQMessages";
@@ -75,6 +76,8 @@ class RabbitMQ {
       console.log(
         `Error: rabbitmq consumeNotificationsQueue(): ${error} | request id: ${RMqRequest.id}`
       );
+      if (RMqRequest.op === RabbitMQNotificationsOp.SAVE_NOTIFICATION)
+        return;
       const RMqResponse: RabbitMQResponse = {
         service: RabbitMQMicroServices.NOTIFICATIONS,
         op: RMqRequest.op,

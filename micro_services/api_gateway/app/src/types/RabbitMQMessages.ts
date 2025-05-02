@@ -27,6 +27,7 @@ export enum RabbitMQFriendsManagerOp {
 
 export enum RabbitMQNotificationsOp {
   SAVE_NOTIFICATION = 1,
+  MARK_READ,
   LIST_UNREAD,
   LIST_ALL,
   DELETE,

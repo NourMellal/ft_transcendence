@@ -9,10 +9,23 @@ export enum RabbitMQMicroServices {
 
 export enum RabbitMQNotificationsOp {
   SAVE_NOTIFICATION = 1,
+  MARK_READ,
   LIST_UNREAD,
   LIST_ALL,
   DELETE,
   PING_USER,
+}
+
+export enum NotificationType {
+  NewFriendRequest = 1,
+  FriendRequestAccepted,
+  GameInvite,
+  Poke,
+}
+
+export type NotificationBody = {
+  type: NotificationType,
+  from_uid: string
 }
 
 export type RabbitMQRequest = {
