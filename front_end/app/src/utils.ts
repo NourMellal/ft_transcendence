@@ -3,15 +3,11 @@ import { showToast } from "./components/toast";
 export async function handleEffect(
   component: HTMLElement,
   fetchDataAsync: () => Promise<any>,
-  loadingElement: HTMLElement = document.createElement("app-loader"),
-  delay = 150
+  loadingElement: HTMLElement = document.createElement("app-loader")
 ) {
   let loader = loadingElement;
 
-  // debounce loading state
-  const showLoader = setTimeout(() => {
-    component.appendChild(loader);
-  }, delay);
+  component.appendChild(loader);
 
   try {
     return await fetchDataAsync();
@@ -21,7 +17,6 @@ export async function handleEffect(
       message: "An unexpected error occurred",
     });
   } finally {
-    clearTimeout(showLoader);
     if (loader.isConnected) {
       loader.remove();
     }

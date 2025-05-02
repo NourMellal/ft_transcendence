@@ -3,6 +3,7 @@ import CogIcon from "~/icons/cog.svg?raw";
 import LogoutIcon from "~/icons/logout.svg?raw";
 import { navigateTo } from "../app-router";
 import { fetchWithAuth } from "~/api/auth";
+import { getUser } from "~/api/user";
 
 class UserNavMenu extends HTMLElement {
   constructor() {
@@ -46,7 +47,7 @@ class UserNavMenu extends HTMLElement {
         throw new Error("Logout failed");
       }
 
-      window._currentUser = null;
+      await getUser();
 
       navigateTo("/signin");
     } catch (error) {

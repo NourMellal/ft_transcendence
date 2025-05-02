@@ -49,7 +49,7 @@ class SignupPage extends HTMLElement {
           });
           return;
         }
-        window._currentUser = await getUser();
+        await getUser();
         showToast({
           type: "success",
           message: `Welcome to ft_transcendence!`,

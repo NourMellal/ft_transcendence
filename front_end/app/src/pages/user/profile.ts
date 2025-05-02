@@ -3,93 +3,320 @@ import { User } from "~/api/user";
 import { showToast } from "~/components/toast";
 import { fetchWithAuth } from "~/api/auth";
 
+enum FriendStatus {
+  NONE,
+  FRIEND,
+  PENDING_OUTGOING,
+  PENDING_INCOMING,
+}
+
+interface ProfileState {
+  user: User;
+  isOwnProfile: boolean;
+  friendStatus: FriendStatus;
+  pendingRequestId: string | null;
+}
+
 class ProfilePage extends HTMLElement {
+  private state: ProfileState | null = null;
+
   constructor() {
     super();
   }
 
-  async render() {
+  async loadProfileData(): Promise<ProfileState | null> {
     if (!window._currentUser) {
       navigateTo("/signin");
-      return;
+      return null;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const uid = urlParams.get("uid");
-    let user: User;
-    let isOwnProfile = false;
-    let isFriend = false;
-    let hasPendingRequest = false;
-    let isRequestFromUser = false;
-    let pendingRequestId: string | null = null;
-    let hasSentRequest = false;
+    const userId = urlParams.get("id");
+    const username = urlParams.get("username");
 
     try {
-      if (uid) {
-        const res = await fetchWithAuth(`/api/user/info?uid=${uid}`, {
+      let user: User;
+      if (userId || username) {
+        const queryParam = username ? `uname=${username}` : `uid=${userId}`;
+        const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
           credentials: "include",
           cache: "no-store",
         });
+
         if (!res.ok) {
           navigateTo("/profile");
-          return;
+          return null;
         }
         user = await res.json();
-        isOwnProfile = user.UID === window._currentUser.UID;
-
-        const friendsRes = await fetchWithAuth("/api/friends", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (friendsRes.ok) {
-          const friends = await friendsRes.json();
-          isFriend = friends.includes(user.UID);
-        }
-
-        const requestsRes = await fetchWithAuth("/api/friends/requests", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (requestsRes.ok) {
-          const requests = await requestsRes.json();
-          const pendingRequest = requests.find(
-            (request: any) =>
-              (request.from_uid === user.UID &&
-                request.to_uid === window._currentUser?.UID) ||
-              (request.from_uid === window._currentUser?.UID &&
-                request.to_uid === user.UID)
-          );
-          hasPendingRequest = !!pendingRequest;
-          isRequestFromUser = pendingRequest?.from_uid === user.UID;
-          pendingRequestId = pendingRequest?.REQ_ID || null;
-        }
-
-        const sentRequestsRes = await fetchWithAuth(
-          "/api/friends/sent_requests",
-          {
-            credentials: "include",
-            cache: "no-store",
-          }
-        );
-        if (sentRequestsRes.ok) {
-          const sentRequests = await sentRequestsRes.json();
-          const sentRequest = sentRequests.find(
-            (request: any) => request.to_uid === user.UID
-          );
-          hasSentRequest = !!sentRequest;
-          if (sentRequest) {
-            pendingRequestId = sentRequest.REQ_ID;
-          }
-        }
       } else {
         user = window._currentUser;
-        isOwnProfile = true;
       }
+
+      const isOwnProfile = user.UID === window._currentUser.UID;
+
+      if (isOwnProfile) {
+        return {
+          user,
+          isOwnProfile,
+          friendStatus: FriendStatus.NONE,
+          pendingRequestId: null,
+        };
+      }
+
+      const friendStatus = await this.getFriendStatus(user.UID);
+
+      return {
+        user,
+        isOwnProfile,
+        ...friendStatus,
+      };
     } catch (error) {
       console.error("Error fetching user data:", error);
       navigateTo("/profile");
-      return;
+      return null;
     }
+  }
+
+  async getFriendStatus(
+    targetUid: string
+  ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
+    try {
+      const friendsRes = await fetchWithAuth("/api/friends", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (friendsRes.ok) {
+        const friends = await friendsRes.json();
+        if (friends.includes(targetUid)) {
+          return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
+        }
+      }
+
+      const requestsRes = await fetchWithAuth("/api/friends/requests", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (requestsRes.ok) {
+        const requests = await requestsRes.json();
+        const incomingRequest = requests.find(
+          (request: any) => request.from_uid === targetUid
+        );
+
+        if (incomingRequest) {
+          return {
+            friendStatus: FriendStatus.PENDING_INCOMING,
+            pendingRequestId: incomingRequest.REQ_ID,
+          };
+        }
+      }
+
+      const sentRequestsRes = await fetchWithAuth(
+        "/api/friends/sent_requests",
+        {
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+      if (sentRequestsRes.ok) {
+        const sentRequests = await sentRequestsRes.json();
+        const outgoingRequest = sentRequests.find(
+          (request: any) => request.to_uid === targetUid
+        );
+
+        if (outgoingRequest) {
+          return {
+            friendStatus: FriendStatus.PENDING_OUTGOING,
+            pendingRequestId: outgoingRequest.REQ_ID,
+          };
+        }
+      }
+
+      return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
+    } catch (error) {
+      console.error("Error checking friend status:", error);
+      return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
+    }
+  }
+
+  renderFriendActionButtons() {
+    if (!this.state || this.state.isOwnProfile) return "";
+
+    const { user, friendStatus, pendingRequestId } = this.state;
+
+    switch (friendStatus) {
+      case FriendStatus.FRIEND:
+        return /*html*/ `
+          <div class="flex gap-2">
+            <button class="btn btn-disabled" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Already Friends</span>
+            </button>
+            <button
+              class="btn btn-destructive friend-action"
+              data-action="remove"
+              data-id="${user.UID}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <line x1="18" y1="8" x2="23" y2="13"></line>
+                <line x1="23" y1="8" x2="18" y2="13"></line>
+              </svg>
+              <span>Remove Friend</span>
+            </button>
+          </div>
+        `;
+
+      case FriendStatus.PENDING_INCOMING:
+        return /*html*/ `
+          <div class="flex gap-2">
+            <button
+              class="btn btn-primary friend-action"
+              data-action="accept"
+              data-id="${pendingRequestId}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>Accept Request</span>
+            </button>
+            <button
+              class="btn btn-destructive friend-action"
+              data-action="deny"
+              data-id="${pendingRequestId}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span>Decline</span>
+            </button>
+          </div>
+        `;
+
+      case FriendStatus.PENDING_OUTGOING:
+        return /*html*/ `
+          <div class="flex gap-2">
+            <button class="btn btn-disabled" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <path d="M20 6L9 17l-5-5"></path>
+              </svg>
+              <span>Request Sent</span>
+            </button>
+            <button
+              class="btn btn-destructive friend-action"
+              data-action="cancel"
+              data-id="${pendingRequestId}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span>Cancel Request</span>
+            </button>
+          </div>
+        `;
+
+      default:
+        return /*html*/ `
+          <button
+            class="btn btn-outlined friend-action"
+            data-action="add"
+            data-id="${user.UID}"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+            <span>Add Friend</span>
+          </button>
+        `;
+    }
+  }
+
+  async handleFriendAction(action: string, id: string) {
+    try {
+      let endpoint = "";
+      let successMessage = "";
+
+      switch (action) {
+        case "add":
+          endpoint = `/api/friends/request?uid=${id}`;
+          successMessage = "Friend request sent";
+          break;
+        case "accept":
+          endpoint = `/api/friends/accept?uid=${id}`;
+          successMessage = "Friend request accepted";
+          break;
+        case "deny":
+        case "cancel":
+          endpoint = `/api/friends/deny?uid=${id}`;
+          successMessage =
+            action === "deny"
+              ? "Friend request declined"
+              : "Friend request canceled";
+          break;
+        case "remove":
+          endpoint = `/api/friends/remove?uid=${id}`;
+          successMessage = "Friend removed successfully";
+          break;
+        default:
+          throw new Error("Invalid friend action");
+      }
+
+      const response = await fetchWithAuth(endpoint, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${action} friend`);
+      }
+
+      showToast({ type: "success", message: successMessage });
+      await this.render();
+    } catch (error) {
+      console.error(`Error with friend action (${action}):`, error);
+      showToast({
+        type: "error",
+        message: `Failed to ${action} friend. Please try again.`,
+      });
+    }
+  }
+
+  setup() {
+    const buttons = this.querySelectorAll(".friend-action");
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        const target = event.currentTarget as HTMLElement;
+        const action = target.dataset.action;
+        const id = target.dataset.id;
+
+        if (action && id) {
+          this.handleFriendAction(action, id);
+        }
+      });
+    });
+  }
+
+  async render() {
+    this.state = await this.loadProfileData();
+    if (!this.state) return;
+
+    const { user, isOwnProfile } = this.state;
 
     const stats = [
       { label: "Games Played", value: "42" },
@@ -127,109 +354,7 @@ class ProfilePage extends HTMLElement {
             <p class="text-muted-foreground">${user.bio || "No bio yet"}</p>
           </div>
           <div class="flex gap-2">
-            ${
-              !isOwnProfile
-                ? /*html*/ `
-              ${
-                isFriend
-                  ? /*html*/ `
-                    <div class="flex gap-2">
-                      <button class="btn btn-disabled" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <span>Already Friends</span>
-                      </button>
-                      <button
-                        class="btn btn-destructive"
-                        onclick="this.closest('profile-page').removeFriend('${user.UID}')"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <line x1="18" y1="8" x2="23" y2="13"></line>
-                          <line x1="23" y1="8" x2="18" y2="13"></line>
-                        </svg>
-                        <span>Remove Friend</span>
-                      </button>
-                    </div>
-                  `
-                  : hasPendingRequest
-                  ? isRequestFromUser
-                    ? /*html*/ `
-                        <div class="flex gap-2">
-                          <button
-                            class="btn btn-primary"
-                            onclick="this.closest('profile-page').acceptFriendRequest('${pendingRequestId}')"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                            <span>Accept Request</span>
-                          </button>
-                          <button
-                            class="btn btn-destructive"
-                            onclick="this.closest('profile-page').denyFriendRequest('${pendingRequestId}')"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                              <line x1="18" y1="6" x2="6" y2="18"></line>
-                              <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                            <span>Decline</span>
-                          </button>
-                        </div>
-                      `
-                    : /*html*/ `
-                        <button class="btn btn-disabled" disabled>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                            <path d="M20 6L9 17l-5-5"></path>
-                          </svg>
-                          <span>Request Sent</span>
-                        </button>
-                      `
-                  : hasSentRequest
-                  ? /*html*/ `
-                      <div class="flex gap-2">
-                        <button class="btn btn-disabled" disabled>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                          <path d="M20 6L9 17l-5-5"></path>
-                        </svg>
-                        <span>Request Sent</span>
-                      </button>
-                      <button
-                        class="btn btn-destructive"
-                        onclick="this.closest('profile-page').denyFriendRequest('${pendingRequestId}')"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                        <span>Cancel Request</span>
-                      </button>
-                    </div>
-                  `
-                  : /*html*/ `
-                    <button
-                      class="btn btn-outlined"
-                      onclick="this.closest('profile-page').addFriend('${user.UID}')"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <line x1="19" y1="8" x2="19" y2="14"></line>
-                        <line x1="22" y1="11" x2="16" y2="11"></line>
-                      </svg>
-                      <span>Add Friend</span>
-                    </button>
-                  `
-              }
-            `
-                : ""
-            }
+            ${!isOwnProfile ? this.renderFriendActionButtons() : ""}
           </div>
         </div>
 
@@ -275,86 +400,8 @@ class ProfilePage extends HTMLElement {
         </div>
       </div>
     `;
-  }
 
-  async addFriend(uid: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/request?uid=${uid}`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send friend request");
-      }
-
-      this.render();
-    } catch (error) {
-      console.error("Error adding friend:", error);
-    }
-  }
-
-  async acceptFriendRequest(uid: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/accept?uid=${uid}`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to accept friend request");
-      }
-
-      this.render();
-    } catch (error) {
-      console.error("Error accepting friend request:", error);
-    }
-  }
-
-  async denyFriendRequest(uid: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/deny?uid=${uid}`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to deny friend request");
-      }
-
-      this.render();
-    } catch (error) {
-      console.error("Error denying friend request:", error);
-    }
-  }
-
-  async removeFriend(uid: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/remove?uid=${uid}`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to remove friend");
-      }
-
-      showToast({
-        type: "success",
-        message: "Friend removed successfully",
-      });
-
-      this.render();
-    } catch (error) {
-      showToast({
-        type: "error",
-        message: "An unexpected error occurred while removing friend",
-      });
-    }
+    this.setup();
   }
 
   connectedCallback() {

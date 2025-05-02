@@ -7,7 +7,7 @@ class SettingsPage extends HTMLElement {
   }
 
   render = async () => {
-    window._currentUser = await getUser();
+    await getUser();
     if (!window._currentUser) {
       return navigateTo("/signin");
     }
