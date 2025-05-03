@@ -209,6 +209,7 @@ export const discoveryDocument = {
       types: [
         { NewFriendRequest: 1 },
         { FriendRequestAccepted: 2 },
+        { FriendRequestDenied: 3 },
         { GameInvite: 3 },
         { Poke: 4 }
       ]
