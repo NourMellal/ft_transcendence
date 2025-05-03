@@ -165,7 +165,7 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
-    ListSentFriendsRequestsRoute:{
+    ListSentFriendsRequestsRoute: {
       description: "HTTP: Get current user sent friends requests.",
       route: "/api/friends/sent_requests",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
@@ -204,7 +204,16 @@ export const discoveryDocument = {
     },
   },
   Notifications: {
-    GetPushNotificationTicket:{
+    NotificationTypesEnum: {
+      description: "Enum: notification types.",
+      types: [
+        { NewFriendRequest: 1 },
+        { FriendRequestAccepted: 2 },
+        { GameInvite: 3 },
+        { Poke: 4 }
+      ]
+    },
+    GetPushNotificationTicket: {
       description: "HTTP: get a notification ticket to use with wss.",
       route: "/api/notifications/ticket",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
