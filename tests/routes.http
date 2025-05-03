@@ -258,12 +258,49 @@ POST https://transcendence.fr/api/friends/remove?uid=
 
 ###### START NOTIFICATION TESTs (Authorization required) ######
 
-# Listen to notifications ping using WebSocket:
+# Get a ticket to use for wss sockets:
 GET https://transcendence.fr/api/notifications/ticket
 #Cookie: jwt={{jwt_token}}
 
 
 ###
+
+# List unread notifications:
+GET https://transcendence.fr/api/notifications/list_unread
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# List all notifications:
+GET https://transcendence.fr/api/notifications/list_all
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Mark a notification as read:
+POST https://transcendence.fr/api/notifications/mark_as_read?uid=
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Delete a notification:
+POST https://transcendence.fr/api/notifications/delete?uid=
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Send a Poke notification to a friend:
+POST https://transcendence.fr/api/poke?uid=
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+
 # Listen to notifications ping using WebSocket:
 GET wss://transcendence.fr/api/notifications/push_notification
 Sec-WebSocket-Protocol: {{jwt_token}}

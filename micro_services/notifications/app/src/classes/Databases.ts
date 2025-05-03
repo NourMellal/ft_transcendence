@@ -10,7 +10,7 @@ class Databases {
   public init(): void {
     try {
       db.persistent.exec(
-        `create table IF NOT EXISTS '${notifications_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'type' INT, 'messageJson' TEXT)`
+        `create table IF NOT EXISTS '${notifications_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'user_uid' TEXT NOT NULL, 'messageJson' TEXT NOT NULL, 'is_read' INT NOT NULL)`
       );
     } catch (err) {
       console.log("fatal error: " + err);

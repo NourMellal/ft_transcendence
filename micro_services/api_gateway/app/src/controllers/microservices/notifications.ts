@@ -3,6 +3,8 @@ import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
 import { GetRandomString } from "../Common";
 import { state_expiree_sec } from "../../types/DbTables";
+import { RabbitMQFriendsManagerOp, RabbitMQNotificationsOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
+import rabbitmq from "../../classes/RabbitMQ";
 
 const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
 const PushNotificationStates = new Map<string, string>();
@@ -21,11 +23,13 @@ const removeSocket = function (socket: WebSocket, uid: string) {
 };
 
 export const pingUser = function (uid: string) {
+  console.log(`Ping Request for uid=${uid}:`);
   const sockets = PushNotificationSocketsMap.get(uid);
   if (sockets) {
     for (let i = 0; i < sockets.length; i++) {
       try {
         sockets[i].ping();
+        console.log(`pinging uid=${uid} on registred web socket.`);
       } catch (error) {
         console.log(`error pinging user uid=${uid}: ${error}`);
       }
@@ -61,4 +65,89 @@ export const GetPushNotificationTicket = async (
   PushNotificationStates.set(state, request.jwt.sub);
   setTimeout(() => PushNotificationStates.delete(state), state_expiree_sec * 1000);
   return reply.code(200).send(state);
+}
+
+export const GetUnreadNotification = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  reply.hijack();
+  const RabbitMQReq: RabbitMQRequest = {
+    op: RabbitMQNotificationsOp.LIST_UNREAD,
+    message: '',
+    id: '',
+    JWT: request.jwt,
+  };
+  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
+}
+
+export const GetAllNotification = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  reply.hijack();
+  const RabbitMQReq: RabbitMQRequest = {
+    op: RabbitMQNotificationsOp.LIST_ALL,
+    message: '',
+    id: '',
+    JWT: request.jwt,
+  };
+  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
+}
+
+export const MarkNotificationAsRead = async (
+  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  reply: FastifyReply
+) => {
+  reply.hijack();
+  const RabbitMQReq: RabbitMQRequest = {
+    op: RabbitMQNotificationsOp.MARK_READ,
+    message: request.query.uid,
+    id: '',
+    JWT: request.jwt,
+  };
+  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
+}
+
+export const DeleteNotification = async (
+  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  reply: FastifyReply
+) => {
+  reply.hijack();
+  const RabbitMQReq: RabbitMQRequest = {
+    op: RabbitMQNotificationsOp.DELETE,
+    message: request.query.uid,
+    id: '',
+    JWT: request.jwt,
+  };
+  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
+}
+
+export const PokeFriend = async (
+  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  reply: FastifyReply
+) => {
+  reply.hijack();
+  const RabbitMQReq: RabbitMQRequest = {
+    op: RabbitMQFriendsManagerOp.POKE_FRIEND,
+    message: request.query.uid,
+    id: '',
+    JWT: request.jwt,
+  };
+  rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
 }
