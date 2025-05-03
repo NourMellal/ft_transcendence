@@ -127,7 +127,17 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   // Send a message to notification service
   {
-    // TODO ..
+    const Notification: NotificationBody = {
+      type: NotificationType.NewFriendRequest,
+      from_uid: RMqRequest.JWT.sub
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: { sub: RMqRequest.message } as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   return RMqResponse;
 }
@@ -204,7 +214,17 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   // Send a message to notification service
   {
-    // TODO ..
+    const Notification: NotificationBody = {
+      type: NotificationType.FriendRequestAccepted,
+      from_uid: RMqRequest.JWT.sub
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: { sub: request.from_uid } as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   RMqResponse.message = "friend request accepted";
   RMqResponse.status = 200;
@@ -233,6 +253,11 @@ function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       RMqResponse.status = 400;
       return RMqResponse;
     }
+    if (request.from_uid !== RMqRequest.JWT.sub && request.to_uid !== RMqRequest.JWT.sub) {
+      RMqResponse.message = "permission denied";
+      RMqResponse.status = 400;
+      return RMqResponse;
+    }
   }
   // Remove request from db
   {
@@ -243,8 +268,18 @@ function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     if (result.changes !== 1) throw `DenyFriendRequest(): database error`;
   }
   // Send notification to the sender if deny comes from to_uid
-  {
-    // Send to notification service
+  if (RMqRequest.JWT.sub == request.to_uid) {
+    const Notification: NotificationBody = {
+      type: NotificationType.FriendRequestDenied,
+      from_uid: RMqRequest.JWT.sub
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: { sub: request.from_uid } as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   RMqResponse.message = "friend request denied";
   RMqResponse.status = 200;
@@ -353,7 +388,7 @@ function PokeFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     id: '',
     op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
     message: JSON.stringify(Notification),
-    JWT: {sub: RMqRequest.message} as JWT
+    JWT: { sub: RMqRequest.message } as JWT
   };
   rabbitmq.sendToNotificationQueue(notificationRequest);
   RMqResponse.message = "Poke registred";
