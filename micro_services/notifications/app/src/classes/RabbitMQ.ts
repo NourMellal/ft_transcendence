@@ -61,8 +61,6 @@ class RabbitMQ {
     var RMqRequest: RabbitMQRequest;
     try {
       RMqRequest = JSON.parse(msg.content.toString());
-      if (!RMqRequest.id || RMqRequest.id === "")
-        throw "received request with no id";
     } catch (error) {
       console.log(
         `Error: rabbitmq consumeNotificationsQueue(): parse error ${error}`
@@ -77,6 +75,8 @@ class RabbitMQ {
         `Error: rabbitmq consumeNotificationsQueue(): ${error} | request id: ${RMqRequest.id}`
       );
       if (RMqRequest.op === RabbitMQNotificationsOp.SAVE_NOTIFICATION)
+        return;
+      if (!RMqRequest.id || RMqRequest.id === "")
         return;
       const RMqResponse: RabbitMQResponse = {
         service: RabbitMQMicroServices.NOTIFICATIONS,

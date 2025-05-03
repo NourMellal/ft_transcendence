@@ -1,4 +1,6 @@
 import db from "../classes/Databases";
+import rabbitmq from "../classes/RabbitMQ";
+import { JWT } from "../types/common";
 import {
   friends_table_name,
   FriendsModel,
@@ -10,6 +12,9 @@ import {
   RabbitMQResponse,
   RabbitMQFriendsManagerOp,
   RabbitMQMicroServices,
+  NotificationBody,
+  NotificationType,
+  RabbitMQNotificationsOp,
 } from "../types/RabbitMQMessages";
 
 function ListFriends(RMqRequest: RabbitMQRequest): RabbitMQResponse {
@@ -311,6 +316,51 @@ function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   return RMqResponse;
 }
 
+function PokeFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  const RMqResponse: RabbitMQResponse = {
+    service: RabbitMQMicroServices.FRIENDS_MANAGER,
+    req_id: RMqRequest.id,
+  } as RabbitMQResponse;
+  if (
+    !RMqRequest.message ||
+    RMqRequest.message === "" ||
+    RMqRequest.message === RMqRequest.JWT.sub
+  ) {
+    RMqResponse.message = "Bad request";
+    RMqResponse.status = 400;
+    return RMqResponse;
+  }
+  const query = db.persistent.prepare(
+    `SELECT friends FROM '${friends_table_name}' WHERE UID = ? ;`
+  );
+  const res = query.get(RMqRequest.JWT.sub) as FriendsModel;
+  if (!res || !res.friends || res.friends === "") {
+    RMqResponse.message = "Bad request";
+    RMqResponse.status = 400;
+    return RMqResponse;
+  }
+  const friends_uids = res.friends.split(';');
+  if (friends_uids.indexOf(RMqRequest.message) == -1) {
+    RMqResponse.message = "Bad request";
+    RMqResponse.status = 400;
+    return RMqResponse;
+  }
+  const Notification: NotificationBody = {
+    type: NotificationType.Poke,
+    from_uid: RMqRequest.JWT.sub
+  }
+  const notificationRequest: RabbitMQRequest = {
+    id: '',
+    op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+    message: JSON.stringify(Notification),
+    JWT: {sub: RMqRequest.message} as JWT
+  };
+  rabbitmq.sendToNotificationQueue(notificationRequest);
+  RMqResponse.message = "Poke registred";
+  RMqResponse.status = 200;
+  return RMqResponse;
+}
+
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {
     case RabbitMQFriendsManagerOp.LIST_FRIENDS:
@@ -327,6 +377,8 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       return DenyFriendRequest(RMqRequest);
     case RabbitMQFriendsManagerOp.REMOVE_FRIEND:
       return RemoveFriend(RMqRequest);
+    case RabbitMQFriendsManagerOp.POKE_FRIEND:
+      return PokeFriend(RMqRequest);
     default:
       console.log(
         "WARNING: rabbitmq HandleMessage(): operation not implemented."

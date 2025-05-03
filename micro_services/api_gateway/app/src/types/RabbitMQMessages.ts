@@ -23,6 +23,7 @@ export enum RabbitMQFriendsManagerOp {
   LIST_FRIENDS,
   LIST_REQUESTS,
   LIST_SENT_REQUESTS,
+  POKE_FRIEND
 }
 
 export enum RabbitMQNotificationsOp {
@@ -32,6 +33,18 @@ export enum RabbitMQNotificationsOp {
   LIST_ALL,
   DELETE,
   PING_USER,
+}
+
+export enum NotificationType {
+  NewFriendRequest = 1,
+  FriendRequestAccepted,
+  GameInvite,
+  Poke,
+}
+
+export type NotificationBody = {
+  type: NotificationType,
+  from_uid: string
 }
 
 export type UpdateUser = {

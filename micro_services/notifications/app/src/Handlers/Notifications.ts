@@ -8,12 +8,13 @@ import {
 } from "../types/RabbitMQMessages";
 
 const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  let RMqResponse!: RabbitMQResponse;
-  RMqResponse.req_id = RMqRequest.id;
-  RMqResponse.service = RabbitMQMicroServices.NOTIFICATIONS;
-  RMqResponse.op = RabbitMQNotificationsOp.LIST_ALL;
-  RMqResponse.status = 200;
-  const query = db.persistent.prepare(`SELECT * from ${notifications_table_name} WHERE user_id = ? ;`);
+  let RMqResponse: RabbitMQResponse = {
+    req_id: RMqRequest.id,
+    service: RabbitMQMicroServices.NOTIFICATIONS,
+    op: RabbitMQNotificationsOp.LIST_ALL,
+    status: 200
+  } as RabbitMQResponse;
+  const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? ;`);
   const res = query.all(RMqRequest.JWT.sub);
   if (res.length > 0)
     RMqResponse.message = JSON.stringify(res);
@@ -23,12 +24,13 @@ const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQRes
 }
 
 const ListUnreadNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  let RMqResponse!: RabbitMQResponse;
-  RMqResponse.req_id = RMqRequest.id;
-  RMqResponse.service = RabbitMQMicroServices.NOTIFICATIONS;
-  RMqResponse.op = RabbitMQNotificationsOp.LIST_UNREAD;
-  RMqResponse.status = 200;
-  const query = db.persistent.prepare(`SELECT * from ${notifications_table_name} WHERE user_id = ? AND is_read = 0 ;`);
+  let RMqResponse: RabbitMQResponse = {
+    req_id: RMqRequest.id,
+    service: RabbitMQMicroServices.NOTIFICATIONS,
+    op: RabbitMQNotificationsOp.LIST_UNREAD,
+    status: 200
+  } as RabbitMQResponse;
+  const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? AND is_read = 0 ;`);
   const res = query.all(RMqRequest.JWT.sub);
   if (res.length > 0)
     RMqResponse.message = JSON.stringify(res);
@@ -38,13 +40,17 @@ const ListUnreadNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQ
 }
 
 const DeleteNotification = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  if (!RMqRequest.message)
-    throw 'DeleteNotification(): Error no notification uid';
-  let RMqResponse!: RabbitMQResponse;
-  RMqResponse.req_id = RMqRequest.id;
-  RMqResponse.service = RabbitMQMicroServices.NOTIFICATIONS;
-  RMqResponse.op = RabbitMQNotificationsOp.DELETE;
-  const query = db.persistent.prepare(`DELETE from ${notifications_table_name} WHERE user_id = ? AND UID = ? ;`);
+  let RMqResponse: RabbitMQResponse = {
+    req_id: RMqRequest.id,
+    service: RabbitMQMicroServices.NOTIFICATIONS,
+    op: RabbitMQNotificationsOp.DELETE
+  } as RabbitMQResponse;
+  if (!RMqRequest.message) {
+    RMqResponse.status = 400;
+    RMqResponse.message = 'bad request';
+    return RMqResponse;
+  }
+  const query = db.persistent.prepare(`DELETE from ${notifications_table_name} WHERE user_uid = ? AND UID = ? ;`);
   const res = query.run(RMqRequest.JWT.sub, RMqRequest.message);
   if (res.changes !== 1) {
     RMqResponse.status = 400;
@@ -75,26 +81,28 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
 }
 
 const MarkNotificationAsRead = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  if (!RMqRequest.message)
-    throw 'DeleteNotification(): Error no notification uid';
-  let RMqResponse!: RabbitMQResponse;
-  RMqResponse.req_id = RMqRequest.id;
-  RMqResponse.service = RabbitMQMicroServices.NOTIFICATIONS;
-  RMqResponse.op = RabbitMQNotificationsOp.MARK_READ;
+  let RMqResponse: RabbitMQResponse = {
+    req_id: RMqRequest.id,
+    service: RabbitMQMicroServices.NOTIFICATIONS,
+    op: RabbitMQNotificationsOp.MARK_READ
+  } as RabbitMQResponse;
+  if (!RMqRequest.message) {
+    RMqResponse.status = 400;
+    RMqResponse.message = 'bad request';
+    return RMqResponse;
+  }
   const query = db.persistent.prepare(`UPDATE ${notifications_table_name} SET is_read = 1 WHERE UID = ? AND user_uid = ? ;`)
   const res = query.run(RMqRequest.message, RMqRequest.JWT.sub);
-  if (res.changes !== 1)
-  {
+  if (res.changes !== 1) {
     RMqResponse.status = 400;
     RMqResponse.message = 'bad request';
   }
-  else
-  {
+  else {
     RMqResponse.status = 200;
     RMqResponse.message = 'notification marked as read';
   }
   return RMqResponse;
-} 
+}
 
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {

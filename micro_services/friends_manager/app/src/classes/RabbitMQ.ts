@@ -18,6 +18,7 @@ class RabbitMQ {
   connection: amqp.ChannelModel;
   channel: amqp.Channel;
   api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
+  notifications_queue = process.env.RABBITMQ_NOTIFICATIONS_QUEUE_NAME as string;
   friends_manager_queue = process.env
     .RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME as string;
   constructor() {
@@ -91,6 +92,13 @@ class RabbitMQ {
     this.channel.sendToQueue(
       this.api_gateway_queue,
       Buffer.from(JSON.stringify(RMqResponse))
+    );
+  }
+  public sendToNotificationQueue(req: RabbitMQRequest) {
+    if (!this.isReady) throw "RabbitMQ class not ready";
+    this.channel.sendToQueue(
+      this.notifications_queue,
+      Buffer.from(JSON.stringify(req))
     );
   }
 }

@@ -124,6 +124,20 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
+  public sendToNotificationQueue(
+    req: RabbitMQRequest,
+    callback: (response: RabbitMQResponse) => void
+  ) {
+    if (!this.isReady) throw "RabbitMQ class not ready";
+    req.id = crypto.randomUUID();
+    if (this.reply_map.has(req.id))
+      throw `request id with UID=${req.id} already exist`;
+    this.reply_map.set(req.id, callback);
+    this.channel.sendToQueue(
+      this.notifications_queue,
+      Buffer.from(JSON.stringify(req))
+    );
+  }
 }
 
 const rabbitmq = new RabbitMQ();
