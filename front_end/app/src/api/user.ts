@@ -20,10 +20,15 @@ export const getUser = async () => {
     const websocketTicket = await (
       await fetchWithAuth("/api/notifications/ticket")
     ).text();
-    window._pushNotificationSocket = new WebSocket(
-      "/api/notifications/push_notification",
-      [websocketTicket]
-    );
+    if (!window._pushNotificationSocket) {
+      window._pushNotificationSocket = new WebSocket(
+        "/api/notifications/push_notification",
+        [websocketTicket]
+      );
+      window._pushNotificationSocket.onmessage = (e) => {
+        console.log(e.type);
+      };
+    }
   } catch {
     window._currentUser = null;
     if (window._pushNotificationSocket) {
