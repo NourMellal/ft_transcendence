@@ -8,12 +8,23 @@ services:
       - "443:443"
     networks:
       - ft_transcendence
-    depends_on:
-      - api_gateway
     restart: always
   rabbitmq:
     container_name: rabbitmq
-    build: ./rabbitmq
+    build:
+      context: ./rabbitmq
+      args:
+        RABBITMQ_HOST: ${RABBITMQ_HOST}
+        RABBITMQ_PORT: ${RABBITMQ_PORT}
+        RABBITMQ_NODENAME: ${RABBITMQ_NODENAME}
+        RABBITMQ_API_GATEWAY_USER: ${RABBITMQ_API_GATEWAY_USER}
+        RABBITMQ_API_GATEWAY_PASSWORD: ${RABBITMQ_API_GATEWAY_PASSWORD}
+        RABBITMQ_USER_MANAGER_USER: ${RABBITMQ_USER_MANAGER_USER}
+        RABBITMQ_USER_MANAGER_PASSWORD: ${RABBITMQ_USER_MANAGER_PASSWORD}
+        RABBITMQ_FRIENDS_MANAGER_USER: ${RABBITMQ_FRIENDS_MANAGER_USER}
+        RABBITMQ_FRIENDS_MANAGER_PASSWORD: ${RABBITMQ_FRIENDS_MANAGER_PASSWORD}
+        RABBITMQ_NOTIFICATIONS_USER: ${RABBITMQ_NOTIFICATIONS_USER}
+        RABBITMQ_NOTIFICATIONS_PASSWORD: ${RABBITMQ_NOTIFICATIONS_PASSWORD}
     volumes:
       - rabbit_mq_log_volume:/var/log/rabbitmq:rw
     networks:
@@ -29,8 +40,6 @@ services:
       - static_data_volume:/static:rw
     networks:
       - ft_transcendence
-    depends_on:
-      - rabbitmq
     restart: always
   user_manager:
     container_name: user_manager
@@ -40,8 +49,6 @@ services:
       - static_data_volume:/static:rw
     networks:
       - ft_transcendence
-    depends_on:
-      - rabbitmq
     restart: always
   friends_manager:
     container_name: friends_manager
@@ -50,8 +57,6 @@ services:
       - friends_manager_db_volume:/database:rw
     networks:
       - ft_transcendence
-    depends_on:
-      - rabbitmq
     restart: always
   notifications:
     container_name: notifications
@@ -60,8 +65,6 @@ services:
       - notifications_db_volume:/database:rw
     networks:
       - ft_transcendence
-    depends_on:
-      - rabbitmq
     restart: always
   frontend:
     container_name: frontend

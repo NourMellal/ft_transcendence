@@ -4,16 +4,11 @@ RUN apt update && apt upgrade -y
 
 RUN apt install nginx openssl -y
 
-#Installing modSecurity library:
-RUN apt install git automake libyajl-dev libgeoip-dev libmaxminddb-dev liblmdb++-dev liblua5.4-dev libpcre2-dev
+COPY ./tools/ModSecurity.sh /ModSecurity.sh
 
-RUN git clone --recursive https://github.com/owasp-modsecurity/ModSecurity ModSecurity
+RUN chmod u+x /ModSecurity.sh && ./ModSecurity.sh 
 
-WORKDIR /ModSecurity
-
-RUN ./build.sh && ./configure && make && make install
-
-
+COPY ./conf/modsec.conf /etc/nginx/modsec/modsec.conf 
 
 WORKDIR /usr/local/nginx/conf
 
@@ -22,6 +17,8 @@ RUN openssl req -x509 -newkey rsa:4096 -keyout cert.key -out cert.pem -sha256 -d
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf 
 
 COPY ./conf/default.conf /etc/nginx/sites-enabled/default
+
+COPY ./conf/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf /usr/local/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
 
 EXPOSE 443
 
