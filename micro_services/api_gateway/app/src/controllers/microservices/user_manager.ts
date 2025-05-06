@@ -96,12 +96,6 @@ export const UpdateUserInfo = async (
     if (bio) {
       UpdatedInfo.bio = escapeHtml(bio.field_value);
     }
-    if (
-      username === undefined &&
-      UpdatedInfo.bio === null &&
-      UpdatedInfo.picture_url === null
-    )
-      return reply.code(400).send("bad request no field is supplied");
     if (username) {
       if (username.field_value.length < 3)
         return reply.code(400).send("bad request provide a valid username");
@@ -119,6 +113,11 @@ export const UpdateUserInfo = async (
         return reply.code(400).send("username is taken");
       }
     }
+    if (
+      UpdatedInfo.bio === null &&
+      UpdatedInfo.picture_url === null
+    )
+      return reply.code(200).send('username updated');
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
       op: RabbitMQUserManagerOp.UPDATE,
