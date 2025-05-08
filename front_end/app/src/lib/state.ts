@@ -3,16 +3,16 @@ type Unsubscribe = () => void;
 type UpdateFn<T> = (prevState: T) => T;
 
 export interface StateStore<T> {
-  getState: () => T;
+  get: () => T;
   subscribe: (listener: Subscriber<T>) => Unsubscribe;
-  setState: (newStateOrUpdateFn: T | UpdateFn<T>) => void;
+  set: (newStateOrUpdateFn: T | UpdateFn<T>) => void;
 }
 
 export function createStateStore<T>(initialState: T): StateStore<T> {
   let state: T = initialState;
   const subscribers: Set<Subscriber<T>> = new Set();
 
-  const getState = (): T => {
+  const get = (): T => {
     return state;
   };
 
@@ -23,7 +23,7 @@ export function createStateStore<T>(initialState: T): StateStore<T> {
     };
   };
 
-  const setState = (newStateOrUpdateFn: T | UpdateFn<T>): void => {
+  const set = (newStateOrUpdateFn: T | UpdateFn<T>): void => {
     const newState =
       typeof newStateOrUpdateFn === 'function'
         ? (newStateOrUpdateFn as UpdateFn<T>)(state)
@@ -34,8 +34,8 @@ export function createStateStore<T>(initialState: T): StateStore<T> {
   };
 
   return {
-    getState,
+    get,
     subscribe,
-    setState,
+    set,
   };
 }

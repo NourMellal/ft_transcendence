@@ -1,11 +1,7 @@
-import LoadingIcon from "~/icons/loading.svg?raw";
-import { html } from "~/lib/html";
+import { LoadingIcon } from '~/icons';
+import { html } from '~/lib/html';
 
 class AppLoader extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
       <div
@@ -23,8 +19,8 @@ class AppLoader extends HTMLElement {
     this.render();
     this.firstElementChild?.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: 300,
-      easing: "ease-in-out",
-      fill: "forwards",
+      easing: 'ease-in-out',
+      fill: 'forwards',
     });
   }
 
@@ -33,8 +29,8 @@ class AppLoader extends HTMLElement {
       [{ opacity: 1 }, { opacity: 0 }],
       {
         duration: 300,
-        easing: "ease-in-out",
-        fill: "forwards",
+        easing: 'ease-in-out',
+        fill: 'forwards',
       }
     );
 
@@ -46,4 +42,4 @@ class AppLoader extends HTMLElement {
   }
 }
 
-customElements.define("app-loader", AppLoader);
+customElements.define('app-loader', AppLoader);

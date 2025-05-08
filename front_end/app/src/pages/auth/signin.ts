@@ -1,17 +1,13 @@
-import GoogleIcon from '~/icons/google.svg?raw';
-import LockIcon from '~/icons/lock.svg?raw';
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
 import { handleEffect } from '~/utils';
-import { getUser as setUser } from '~/api/user';
+import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
+import { user } from '~/app-state';
+import { LockIcon, GoogleIcon } from '~/icons';
 
 export default class SigninPage extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   handleSumbit = (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
     e.preventDefault();
@@ -39,7 +35,7 @@ export default class SigninPage extends HTMLElement {
           return navigateTo(url.pathname + url.search);
         }
 
-        await setUser();
+        await setupUser();
 
         showToast({
           type: 'success',
@@ -89,9 +85,8 @@ export default class SigninPage extends HTMLElement {
   };
 
   async render() {
-    if (window._currentUser) {
-      return navigateTo('/profile');
-    }
+    if (user.get()) return navigateTo('/profile');
+
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <fieldset class="max-w-md mx-auto my-4 flex flex-col gap-4 mt-16">

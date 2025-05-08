@@ -1,14 +1,11 @@
 import { navigateTo } from '~/components/app-router';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
+import { user } from '~/app-state';
 
 export default class PlayPage extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
-    if (!window._currentUser) {
+    if (!user.get()) {
       return navigateTo('/signin');
     }
     this.replaceChildren(html`

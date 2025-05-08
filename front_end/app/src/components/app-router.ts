@@ -29,10 +29,6 @@ export function navigateTo(pathname: string, preserveScroll = false) {
 }
 
 class AppRouter extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   renderPage = () => {
     const route = normalizePath(window.location.pathname);
     const match = routes.find((r) => {

@@ -1,14 +1,9 @@
-import MoonIcon from "~/icons/moon.svg?raw";
-import SunIcon from "~/icons/sun.svg?raw";
-import { html } from "~/lib/html";
+import { SunIcon, MoonIcon } from '~/icons';
+import { html } from '~/lib/html';
 
 class ThemeToggleButton extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
-    const isDark = document.documentElement.classList.contains("dark");
+    const isDark = document.documentElement.classList.contains('dark');
     this.replaceChildren(html`
       <button class="btn-outlined btn-icon">
         ${isDark ? SunIcon : MoonIcon}
@@ -17,15 +12,15 @@ class ThemeToggleButton extends HTMLElement {
   }
 
   toggle = () => {
-    document.documentElement.classList.toggle("dark");
-    const isDark = document.documentElement.classList.contains("dark");
-    window.localStorage.setItem("theme", isDark ? "dark" : "light");
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    window.localStorage.setItem('theme', isDark ? 'dark' : 'light');
     this.render();
     this.setup();
   };
 
   setup() {
-    this.querySelector("button")?.addEventListener("click", this.toggle);
+    this.querySelector('button')?.addEventListener('click', this.toggle);
   }
 
   connectedCallback() {
@@ -34,4 +29,4 @@ class ThemeToggleButton extends HTMLElement {
   }
 }
 
-customElements.define("theme-toggle-button", ThemeToggleButton);
+customElements.define('theme-toggle-button', ThemeToggleButton);

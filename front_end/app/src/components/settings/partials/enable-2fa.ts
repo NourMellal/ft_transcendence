@@ -5,10 +5,6 @@ import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 
 class Enable2Fa extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
       <div id="totp-setup-area" class="pt-4 space-y-4">

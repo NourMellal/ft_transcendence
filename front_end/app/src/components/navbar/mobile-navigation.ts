@@ -1,15 +1,11 @@
-import XIcon from "~/icons/x.svg?raw";
-import { html } from "~/lib/html";
+import { XIcon } from '~/icons';
+import { html } from '~/lib/html';
 
 class MobileNavigation extends HTMLElement {
-  constructor() {
-    super();
-  }
-
-  static observedAttributes = ["pages"];
+  static observedAttributes = ['pages'];
 
   render() {
-    const pagesAttr = this.getAttribute("pages");
+    const pagesAttr = this.getAttribute('pages');
     if (!pagesAttr) return;
 
     const pages = JSON.parse(pagesAttr) as {
@@ -44,52 +40,52 @@ class MobileNavigation extends HTMLElement {
 
   toggle = () => {
     const mobileMenuElement = this.querySelector(
-      "#mobile-menu"
+      '#mobile-menu'
     ) as HTMLDivElement | null;
 
     if (!mobileMenuElement) return;
 
-    const isHidden = mobileMenuElement.classList.contains("hidden");
+    const isHidden = mobileMenuElement.classList.contains('hidden');
     const animationOpts: KeyframeAnimationOptions = {
       duration: 200,
-      easing: "ease-in-out",
-      fill: "forwards",
+      easing: 'ease-in-out',
+      fill: 'forwards',
     };
 
     if (isHidden) {
-      mobileMenuElement.classList.remove("hidden");
+      mobileMenuElement.classList.remove('hidden');
 
       mobileMenuElement.animate(
         [
-          { opacity: 0, transform: "translateX(-100%)" },
-          { opacity: 1, transform: "translateX(0)" },
+          { opacity: 0, transform: 'translateX(-100%)' },
+          { opacity: 1, transform: 'translateX(0)' },
         ],
         animationOpts
       );
     } else {
       const anim = mobileMenuElement.animate(
         [
-          { opacity: 1, transform: "translateX(0)" },
-          { opacity: 0, transform: "translateX(-100%)" },
+          { opacity: 1, transform: 'translateX(0)' },
+          { opacity: 0, transform: 'translateX(-100%)' },
         ],
         animationOpts
       );
 
       anim.onfinish = () => {
-        mobileMenuElement.classList.add("hidden");
+        mobileMenuElement.classList.add('hidden');
       };
     }
   };
 
   setup() {
-    this.querySelector("#close-menu-btn")?.addEventListener(
-      "click",
+    this.querySelector('#close-menu-btn')?.addEventListener(
+      'click',
       this.toggle
     );
 
     document
-      .querySelector("navigation-bar #open-menu-btn")
-      ?.addEventListener("click", this.toggle);
+      .querySelector('navigation-bar #open-menu-btn')
+      ?.addEventListener('click', this.toggle);
   }
 
   connectedCallback() {
@@ -98,4 +94,4 @@ class MobileNavigation extends HTMLElement {
   }
 }
 
-customElements.define("mobile-navigation", MobileNavigation);
+customElements.define('mobile-navigation', MobileNavigation);

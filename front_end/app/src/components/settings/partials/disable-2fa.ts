@@ -4,10 +4,6 @@ import { showToast } from '~/components/toast';
 import { html } from '~/lib/html';
 
 class Disable2FA extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
       <div id="totp-disable-area" class="pt-4 space-y-4">

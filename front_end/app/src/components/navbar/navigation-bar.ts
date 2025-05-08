@@ -1,20 +1,19 @@
-import LockIcon from '~/icons/lock.svg?raw';
-import MenuIcon from '~/icons/menu.svg?raw';
-import RocketIcon from '~/icons/rocket.svg?raw';
-import { html } from '~/lib/html';
 import '~/components/navbar/friends-nav-menu';
 import '~/components/navbar/mobile-navigation';
 import '~/components/navbar/notification-nav-menu';
 import '~/components/navbar/theme-toggle-button';
 import '~/components/navbar/user-nav-menu';
 
+import { html } from '~/lib/html';
+import { user } from '~/app-state';
+
+import { LockIcon, MenuIcon, RocketIcon } from '~/icons';
+
 class NavigationBar extends HTMLElement {
-  constructor() {
-    super();
-  }
+  cleanupCallbacks = new Array<Function>();
 
   render() {
-    const pages = window._currentUser
+    const pages = user.get()
       ? [
           {
             name: 'Play',
@@ -45,7 +44,7 @@ class NavigationBar extends HTMLElement {
 
     this.replaceChildren(html`
       <div
-        class="fixed top-0 inset-x-0 z-40 px-2 py-2 border-b bg-background/20 backdrop-blur-sm"
+        class="fixed top-0 inset-x-0 z-40 px-2 py-2 border-b bg-background/80 backdrop-blur-md"
       >
         <div class="container flex items-center">
           <button id="open-menu-btn" class="me-4 md:hidden cursor-pointer">
@@ -66,7 +65,7 @@ class NavigationBar extends HTMLElement {
           </div>
           <div class="ms-auto flex gap-4 items-center justify-center">
             <theme-toggle-button></theme-toggle-button>
-            ${window._currentUser
+            ${user.get()
               ? html`
                   <friends-nav-menu></friends-nav-menu>
                   <notification-nav-menu></notification-nav-menu>
@@ -88,12 +87,14 @@ class NavigationBar extends HTMLElement {
       ${mobileNav}
     `);
   }
-  async connectedCallback() {
+
+  connectedCallback() {
     this.render();
+    this.cleanupCallbacks.push(user.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {
-    //
+    this.cleanupCallbacks.forEach((cleanup) => cleanup());
   }
 }
 

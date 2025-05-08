@@ -1,4 +1,4 @@
-import { getUser } from './api/user';
+import { setupUser } from './api/user';
 import './style.css';
 import { handleEffect } from './utils';
 
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
 
   handleEffect(document.body, async () => {
-    await getUser();
+    await setupUser();
     const root = document.querySelector('#app');
     if (!root) throw Error('App Root Not Found!');
 

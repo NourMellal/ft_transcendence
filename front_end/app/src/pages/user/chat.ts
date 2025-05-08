@@ -4,10 +4,6 @@ import '~/components/navbar/navigation-bar';
 export default class ChatPage extends HTMLElement {
   private isFriendsListOpen: boolean = false;
 
-  constructor() {
-    super();
-  }
-
   render() {
     // Placeholder data for friends list
     const friends = [

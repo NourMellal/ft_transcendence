@@ -1,19 +1,18 @@
-import { getUser } from '~/api/user';
+import { setupUser } from '~/api/user';
 import { navigateTo } from '~/components/app-router';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
 import '~/components/settings/settings-info';
 import '~/components/settings/settings-2fa';
 import '~/components/settings/settings-password';
+import { user } from '~/app-state';
 
 export default class SettingsPage extends HTMLElement {
-  constructor() {
-    super();
-  }
+  currentUser = user.get();
 
   render = async () => {
-    await getUser();
-    if (!window._currentUser) {
+    await setupUser();
+    if (!this.currentUser) {
       return navigateTo('/signin');
     }
     this.replaceChildren(html`

@@ -1,22 +1,18 @@
-import { handleEffect } from "~/utils";
-import { navigateTo } from "../app-router";
-import { showToast } from "../toast";
-import { fetchWithAuth } from "~/api/auth";
-import { html } from "~/lib/html";
+import { handleEffect } from '~/utils';
+import { navigateTo } from '../app-router';
+import { showToast } from '../toast';
+import { fetchWithAuth } from '~/api/auth';
+import { html } from '~/lib/html';
+import { user } from '~/app-state';
+import { setupUser, User } from '~/api/user';
 
 class ProfileInfo extends HTMLElement {
-  // for the username check
-  debounceTimeout: number | undefined;
-
-  constructor() {
-    super();
-  }
+  debounceTimeout: number | undefined; // for the username check
+  currentUser: User = user.get()!;
 
   render() {
-    if (!window._currentUser) return;
-
     this.replaceChildren(html`
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <fieldset class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
           <h2 class="text-xl font-semibold mb-1">Profile</h2>
           <p class="text-sm text-muted-foreground">
@@ -32,7 +28,7 @@ class ProfileInfo extends HTMLElement {
                 <div class="flex items-center gap-4">
                   <img
                     id="avatar-preview"
-                    src="/api/${window._currentUser.picture_url}"
+                    src="/api/${this.currentUser.picture_url}"
                     alt="Avatar"
                     class="h-16 w-16 rounded-full object-cover border"
                   />
@@ -78,7 +74,7 @@ class ProfileInfo extends HTMLElement {
                   type="text"
                   class="input w-full"
                   placeholder="Your username"
-                  value="${window._currentUser.username}"
+                  value="${this.currentUser.username}"
                   autocomplete="off"
                 />
                 <p
@@ -98,7 +94,7 @@ class ProfileInfo extends HTMLElement {
                   class="input w-full min-h-[80px]"
                   placeholder="Tell us a little about yourself"
                 >
-${window._currentUser.bio}</textarea
+${this.currentUser.bio}</textarea
                 >
                 <p class="text-xs text-muted-foreground">
                   A brief description about you.
@@ -112,112 +108,116 @@ ${window._currentUser.bio}</textarea
             </div>
           </form>
         </div>
-      </div>
+      </fieldset>
     `);
   }
 
   updateProfile = (e: SubmitEvent) => {
     e.preventDefault();
     const formData = new FormData(
-      this.querySelector("#user-details-form") as HTMLFormElement
+      this.querySelector('#user-details-form') as HTMLFormElement
     );
 
-    const avatarInput = this.querySelector("#avatar-input") as HTMLInputElement;
+    const avatarInput = this.querySelector('#avatar-input') as HTMLInputElement;
     const avatar = avatarInput.files?.[0];
 
     if (!avatar) {
-      formData.delete("picture");
+      formData.delete('picture');
     }
 
+    const fieldset = document.querySelector('fieldset')!;
+    fieldset.disabled = true;
     handleEffect(document.body, async () => {
-      const res = await fetchWithAuth("/api/user/info", {
-        method: "POST",
-        credentials: "include",
+      const res = await fetchWithAuth('/api/user/info', {
+        method: 'POST',
+        credentials: 'include',
         body: formData,
-        cache: "no-store",
+        cache: 'no-store',
       });
 
       if (res.ok) {
         showToast({
-          type: "success",
-          message: "Profile updated successfully",
+          type: 'success',
+          message: 'Profile updated successfully',
         });
-        navigateTo("/settings");
+        await setupUser();
       } else {
         showToast({
-          type: "error",
+          type: 'error',
           message: await res.text(),
         });
       }
+    }).finally(() => {
+      fieldset.disabled = false;
     });
   };
 
   removeAvatar = () => {
     handleEffect(this, async () => {
-      const res = await fetchWithAuth("/api/user/remove_picture", {
-        method: "DELETE",
-        credentials: "include",
-        cache: "no-store",
+      const res = await fetchWithAuth('/api/user/remove_picture', {
+        method: 'DELETE',
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (res.ok) {
         showToast({
-          type: "success",
-          message: "Picture removed successfully",
+          type: 'success',
+          message: 'Picture removed successfully',
         });
-        navigateTo("/settings");
+        navigateTo('/settings');
       } else {
-        showToast({ type: "error", message: "something went wrong" });
+        showToast({ type: 'error', message: 'something went wrong' });
       }
     });
   };
 
   setup() {
     const removeAvatarBtn = this.querySelector(
-      "#remove-avatar-btn"
+      '#remove-avatar-btn'
     ) as HTMLButtonElement;
     const usernameInput = this.querySelector(
       "input[name='username']"
     ) as HTMLInputElement;
     const changeAvatarBtn = this.querySelector(
-      "#change-avatar-btn"
+      '#change-avatar-btn'
     ) as HTMLButtonElement;
-    const avatarInput = this.querySelector("#avatar-input") as HTMLInputElement;
+    const avatarInput = this.querySelector('#avatar-input') as HTMLInputElement;
     const avatarPreview = this.querySelector(
-      "#avatar-preview"
+      '#avatar-preview'
     ) as HTMLImageElement;
 
-    if (window._currentUser?.picture_url !== "/static/profile/default.jpg") {
-      removeAvatarBtn.addEventListener("click", this.removeAvatar);
+    if (this.currentUser?.picture_url !== '/static/profile/default.jpg') {
+      removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
     }
 
-    changeAvatarBtn.addEventListener("click", () => {
+    changeAvatarBtn.addEventListener('click', () => {
       avatarInput.click();
     });
 
-    avatarInput.addEventListener("change", () => {
+    avatarInput.addEventListener('change', () => {
       if (avatarInput.files?.[0]) {
         avatarPreview.src = URL.createObjectURL(avatarInput.files[0]);
       }
     });
 
-    usernameInput.addEventListener("keyup", (e) => {
+    usernameInput.addEventListener('keyup', (e) => {
       clearTimeout(this.debounceTimeout);
       const target = e.target as HTMLInputElement;
       const errorSpan = document.querySelector(
-        "#username-error-message"
+        '#username-error-message'
       ) as HTMLSpanElement;
-      errorSpan.innerText = "";
+      errorSpan.innerText = '';
 
       const saveBtn = this.querySelector(
-        "#save-profile-btn"
+        '#save-profile-btn'
       ) as HTMLButtonElement;
       this.debounceTimeout = window.setTimeout(async () => {
-        if (e.key === "Enter") return;
-        if (!target.value || target.value === window._currentUser?.username) {
-          errorSpan.innerText = "";
+        if (e.key === 'Enter') return;
+        if (!target.value || target.value === this.currentUser?.username) {
+          errorSpan.innerText = '';
           saveBtn.disabled = false;
           return;
         }
@@ -226,8 +226,8 @@ ${window._currentUser.bio}</textarea
           const res = await fetchWithAuth(
             `/api/user/namecheck?username=${target.value}`,
             {
-              method: "GET",
-              cache: "no-store",
+              method: 'GET',
+              cache: 'no-store',
             }
           );
           if (!res.ok) {
@@ -235,20 +235,20 @@ ${window._currentUser.bio}</textarea
             errorSpan.innerText = errorMessage || `Username already taken`;
             saveBtn.disabled = true;
           } else {
-            errorSpan.innerText = "";
+            errorSpan.innerText = '';
             saveBtn.disabled = false;
           }
         } catch (error) {
-          console.error("Error checking username:", error);
-          errorSpan.innerText = "Error checking username";
+          console.error('Error checking username:', error);
+          errorSpan.innerText = 'Error checking username';
         }
       }, 500);
     });
 
     const userDetailsForm = this.querySelector(
-      "#user-details-form"
+      '#user-details-form'
     ) as HTMLFormElement;
-    userDetailsForm.addEventListener("submit", this.updateProfile);
+    userDetailsForm.addEventListener('submit', this.updateProfile);
   }
 
   connectedCallback() {
@@ -261,4 +261,4 @@ ${window._currentUser.bio}</textarea
   }
 }
 
-customElements.define("profile-info", ProfileInfo);
+customElements.define('profile-info', ProfileInfo);

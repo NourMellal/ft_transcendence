@@ -1,10 +1,6 @@
 import { html } from '~/lib/html';
 
 export default class NotFound extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
       <div

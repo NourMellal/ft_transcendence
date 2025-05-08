@@ -1,13 +1,12 @@
+import '~/components/navbar/navigation-bar';
+
+import { user } from '~/app-state';
 import { navigateTo } from '~/components/app-router';
 import { html } from '~/lib/html';
 
 export default class HomePage extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
-    if (window._currentUser) {
+    if (user.get()) {
       return navigateTo('/profile');
     }
     this.replaceChildren(html`

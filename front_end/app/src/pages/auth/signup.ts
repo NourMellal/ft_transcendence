@@ -1,16 +1,13 @@
-import LockIcon from '~/icons/lock.svg?raw';
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
 import { handleEffect } from '~/utils';
-import { getUser } from '~/api/user';
+import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
+import { user } from '~/app-state';
+import { LockIcon } from '~/icons';
 
 export default class SignupPage extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   handleSumbit = async (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
 
@@ -51,7 +48,7 @@ export default class SignupPage extends HTMLElement {
           });
           return;
         }
-        await getUser();
+        await setupUser();
         showToast({
           type: 'success',
           message: `Welcome to ft_transcendence!`,
@@ -72,7 +69,7 @@ export default class SignupPage extends HTMLElement {
   };
 
   async render() {
-    if (window._currentUser) {
+    if (user.get()) {
       return navigateTo('/profile');
     }
     this.replaceChildren(html`

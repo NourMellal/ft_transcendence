@@ -1,4 +1,5 @@
-import { fetchWithAuth } from "./auth";
+import { pushNotification, user } from '~/app-state';
+import { fetchWithAuth } from './auth';
 
 export type User = {
   UID: string;
@@ -8,32 +9,36 @@ export type User = {
   totp_enabled: boolean;
 };
 
-export const getUser = async () => {
-  try {
-    const res = await fetchWithAuth("/api/user/info?uid=me", {
-      method: "GET",
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Failed to fetch user info");
+export const setupUser = async () => {
+  const websocket = pushNotification.get();
 
-    window._currentUser = await res.json();
-    const websocketTicket = await (
-      await fetchWithAuth("/api/notifications/ticket")
-    ).text();
-    if (!window._pushNotificationSocket) {
-      window._pushNotificationSocket = new WebSocket(
-        "/api/notifications/push_notification",
-        [websocketTicket]
-      );
-      window._pushNotificationSocket.onmessage = (e) => {
-        console.log(e.type);
+  try {
+    const res = await fetchWithAuth('/api/user/info?uid=me', {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('Failed to fetch user info');
+
+    user.set(await res.json());
+
+    if (!websocket) {
+      const websocketTicket = await (
+        await fetchWithAuth('/api/notifications/ticket')
+      ).text();
+      const socket = new WebSocket('/api/notifications/push_notification', [
+        websocketTicket,
+      ]);
+      socket.onmessage = (e) => {
+        console.debug(e.type);
       };
+      pushNotification.set(socket);
     }
   } catch {
-    window._currentUser = null;
-    if (window._pushNotificationSocket) {
-      window._pushNotificationSocket.close();
-      window._pushNotificationSocket = null;
+    user.set(null);
+
+    if (websocket) {
+      websocket.close();
+      pushNotification.set(null);
     }
   }
 };

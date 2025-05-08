@@ -1,14 +1,10 @@
 import { fetchWithAuth } from '~/api/auth';
-import { getUser } from '~/api/user';
+import { setupUser } from '~/api/user';
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
 import { html } from '~/lib/html';
 
 export default class TotpVerify extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
       <div
@@ -92,7 +88,7 @@ export default class TotpVerify extends HTMLElement {
       );
 
       if (res.ok) {
-        await getUser();
+        await setupUser();
         showToast({
           message: `Welcome back!`,
           type: 'success',

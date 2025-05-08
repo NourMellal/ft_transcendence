@@ -1,9 +1,12 @@
+// TODO: refactor this mess
+
 import { navigateTo } from '~/components/app-router';
 import { User } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
+import { user } from '~/app-state';
 
 enum FriendStatus {
   NONE,
@@ -21,13 +24,10 @@ interface ProfileState {
 
 export default class ProfilePage extends HTMLElement {
   private state: ProfileState | null = null;
-
-  constructor() {
-    super();
-  }
+  currentUser = user.get();
 
   async loadProfileData(): Promise<ProfileState | null> {
-    if (!window._currentUser) {
+    if (!user.get()) {
       navigateTo('/signin');
       return null;
     }
@@ -37,7 +37,7 @@ export default class ProfilePage extends HTMLElement {
     const username = urlParams.get('username');
 
     try {
-      let user: User;
+      let profileUser: User;
       if (userId || username) {
         const queryParam = username ? `uname=${username}` : `uid=${userId}`;
         const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
@@ -49,26 +49,26 @@ export default class ProfilePage extends HTMLElement {
           navigateTo('/profile');
           return null;
         }
-        user = await res.json();
+        profileUser = await res.json();
       } else {
-        user = window._currentUser;
+        profileUser = user.get()!;
       }
 
-      const isOwnProfile = user.UID === window._currentUser.UID;
+      const isOwnProfile = profileUser.UID === user.get()!.UID;
 
       if (isOwnProfile) {
         return {
-          user,
+          user: profileUser,
           isOwnProfile,
           friendStatus: FriendStatus.NONE,
           pendingRequestId: null,
         };
       }
 
-      const friendStatus = await this.getFriendStatus(user.UID);
+      const friendStatus = await this.getFriendStatus(profileUser.UID);
 
       return {
-        user,
+        user: profileUser,
         isOwnProfile,
         ...friendStatus,
       };
@@ -208,7 +208,7 @@ export default class ProfilePage extends HTMLElement {
       case FriendStatus.PENDING_OUTGOING:
         return /*html*/ `
           <div class="flex gap-2">
-            <button class="btn btn-disabled" disabled>
+            <button class="btn-ghost" disabled>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                 <path d="M20 6L9 17l-5-5"></path>
               </svg>

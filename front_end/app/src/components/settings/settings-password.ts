@@ -1,17 +1,12 @@
-import { handleEffect } from "~/utils";
-import { navigateTo } from "../app-router";
-import { showToast } from "../toast";
-import { fetchWithAuth } from "~/api/auth";
-import { html } from "~/lib/html";
+import { handleEffect } from '~/utils';
+import { showToast } from '../toast';
+import { fetchWithAuth } from '~/api/auth';
+import { html } from '~/lib/html';
 
 class SettingsPassword extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
     this.replaceChildren(html`
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <fieldset class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
           <h2 class="text-xl font-semibold mb-1">Password</h2>
           <p class="text-sm text-muted-foreground">
@@ -73,55 +68,64 @@ class SettingsPassword extends HTMLElement {
             </div>
           </form>
         </div>
-      </div>
+      </fieldset>
     `);
   }
 
   updatePassword = (e: SubmitEvent) => {
     e.preventDefault();
     const formData = new FormData(
-      this.querySelector("#password-form") as HTMLFormElement
+      this.querySelector('#password-form') as HTMLFormElement
     );
 
-    const newPassword = formData.get("new_password") as string;
-    const confirmPassword = formData.get("confirm_password") as string;
+    const newPassword = formData.get('new_password') as string;
+    const confirmPassword = formData.get('confirm_password') as string;
 
     if (newPassword !== confirmPassword) {
       showToast({
-        type: "error",
-        message: "New passwords do not match",
+        type: 'error',
+        message: 'New passwords do not match',
       });
       return;
     }
 
+    const fieldset = this.querySelector('fieldset')!;
+
+    fieldset.disabled = true;
+
     handleEffect(document.body, async () => {
-      const res = await fetchWithAuth("/api/user/passwd", {
-        method: "POST",
-        credentials: "include",
+      const res = await fetchWithAuth('/api/user/passwd', {
+        method: 'POST',
+        credentials: 'include',
         body: formData,
-        cache: "no-store",
+        cache: 'no-store',
       });
 
       if (res.ok) {
         showToast({
-          type: "success",
-          message: "Password updated successfully",
+          type: 'success',
+          message: 'Password updated successfully',
         });
-        navigateTo("/settings");
       } else {
         showToast({
-          type: "error",
+          type: 'error',
           message: await res.text(),
         });
       }
-    });
+    })
+      .then(() => {
+        (e.target as HTMLFormElement).reset();
+      })
+      .finally(() => {
+        fieldset.disabled = false;
+      });
   };
 
   setup() {
     const passwordForm = this.querySelector(
-      "#password-form"
+      '#password-form'
     ) as HTMLFormElement;
-    passwordForm.addEventListener("submit", this.updatePassword);
+    passwordForm.addEventListener('submit', this.updatePassword);
   }
 
   connectedCallback() {
@@ -130,4 +134,4 @@ class SettingsPassword extends HTMLElement {
   }
 }
 
-customElements.define("settings-password", SettingsPassword);
+customElements.define('settings-password', SettingsPassword);
