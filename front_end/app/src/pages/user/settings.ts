@@ -23,6 +23,7 @@ export default class SettingsPage extends HTMLElement {
         <settings-2fa></settings-2fa>
       </div>
     `);
+    this.setup();
   };
 
   setup() {
@@ -31,7 +32,6 @@ export default class SettingsPage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

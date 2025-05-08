@@ -1,8 +1,8 @@
 import QrCode from 'qrcode';
 import { showToast } from '~/components/toast';
-import { navigateTo } from '~/components/app-router';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
+import { setupUser } from '~/api/user';
 
 class Enable2Fa extends HTMLElement {
   render() {
@@ -41,6 +41,7 @@ class Enable2Fa extends HTMLElement {
         </form>
       </div>
     `);
+    this.setup();
   }
 
   async setup() {
@@ -76,7 +77,7 @@ class Enable2Fa extends HTMLElement {
           type: 'success',
           message: '2FA enabled successfully.',
         });
-        return navigateTo('/settings');
+        await setupUser();
       }
 
       showToast({
@@ -88,7 +89,6 @@ class Enable2Fa extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

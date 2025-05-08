@@ -9,6 +9,7 @@ class ThemeToggleButton extends HTMLElement {
         ${isDark ? SunIcon : MoonIcon}
       </button>
     `);
+    this.setup();
   }
 
   toggle = () => {
@@ -16,7 +17,6 @@ class ThemeToggleButton extends HTMLElement {
     const isDark = document.documentElement.classList.contains('dark');
     window.localStorage.setItem('theme', isDark ? 'dark' : 'light');
     this.render();
-    this.setup();
   };
 
   setup() {
@@ -25,7 +25,6 @@ class ThemeToggleButton extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

@@ -14,6 +14,7 @@ export default class PlayPage extends HTMLElement {
         <h1>Play Page</h1>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -22,7 +23,6 @@ export default class PlayPage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

@@ -162,6 +162,7 @@ export default class ChatPage extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -188,7 +189,6 @@ export default class ChatPage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 
   disconnectedCallback() {

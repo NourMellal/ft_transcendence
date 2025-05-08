@@ -13,6 +13,7 @@ export default class NotFound extends HTMLElement {
         <a href="/" class="btn btn-primary"> Go back home </a>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -21,7 +22,6 @@ export default class NotFound extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

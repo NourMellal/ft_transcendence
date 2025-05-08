@@ -19,7 +19,8 @@ export const setupUser = async () => {
     });
     if (!res.ok) throw new Error('Failed to fetch user info');
 
-    user.set(await res.json());
+    const userDetails = await res.json();
+    user.set(userDetails);
 
     if (!websocket) {
       const websocketTicket = await (

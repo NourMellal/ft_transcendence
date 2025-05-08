@@ -293,6 +293,7 @@ export default class HomePage extends HTMLElement {
         </section>
       </main>
     `);
+    this.setup();
   }
 
   setup() {
@@ -301,7 +302,6 @@ export default class HomePage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

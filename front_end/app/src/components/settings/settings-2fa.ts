@@ -27,6 +27,7 @@ class Settings2FA extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -41,7 +42,6 @@ class Settings2FA extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

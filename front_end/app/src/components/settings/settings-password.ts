@@ -70,6 +70,7 @@ class SettingsPassword extends HTMLElement {
         </div>
       </fieldset>
     `);
+    this.setup();
   }
 
   updatePassword = (e: SubmitEvent) => {
@@ -130,7 +131,6 @@ class SettingsPassword extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

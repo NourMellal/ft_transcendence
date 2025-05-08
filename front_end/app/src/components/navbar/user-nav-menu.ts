@@ -48,6 +48,7 @@ class UserNavMenu extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
   }
 
   handleLogout = async () => {
@@ -159,7 +160,6 @@ class UserNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 
   disconnectedCallback() {

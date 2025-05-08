@@ -70,6 +70,8 @@ class NotificationNavMenu extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
+    this.setNotificationCount(3);
   }
 
   toggle = () => {
@@ -156,8 +158,6 @@ class NotificationNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
-    this.setNotificationCount(3);
   }
 }
 

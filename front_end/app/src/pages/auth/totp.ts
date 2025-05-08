@@ -50,6 +50,7 @@ export default class TotpVerify extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -113,7 +114,6 @@ export default class TotpVerify extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

@@ -1,5 +1,5 @@
 import { fetchWithAuth } from '~/api/auth';
-import { navigateTo } from '~/components/app-router';
+import { setupUser } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { html } from '~/lib/html';
 
@@ -33,6 +33,7 @@ class Disable2FA extends HTMLElement {
         </form>
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -53,7 +54,7 @@ class Disable2FA extends HTMLElement {
           type: 'success',
           message: '2FA disabled successfully.',
         });
-        return navigateTo('/settings');
+        await setupUser();
       }
 
       showToast({
@@ -67,7 +68,6 @@ class Disable2FA extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

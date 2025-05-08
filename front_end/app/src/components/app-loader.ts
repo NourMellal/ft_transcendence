@@ -13,15 +13,15 @@ class AppLoader extends HTMLElement {
         </div>
       </div>
     `);
-  }
-
-  connectedCallback() {
-    this.render();
     this.firstElementChild?.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: 300,
       easing: 'ease-in-out',
       fill: 'forwards',
     });
+  }
+
+  connectedCallback() {
+    this.render();
   }
 
   remove() {

@@ -36,6 +36,7 @@ class MobileNavigation extends HTMLElement {
         </div>
       </div>
     `);
+    this.setup();
   }
 
   toggle = () => {
@@ -90,7 +91,6 @@ class MobileNavigation extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 

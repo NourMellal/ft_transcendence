@@ -1,14 +1,13 @@
 import { handleEffect } from '~/utils';
-import { navigateTo } from '../app-router';
 import { showToast } from '../toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { user } from '~/app-state';
-import { setupUser, User } from '~/api/user';
+import { setupUser } from '~/api/user';
 
 class ProfileInfo extends HTMLElement {
   debounceTimeout: number | undefined; // for the username check
-  currentUser: User = user.get()!;
+  cleanupCallbacks = new Array<Function>();
 
   render() {
     this.replaceChildren(html`
@@ -28,7 +27,7 @@ class ProfileInfo extends HTMLElement {
                 <div class="flex items-center gap-4">
                   <img
                     id="avatar-preview"
-                    src="/api/${this.currentUser.picture_url}"
+                    src="/api/${user.get()!.picture_url}"
                     alt="Avatar"
                     class="h-16 w-16 rounded-full object-cover border"
                   />
@@ -74,7 +73,7 @@ class ProfileInfo extends HTMLElement {
                   type="text"
                   class="input w-full"
                   placeholder="Your username"
-                  value="${this.currentUser.username}"
+                  value="${user.get()!.username}"
                   autocomplete="off"
                 />
                 <p
@@ -94,7 +93,7 @@ class ProfileInfo extends HTMLElement {
                   class="input w-full min-h-[80px]"
                   placeholder="Tell us a little about yourself"
                 >
-${this.currentUser.bio}</textarea
+${user.get()!.bio}</textarea
                 >
                 <p class="text-xs text-muted-foreground">
                   A brief description about you.
@@ -110,6 +109,7 @@ ${this.currentUser.bio}</textarea
         </div>
       </fieldset>
     `);
+    this.setup();
   }
 
   updateProfile = (e: SubmitEvent) => {
@@ -165,7 +165,7 @@ ${this.currentUser.bio}</textarea
           type: 'success',
           message: 'Picture removed successfully',
         });
-        navigateTo('/settings');
+        await setupUser();
       } else {
         showToast({ type: 'error', message: 'something went wrong' });
       }
@@ -187,7 +187,7 @@ ${this.currentUser.bio}</textarea
       '#avatar-preview'
     ) as HTMLImageElement;
 
-    if (this.currentUser?.picture_url !== '/static/profile/default.jpg') {
+    if (user.get()!.picture_url !== '/static/profile/default.jpg') {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
@@ -216,7 +216,7 @@ ${this.currentUser.bio}</textarea
       ) as HTMLButtonElement;
       this.debounceTimeout = window.setTimeout(async () => {
         if (e.key === 'Enter') return;
-        if (!target.value || target.value === this.currentUser?.username) {
+        if (!target.value || target.value === user.get()!.username) {
           errorSpan.innerText = '';
           saveBtn.disabled = false;
           return;
@@ -253,11 +253,12 @@ ${this.currentUser.bio}</textarea
 
   connectedCallback() {
     this.render();
-    this.setup();
+    this.cleanupCallbacks.push(user.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {
     clearTimeout(this.debounceTimeout);
+    this.cleanupCallbacks.forEach((cb) => cb());
   }
 }
 

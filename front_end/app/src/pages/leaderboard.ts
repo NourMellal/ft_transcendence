@@ -118,6 +118,7 @@ export default class LeaderboardPage extends HTMLElement {
             `}
       </div>
     `);
+    this.setup();
   }
 
   setup() {
@@ -128,7 +129,6 @@ export default class LeaderboardPage extends HTMLElement {
       if (this.currentPage > 1) {
         this.currentPage--;
         this.render();
-        this.setup(); // Re-attach listeners after re-render
       }
     });
 
@@ -136,14 +136,12 @@ export default class LeaderboardPage extends HTMLElement {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
         this.render();
-        this.setup(); // Re-attach listeners after re-render
       }
     });
   }
 
   connectedCallback() {
     this.render();
-    this.setup();
   }
 }
 
