@@ -259,6 +259,7 @@ ${user.get()!.bio}</textarea
   disconnectedCallback() {
     clearTimeout(this.debounceTimeout);
     this.cleanupCallbacks.forEach((cb) => cb());
+    this.cleanupCallbacks = [];
   }
 }
 

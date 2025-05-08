@@ -95,6 +95,7 @@ class NavigationBar extends HTMLElement {
 
   disconnectedCallback() {
     this.cleanupCallbacks.forEach((cleanup) => cleanup());
+    this.cleanupCallbacks = [];
   }
 }
 

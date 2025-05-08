@@ -78,12 +78,12 @@ class Enable2Fa extends HTMLElement {
           message: '2FA enabled successfully.',
         });
         await setupUser();
+      } else {
+        showToast({
+          type: 'error',
+          message: await res.text(),
+        });
       }
-
-      showToast({
-        type: 'error',
-        message: await res.text(),
-      });
     });
   }
 

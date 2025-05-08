@@ -33,7 +33,7 @@ class NotificationNavMenu extends HTMLElement {
           >
             <h4 class="text-sm font-semibold">Notifications</h4>
             <button
-              class="text-sm text-muted-foreground hover:underline focus:outline-none"
+              class="cursor-pointer text-sm text-muted-foreground hover:underline focus:outline-none"
             >
               Mark all as read
             </button>
@@ -43,7 +43,7 @@ class NotificationNavMenu extends HTMLElement {
               href="#"
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
-              <h4 class="font-semibold">Notification Title</h4>
+              <h4>Notification Title</h4>
               <p class="text-sm text-muted-foreground">
                 Lorem ipsum dolor sit amet.
               </p>
@@ -52,7 +52,7 @@ class NotificationNavMenu extends HTMLElement {
               href="#"
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
-              <h4 class="text-sm font-semibold">Notification Title</h4>
+              <h4>Notification Title</h4>
               <p class="text-sm text-muted-foreground">
                 Lorem ipsum dolor sit amet.
               </p>
@@ -61,7 +61,7 @@ class NotificationNavMenu extends HTMLElement {
               href="#"
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
-              <h4 class="text-sm font-semibold">Notification Title</h4>
+              <h4>Notification Title</h4>
               <p class="text-sm text-muted-foreground">
                 Lorem ipsum dolor sit amet.
               </p>

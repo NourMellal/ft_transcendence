@@ -3,6 +3,7 @@ import '~/components/settings/partials/disable-2fa';
 import '~/components/settings/partials/enable-2fa';
 import { user } from '~/app-state';
 class Settings2FA extends HTMLElement {
+  cleanupCallbacks = new Array<Function>();
   render() {
     this.replaceChildren(html`
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -42,6 +43,12 @@ class Settings2FA extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.cleanupCallbacks.push(user.subscribe(() => this.render()));
+  }
+
+  disconnectedCallback() {
+    this.cleanupCallbacks.forEach((callback) => callback());
+    this.cleanupCallbacks = [];
   }
 }
 

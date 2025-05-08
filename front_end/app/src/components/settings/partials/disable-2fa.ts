@@ -55,14 +55,14 @@ class Disable2FA extends HTMLElement {
           message: '2FA disabled successfully.',
         });
         await setupUser();
+      } else {
+        showToast({
+          type: 'error',
+          message: await res.text(),
+        });
+        (target.querySelector("input[name='code']") as HTMLInputElement).value =
+          '';
       }
-
-      showToast({
-        type: 'error',
-        message: await res.text(),
-      });
-      (target.querySelector("input[name='code']") as HTMLInputElement).value =
-        '';
     });
   }
 
