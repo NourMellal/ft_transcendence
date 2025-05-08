@@ -4,6 +4,7 @@ import LogoutIcon from "~/icons/logout.svg?raw";
 import { navigateTo } from "../app-router";
 import { fetchWithAuth } from "~/api/auth";
 import { getUser } from "~/api/user";
+import { html } from "~/lib/html";
 
 class UserNavMenu extends HTMLElement {
   constructor() {
@@ -12,27 +13,44 @@ class UserNavMenu extends HTMLElement {
 
   render() {
     if (!window._currentUser) return;
-    this.innerHTML = /*html*/ `
-      <div class='relative'>
-        <button id='user-menu-btn' class='cursor-pointer focus-within:ring-ring'>
-          <img src='/api/${window._currentUser.picture_url}' class='ring ring-ring rounded-full ring-offset-1 object-cover h-10 w-10' alt='${window._currentUser.username}' />
+    this.replaceChildren(html`
+      <div class="relative">
+        <button id="user-menu-btn" class="cursor-pointer">
+          <img
+            src="/api/${window._currentUser.picture_url}"
+            class="ring ring-ring rounded-full ring-offset-1 object-cover h-10 w-10"
+            alt="${window._currentUser.username}"
+          />
         </button>
-        <div id='user-menu' class='hidden w-48 absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-2 [&>a]:p-1 [&>button]:p-1'>
-          <a class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors' href='/profile'>
+        <div
+          id="user-menu"
+          class="hidden w-48 absolute right-0 top-full bg-background border border-muted rounded-md shadow-lg mt-2 p-2 [&>a]:p-1 [&>button]:p-1"
+        >
+          <a
+            class="flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            href="/profile"
+          >
             ${UserIcon}
             <span>Profile</span>
           </a>
-          <a class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors' href='/settings'>
+          <a
+            class="flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            href="/settings"
+          >
             ${CogIcon}
             <span>Settings</span>
           </a>
-          <button type='button' id='logout-btn' class='flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer'>
+          <button
+            type="button"
+            id="logout-btn"
+            class="flex gap-2 [&>svg]:h-4 [&>svg]:w-4 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
             ${LogoutIcon}
             <span>Signout</span>
           </button>
         </div>
       </div>
-    `;
+    `);
   }
 
   handleLogout = async () => {

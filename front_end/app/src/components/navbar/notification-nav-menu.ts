@@ -1,4 +1,5 @@
 import BellIcon from "~/icons/bell.svg?raw";
+import { html } from "~/lib/html";
 
 class NotificationNavMenu extends HTMLElement {
   constructor() {
@@ -17,50 +18,59 @@ class NotificationNavMenu extends HTMLElement {
   }
 
   render() {
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <div class="relative">
-      <button id="notification-btn" class="cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent">
-        ${BellIcon}
-        <span
-          id="notification-count"
-          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
-        >0</span>
-      </button>
-      <div
-        id="notification-menu"
-        class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
-      >
-        <div class="flex justify-end px-2 pt-2">
-        <button class="text-sm text-muted-foreground hover:underline focus:outline-none">
-          Mark all as read
+        <button id="notification-btn" class="btn-outlined btn-icon">
+          ${BellIcon}
+          <span
+            id="notification-count"
+            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
+            >0</span
+          >
         </button>
-        </div>
-        <div class="divide-y divide-border">
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+        <div
+          id="notification-menu"
+          class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
         >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-        >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-        >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
+          <div class="flex justify-end px-2 pt-2">
+            <button
+              class="text-sm text-muted-foreground hover:underline focus:outline-none"
+            >
+              Mark all as read
+            </button>
+          </div>
+          <div class="divide-y divide-border">
+            <a
+              href="#"
+              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+            >
+              <h4 class="text-sm font-semibold">Notification Title</h4>
+              <p class="text-sm text-muted-foreground">
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
+            <a
+              href="#"
+              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+            >
+              <h4 class="text-sm font-semibold">Notification Title</h4>
+              <p class="text-sm text-muted-foreground">
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
+            <a
+              href="#"
+              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+            >
+              <h4 class="text-sm font-semibold">Notification Title</h4>
+              <p class="text-sm text-muted-foreground">
+                Lorem ipsum dolor sit amet.
+              </p>
+            </a>
+          </div>
         </div>
       </div>
-      </div>
-    `;
+    `);
   }
 
   toggle = () => {
@@ -70,26 +80,33 @@ class NotificationNavMenu extends HTMLElement {
 
     if (!notificationMenu) return;
 
-    const isHidden = notificationMenu.classList.contains("hidden");
-    const animationOpts: KeyframeAnimationOptions = {
-      duration: 200,
-      easing: "ease-in-out",
-      fill: "forwards",
-    };
-
-    if (isHidden) {
-      notificationMenu.classList.remove("hidden");
-
-      notificationMenu.animate(
-        [
-          { opacity: 0, transform: "translateY(-10px)" },
-          { opacity: 1, transform: "translateY(0)" },
-        ],
-        animationOpts
-      );
+    if (notificationMenu.classList.contains("hidden")) {
+      this.open();
     } else {
       this.close();
     }
+  };
+
+  open = () => {
+    const notificationMenu = this.querySelector(
+      "#notification-menu"
+    ) as HTMLDivElement | null;
+
+    if (!notificationMenu) return;
+
+    notificationMenu.classList.remove("hidden");
+
+    notificationMenu.animate(
+      [
+        { opacity: 0, transform: "translateY(-10px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      {
+        duration: 200,
+        easing: "ease-in-out",
+        fill: "forwards",
+      }
+    );
   };
 
   close = () => {

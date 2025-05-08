@@ -1,4 +1,5 @@
 import XIcon from "~/icons/x.svg?raw";
+import { html } from "~/lib/html";
 
 class MobileNavigation extends HTMLElement {
   constructor() {
@@ -16,25 +17,29 @@ class MobileNavigation extends HTMLElement {
       href: string;
     }[];
 
-    this.innerHTML = /*html*/ `
-      <div class='z-40 hidden md:hidden absolute inset-0 bg-background/80 backdrop-blur-md p-4' id='mobile-menu'>
-        <div class='border-b flex items-center justify-between pb-4 mb-4'>
-          <h4 class='font-bold text-lg me-8 select-none'>ft_transcendence</h4>
-          <button class='cursor-pointer' id='close-menu-btn'>${XIcon}</button>
+    this.replaceChildren(html`
+      <div
+        class="z-40 hidden md:hidden absolute inset-0 bg-background/80 backdrop-blur-md p-4"
+        id="mobile-menu"
+      >
+        <div class="border-b flex items-center justify-between pb-4 mb-4">
+          <h4 class="font-bold text-lg me-8 select-none">ft_transcendence</h4>
+          <button class="cursor-pointer" id="close-menu-btn">${XIcon}</button>
         </div>
-        <div class='flex flex-col gap-2'>
-          ${pages
-            .map(
-              (page) => /*html*/ `
-                <a class='focus:bg-muted py-2 px-4 -mx-4 transition-colors' href="${page.href}">
-                  ${page.name}
-                </a>
-              `
-            )
-            .join("")}
+        <div class="flex flex-col gap-2">
+          ${pages.map(
+            (page) => html`
+              <a
+                class="focus:bg-muted py-2 px-4 -mx-4 transition-colors"
+                href="${page.href}"
+              >
+                ${page.name}
+              </a>
+            `
+          )}
         </div>
       </div>
-    `;
+    `);
   }
 
   toggle = () => {

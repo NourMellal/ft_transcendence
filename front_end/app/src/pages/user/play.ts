@@ -1,20 +1,22 @@
-import { navigateTo } from "~/components/app-router";
+import { navigateTo } from '~/components/app-router';
+import { html } from '~/lib/html';
+import '~/components/navbar/navigation-bar';
 
-class PlayPage extends HTMLElement {
+export default class PlayPage extends HTMLElement {
   constructor() {
     super();
   }
 
   render() {
     if (!window._currentUser) {
-      return navigateTo("/signin");
+      return navigateTo('/signin');
     }
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <navigation-bar></navigation-bar>
-      <div class='container'>
+      <div class="container">
         <h1>Play Page</h1>
       </div>
-    `;
+    `);
   }
 
   setup() {
@@ -27,4 +29,4 @@ class PlayPage extends HTMLElement {
   }
 }
 
-customElements.define("play-page", PlayPage);
+customElements.define('play-page', PlayPage);

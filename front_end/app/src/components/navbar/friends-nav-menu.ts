@@ -1,6 +1,7 @@
 import UsersIcon from "~/icons/users.svg?raw";
 import { showToast } from "~/components/toast";
 import { fetchWithAuth } from "~/api/auth";
+import { html } from "~/lib/html";
 
 interface FriendRequest {
   REQ_ID: string;
@@ -17,22 +18,23 @@ class FriendsNavMenu extends HTMLElement {
 
   constructor() {
     super();
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <div class="relative">
-        <button id="friends-btn" class="cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent">
+        <button id="friends-btn" class="btn-outlined btn-icon">
           ${UsersIcon}
           <span
             id="friends-count"
             class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
-          >0</span>
+          >
+            0
+          </span>
         </button>
         <div
           id="friends-menu"
           class="hidden fixed sm:absolute right-0 w-[280px] sm:w-[320px] max-w-[90vw] bg-background border border-muted rounded-lg shadow-lg overflow-hidden z-40"
-        >
-        </div>
+        ></div>
       </div>
-    `;
+    `);
     this.friendsBtn = this.querySelector("#friends-btn");
     this.friendsMenu = this.querySelector("#friends-menu");
   }
@@ -144,32 +146,29 @@ class FriendsNavMenu extends HTMLElement {
   private render() {
     if (!this.friendsMenu) return;
 
-    this.friendsMenu.innerHTML = /*html*/ `
+    this.friendsMenu.replaceChildren(html`
       <div class="px-4 py-2 border-b border-muted">
         <h4 class="text-sm font-semibold">Friend Requests</h4>
       </div>
       <ul class="divide-y divide-muted max-h-60 overflow-y-auto">
-        ${
-          this.friendRequests.length === 0
-            ? /*html*/ `
+        ${this.friendRequests.length === 0
+          ? html`
               <li class="px-4 py-3 text-center text-sm text-muted-foreground">
                 No pending friend requests
               </li>
             `
-            : this.friendRequests
-                .map(
-                  (request) => /*html*/ `
+          : this.friendRequests.map(
+              (request) => html`
                 <li class="flex items-center px-4 py-3 hover:bg-muted/50">
                   <img
-                    src="/api/${
-                      request.picture_url || "static/profile/default.jpg"
-                    }"
+                    src="/api/${request.picture_url ||
+                    "static/profile/default.jpg"}"
                     alt="${request.username || "User"}"
                     class="w-8 h-8 rounded-full object-cover"
                   />
                   <div class="ml-3 flex-1 min-w-0">
                     <p class="text-sm font-medium truncate">
-                    ${request.username || "Unknown User"}
+                      ${request.username || "Unknown User"}
                     </p>
                   </div>
                   <div class="flex space-x-2 ml-2">
@@ -190,11 +189,9 @@ class FriendsNavMenu extends HTMLElement {
                   </div>
                 </li>
               `
-                )
-                .join("")
-        }
+            )}
       </ul>
-    `;
+    `);
     this.setFriendsCount(this.friendRequests.length);
     this.setupActionButtonsListeners();
   }

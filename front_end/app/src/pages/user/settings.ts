@@ -1,7 +1,12 @@
-import { getUser } from "~/api/user";
-import { navigateTo } from "~/components/app-router";
+import { getUser } from '~/api/user';
+import { navigateTo } from '~/components/app-router';
+import { html } from '~/lib/html';
+import '~/components/navbar/navigation-bar';
+import '~/components/settings/settings-info';
+import '~/components/settings/settings-2fa';
+import '~/components/settings/settings-password';
 
-class SettingsPage extends HTMLElement {
+export default class SettingsPage extends HTMLElement {
   constructor() {
     super();
   }
@@ -9,16 +14,16 @@ class SettingsPage extends HTMLElement {
   render = async () => {
     await getUser();
     if (!window._currentUser) {
-      return navigateTo("/signin");
+      return navigateTo('/signin');
     }
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container mt-16">
         <profile-info></profile-info>
         <settings-password></settings-password>
         <settings-2fa></settings-2fa>
       </div>
-    `;
+    `);
   };
 
   setup() {
@@ -31,4 +36,4 @@ class SettingsPage extends HTMLElement {
   }
 }
 
-customElements.define("settings-page", SettingsPage);
+customElements.define('settings-page', SettingsPage);

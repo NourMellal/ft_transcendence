@@ -1,30 +1,28 @@
-import { getUser } from "./api/user";
-import "./style.css";
-import { handleEffect } from "./utils";
-import.meta.glob("./components/**/*.ts", { eager: true });
-import.meta.glob("./pages/**/*.ts", { eager: true });
+import { getUser } from './api/user';
+import './style.css';
+import { handleEffect } from './utils';
 
 function initTheme() {
   let isDarkMode = true;
-  if (window.localStorage.getItem("theme")) {
-    isDarkMode = window.localStorage.getItem("theme") === "dark";
+  if (window.localStorage.getItem('theme')) {
+    isDarkMode = window.localStorage.getItem('theme') === 'dark';
   } else {
-    isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
   if (isDarkMode) {
-    document.documentElement.classList.add("dark");
+    document.documentElement.classList.add('dark');
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   initTheme();
 
   handleEffect(document.body, async () => {
     await getUser();
-    const root = document.querySelector("#app");
-    if (!root) throw Error("App Root Not Found!");
+    const root = document.querySelector('#app');
+    if (!root) throw Error('App Root Not Found!');
 
-    root.replaceChildren(document.createElement("app-router"));
+    root.replaceChildren(document.createElement('app-router'));
   });
 });

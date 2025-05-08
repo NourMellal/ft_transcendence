@@ -1,7 +1,9 @@
-import { navigateTo } from "~/components/app-router";
-import { User } from "~/api/user";
-import { showToast } from "~/components/toast";
-import { fetchWithAuth } from "~/api/auth";
+import { navigateTo } from '~/components/app-router';
+import { User } from '~/api/user';
+import { showToast } from '~/components/toast';
+import { fetchWithAuth } from '~/api/auth';
+import { html } from '~/lib/html';
+import '~/components/navbar/navigation-bar';
 
 enum FriendStatus {
   NONE,
@@ -17,7 +19,7 @@ interface ProfileState {
   pendingRequestId: string | null;
 }
 
-class ProfilePage extends HTMLElement {
+export default class ProfilePage extends HTMLElement {
   private state: ProfileState | null = null;
 
   constructor() {
@@ -26,25 +28,25 @@ class ProfilePage extends HTMLElement {
 
   async loadProfileData(): Promise<ProfileState | null> {
     if (!window._currentUser) {
-      navigateTo("/signin");
+      navigateTo('/signin');
       return null;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get("id");
-    const username = urlParams.get("username");
+    const userId = urlParams.get('id');
+    const username = urlParams.get('username');
 
     try {
       let user: User;
       if (userId || username) {
         const queryParam = username ? `uname=${username}` : `uid=${userId}`;
         const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
-          credentials: "include",
-          cache: "no-store",
+          credentials: 'include',
+          cache: 'no-store',
         });
 
         if (!res.ok) {
-          navigateTo("/profile");
+          navigateTo('/profile');
           return null;
         }
         user = await res.json();
@@ -71,8 +73,8 @@ class ProfilePage extends HTMLElement {
         ...friendStatus,
       };
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      navigateTo("/profile");
+      console.error('Error fetching user data:', error);
+      navigateTo('/profile');
       return null;
     }
   }
@@ -81,9 +83,9 @@ class ProfilePage extends HTMLElement {
     targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
-      const friendsRes = await fetchWithAuth("/api/friends", {
-        credentials: "include",
-        cache: "no-store",
+      const friendsRes = await fetchWithAuth('/api/friends', {
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (friendsRes.ok) {
@@ -93,9 +95,9 @@ class ProfilePage extends HTMLElement {
         }
       }
 
-      const requestsRes = await fetchWithAuth("/api/friends/requests", {
-        credentials: "include",
-        cache: "no-store",
+      const requestsRes = await fetchWithAuth('/api/friends/requests', {
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (requestsRes.ok) {
@@ -113,10 +115,10 @@ class ProfilePage extends HTMLElement {
       }
 
       const sentRequestsRes = await fetchWithAuth(
-        "/api/friends/sent_requests",
+        '/api/friends/sent_requests',
         {
-          credentials: "include",
-          cache: "no-store",
+          credentials: 'include',
+          cache: 'no-store',
         }
       );
 
@@ -136,13 +138,13 @@ class ProfilePage extends HTMLElement {
 
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     } catch (error) {
-      console.error("Error checking friend status:", error);
+      console.error('Error checking friend status:', error);
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     }
   }
 
   renderFriendActionButtons() {
-    if (!this.state || this.state.isOwnProfile) return "";
+    if (!this.state || this.state.isOwnProfile) return '';
 
     const { user, friendStatus, pendingRequestId } = this.state;
 
@@ -247,60 +249,60 @@ class ProfilePage extends HTMLElement {
 
   async handleFriendAction(action: string, id: string) {
     try {
-      let endpoint = "";
-      let successMessage = "";
+      let endpoint = '';
+      let successMessage = '';
 
       switch (action) {
-        case "add":
+        case 'add':
           endpoint = `/api/friends/request?uid=${id}`;
-          successMessage = "Friend request sent";
+          successMessage = 'Friend request sent';
           break;
-        case "accept":
+        case 'accept':
           endpoint = `/api/friends/accept?uid=${id}`;
-          successMessage = "Friend request accepted";
+          successMessage = 'Friend request accepted';
           break;
-        case "deny":
-        case "cancel":
+        case 'deny':
+        case 'cancel':
           endpoint = `/api/friends/deny?uid=${id}`;
           successMessage =
-            action === "deny"
-              ? "Friend request declined"
-              : "Friend request canceled";
+            action === 'deny'
+              ? 'Friend request declined'
+              : 'Friend request canceled';
           break;
-        case "remove":
+        case 'remove':
           endpoint = `/api/friends/remove?uid=${id}`;
-          successMessage = "Friend removed successfully";
+          successMessage = 'Friend removed successfully';
           break;
         default:
-          throw new Error("Invalid friend action");
+          throw new Error('Invalid friend action');
       }
 
       const response = await fetchWithAuth(endpoint, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (!response.ok) {
         throw new Error(`Failed to ${action} friend`);
       }
 
-      showToast({ type: "success", message: successMessage });
+      showToast({ type: 'success', message: successMessage });
       await this.render();
     } catch (error) {
       console.error(`Error with friend action (${action}):`, error);
       showToast({
-        type: "error",
+        type: 'error',
         message: `Failed to ${action} friend. Please try again.`,
       });
     }
   }
 
   setup() {
-    const buttons = this.querySelectorAll(".friend-action");
+    const buttons = this.querySelectorAll('.friend-action');
 
     buttons.forEach((button) => {
-      button.addEventListener("click", (event) => {
+      button.addEventListener('click', (event) => {
         const target = event.currentTarget as HTMLElement;
         const action = target.dataset.action;
         const id = target.dataset.id;
@@ -319,12 +321,12 @@ class ProfilePage extends HTMLElement {
     const { user, isOwnProfile } = this.state;
 
     const stats = [
-      { label: "Games Played", value: "42" },
-      { label: "Win Rate", value: "65%" },
-      { label: "Rank", value: "#12" },
+      { label: 'Games Played', value: '42' },
+      { label: 'Win Rate', value: '65%' },
+      { label: 'Rank', value: '#12' },
     ];
 
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container space-y-8 mt-16">
         <!-- Profile Header -->
@@ -335,41 +337,55 @@ class ProfilePage extends HTMLElement {
               alt="${user.username}"
               class="w-32 h-32 rounded-full ring ring-ring ring-offset-2 ring-offset-background object-cover"
             />
-            ${
-              isOwnProfile
-                ? /*html*/ `
-              <a href="/settings" class="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                  <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"></path>
-                </svg>
-              </a>
-            `
-                : ""
-            }
+            ${isOwnProfile
+              ? html`
+                  <a
+                    href="/settings"
+                    class="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                    >
+                      <path
+                        d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"
+                      ></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <path
+                        d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"
+                      ></path>
+                    </svg>
+                  </a>
+                `
+              : ''}
           </div>
           <div class="text-center space-y-1">
             <h1 class="text-2xl font-bold">${user.username}</h1>
-            <p class="text-muted-foreground">${user.bio || "No bio yet"}</p>
+            <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
           <div class="flex gap-2">
-            ${!isOwnProfile ? this.renderFriendActionButtons() : ""}
+            ${!isOwnProfile ? this.renderFriendActionButtons() : ''}
           </div>
         </div>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          ${stats
-            .map(
-              (stat) => /*html*/ `
-            <div class="card border rounded-lg p-6 text-center">
-              <p class="text-2xl font-bold">${stat.value}</p>
-              <p class="text-sm text-muted-foreground">${stat.label}</p>
-            </div>
-          `
-            )
-            .join("")}
+          ${stats.map(
+            (stat) => html`
+              <div class="card border rounded-lg p-6 text-center">
+                <p class="text-2xl font-bold">${stat.value}</p>
+                <p class="text-sm text-muted-foreground">${stat.label}</p>
+              </div>
+            `
+          )}
         </div>
 
         <!-- Recent Activity -->
@@ -393,13 +409,15 @@ class ProfilePage extends HTMLElement {
                   <p class="text-sm font-medium">Lost against janedoe</p>
                   <p class="text-xs text-muted-foreground">5 hours ago</p>
                 </div>
-                <span class="text-sm font-medium text-destructive">-15 pts</span>
+                <span class="text-sm font-medium text-destructive">
+                  -15 pts
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    `;
+    `);
 
     this.setup();
   }
@@ -409,4 +427,4 @@ class ProfilePage extends HTMLElement {
   }
 }
 
-customElements.define("profile-page", ProfilePage);
+customElements.define('profile-page', ProfilePage);

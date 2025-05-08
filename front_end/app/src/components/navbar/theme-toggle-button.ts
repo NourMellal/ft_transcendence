@@ -1,5 +1,6 @@
 import MoonIcon from "~/icons/moon.svg?raw";
 import SunIcon from "~/icons/sun.svg?raw";
+import { html } from "~/lib/html";
 
 class ThemeToggleButton extends HTMLElement {
   constructor() {
@@ -8,11 +9,11 @@ class ThemeToggleButton extends HTMLElement {
 
   render() {
     const isDark = document.documentElement.classList.contains("dark");
-    this.innerHTML = /*html*/ `
-      <button class='cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent'>
+    this.replaceChildren(html`
+      <button class="btn-outlined btn-icon">
         ${isDark ? SunIcon : MoonIcon}
       </button>
-    `;
+    `);
   }
 
   toggle = () => {
