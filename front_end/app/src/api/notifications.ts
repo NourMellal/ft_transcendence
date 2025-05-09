@@ -1,4 +1,4 @@
-import { friendRequests, pushNotification } from '~/app-state';
+import { friendRequests, notifications, pushNotification } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 
@@ -25,10 +25,17 @@ export const setupNotificationsSocket = async () => {
   const socket = new WebSocket('/api/notifications/push_notification', [
     websocketTicket,
   ]);
+  const notificationSound = new Audio('/notification.mp3');
   socket.onmessage = async (event) => {
     console.log(event);
 
     const data = JSON.parse(event.data) as NotificationData;
+    if (
+      data.type === NotificationType.NewFriendRequest ||
+      data.type === NotificationType.Poke
+    ) {
+      notificationSound.play();
+    }
 
     switch (data.type) {
       case NotificationType.NewFriendRequest:

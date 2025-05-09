@@ -1,6 +1,7 @@
-import { friendRequests, pushNotification, user } from '~/app-state';
+import { friendRequests, user } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
+import { setupNotificationsSocket } from './notifications';
 
 export type User = {
   UID: string;
@@ -29,6 +30,9 @@ export const setupUser = async () => {
 
     // friend requests
     friendRequests.set(await fetchFriendRequests());
+
+    // notifications
+    setupNotificationsSocket();
   } catch {
     user.set(null);
   }
