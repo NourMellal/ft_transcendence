@@ -132,13 +132,15 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       from_uid: RMqRequest.JWT.sub,
       to_uid: RMqRequest.message
     }
-    const notificationRequest: RabbitMQRequest = {
-      id: '',
-      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+    const notificationRequest: RabbitMQResponse = {
+      req_id: '',
+      service: RabbitMQMicroServices.NOTIFICATIONS,
+      op: RabbitMQNotificationsOp.PING_USER as number,
       message: JSON.stringify(Notification),
-      JWT: {} as JWT
+      status: 200
     };
-    rabbitmq.sendToNotificationQueue(notificationRequest);
+    // Send directly to api gateway to ping the user and avoiding saving the notification to database.
+    rabbitmq.sendToAPIGatewayQueue(notificationRequest);
   }
   return RMqResponse;
 }
