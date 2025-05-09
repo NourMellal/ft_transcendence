@@ -208,10 +208,11 @@ export const discoveryDocument = {
       description: "Enum: notification types.",
       types: [
         { NewFriendRequest: 1 },
-        { FriendRequestAccepted: 2 },
-        { FriendRequestDenied: 3 },
-        { GameInvite: 3 },
-        { Poke: 4 }
+        { FriendRemove: 2 },
+        { FriendRequestAccepted: 3 },
+        { FriendRequestDenied: 4 },
+        { GameInvite: 5 },
+        { Poke: 6 }
       ]
     },
     GetPushNotificationTicket: {
