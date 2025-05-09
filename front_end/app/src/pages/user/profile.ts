@@ -103,9 +103,7 @@ export default class ProfilePage extends HTMLElement {
 
       if (requestsRes.ok) {
         const requests = await requestsRes.json();
-        const incomingRequest = requests.find(
-          (request: any) => request.from_uid === targetUid
-        );
+        const incomingRequest = requests.find((request: any) => request.from_uid === targetUid);
 
         if (incomingRequest) {
           return {
@@ -115,19 +113,14 @@ export default class ProfilePage extends HTMLElement {
         }
       }
 
-      const sentRequestsRes = await fetchWithAuth(
-        '/api/friends/sent_requests',
-        {
-          credentials: 'include',
-          cache: 'no-store',
-        }
-      );
+      const sentRequestsRes = await fetchWithAuth('/api/friends/sent_requests', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
 
       if (sentRequestsRes.ok) {
         const sentRequests = await sentRequestsRes.json();
-        const outgoingRequest = sentRequests.find(
-          (request: any) => request.to_uid === targetUid
-        );
+        const outgoingRequest = sentRequests.find((request: any) => request.to_uid === targetUid);
 
         if (outgoingRequest) {
           return {
@@ -297,11 +290,7 @@ export default class ProfilePage extends HTMLElement {
 
       default:
         return html`
-          <button
-            class="btn btn-outlined friend-action"
-            data-action="add"
-            data-id="${user.UID}"
-          >
+          <button class="btn btn-outlined friend-action" data-action="add" data-id="${user.UID}">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -343,9 +332,7 @@ export default class ProfilePage extends HTMLElement {
         case 'cancel':
           endpoint = `/api/friends/deny?uid=${id}`;
           successMessage =
-            action === 'deny'
-              ? 'Friend request declined'
-              : 'Friend request canceled';
+            action === 'deny' ? 'Friend request declined' : 'Friend request canceled';
           break;
         case 'remove':
           endpoint = `/api/friends/remove?uid=${id}`;
@@ -383,7 +370,7 @@ export default class ProfilePage extends HTMLElement {
 
     buttons.forEach((button) => {
       button.addEventListener('click', (event) => {
-        const target = event.currentTarget as HTMLElement;
+        const target = event.target as HTMLElement;
         const action = target.dataset.action;
         const id = target.dataset.id;
 
@@ -435,9 +422,7 @@ export default class ProfilePage extends HTMLElement {
                       stroke-linejoin="round"
                       class="h-4 w-4"
                     >
-                      <path
-                        d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"
-                      ></path>
+                      <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
                       <path
                         d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"
@@ -451,9 +436,7 @@ export default class ProfilePage extends HTMLElement {
             <h1 class="text-2xl font-bold">${user.username}</h1>
             <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
-          <div class="flex gap-2">
-            ${!isOwnProfile ? this.renderFriendActionButtons() : ''}
-          </div>
+          <div class="flex gap-2">${!isOwnProfile ? this.renderFriendActionButtons() : ''}</div>
         </div>
 
         <!-- Stats Grid -->
@@ -489,9 +472,7 @@ export default class ProfilePage extends HTMLElement {
                   <p class="text-sm font-medium">Lost against janedoe</p>
                   <p class="text-xs text-muted-foreground">5 hours ago</p>
                 </div>
-                <span class="text-sm font-medium text-destructive">
-                  -15 pts
-                </span>
+                <span class="text-sm font-medium text-destructive"> -15 pts </span>
               </div>
             </div>
           </div>

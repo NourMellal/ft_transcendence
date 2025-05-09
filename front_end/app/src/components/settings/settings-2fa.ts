@@ -9,9 +9,7 @@ class Settings2FA extends HTMLElement {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
           <h2 class="text-xl font-semibold mb-1">Security</h2>
-          <p class="text-sm text-muted-foreground">
-            Manage your account security settings.
-          </p>
+          <p class="text-sm text-muted-foreground">Manage your account security settings.</p>
         </div>
         <div class="md:col-span-2">
           <div class="card border rounded-lg shadow-sm">
@@ -20,8 +18,7 @@ class Settings2FA extends HTMLElement {
             </div>
             <div id="totp-container" class="card-content p-6 space-y-4">
               <p class="text-sm text-muted-foreground mb-4">
-                Add an additional layer of security to your account during
-                login.
+                Add an additional layer of security to your account during login.
               </p>
             </div>
           </div>
@@ -32,7 +29,7 @@ class Settings2FA extends HTMLElement {
   }
 
   setup() {
-    const container = this.querySelector('#totp-container') as HTMLDivElement;
+    const container = this.querySelector<HTMLDivElement>('#totp-container')!;
 
     if (user.get()!.totp_enabled) {
       container.appendChild(document.createElement('disable-2fa'));

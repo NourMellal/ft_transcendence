@@ -11,9 +11,7 @@ class FriendsNavMenu extends HTMLElement {
   friendsMenu: HTMLDivElement | null = null;
 
   private setFriendsCount(count: number) {
-    const countEl = this.querySelector(
-      '#friends-count'
-    ) as HTMLSpanElement | null;
+    const countEl = this.querySelector<HTMLSpanElement>('#friends-count');
     if (countEl) {
       countEl.textContent = count.toString();
 
@@ -93,9 +91,7 @@ class FriendsNavMenu extends HTMLElement {
             <ul class="divide-y divide-muted max-h-60 overflow-y-auto">
               ${!requests || requests?.length === 0
                 ? html`
-                    <li
-                      class="px-4 py-3 text-center text-sm text-muted-foreground"
-                    >
+                    <li class="px-4 py-3 text-center text-sm text-muted-foreground">
                       No pending friend requests
                     </li>
                   `
@@ -103,8 +99,7 @@ class FriendsNavMenu extends HTMLElement {
                     (request) => html`
                       <li class="flex items-center px-4 py-3 hover:bg-muted/50">
                         <img
-                          src="/api/${request.picture_url ||
-                          'static/profile/default.jpg'}"
+                          src="/api/${request.picture_url || 'static/profile/default.jpg'}"
                           alt="${request.username || 'User'}"
                           class="w-8 h-8 rounded-full object-cover"
                         />
@@ -169,7 +164,7 @@ class FriendsNavMenu extends HTMLElement {
   }
 
   private handleFriendRequestAction = async (event: Event) => {
-    const button = event.currentTarget as HTMLButtonElement;
+    const button = event.target as HTMLButtonElement;
     const action = button.dataset.action;
     const reqId = button.dataset.reqId;
 
@@ -209,8 +204,7 @@ class FriendsNavMenu extends HTMLElement {
   };
 
   private close = () => {
-    if (!this.friendsMenu || this.friendsMenu.classList.contains('hidden'))
-      return;
+    if (!this.friendsMenu || this.friendsMenu.classList.contains('hidden')) return;
 
     const animation = this.friendsMenu.animate(
       [

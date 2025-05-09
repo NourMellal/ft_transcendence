@@ -72,10 +72,8 @@ class UserNavMenu extends HTMLElement {
   };
 
   closeUserMenu = (event: MouseEvent) => {
-    const userMenu = this.querySelector('#user-menu') as HTMLDivElement | null;
-    const userMenuBtn = this.querySelector(
-      '#user-menu-btn'
-    ) as HTMLButtonElement | null;
+    const userMenu = this.querySelector<HTMLDivElement>('#user-menu');
+    const userMenuBtn = this.querySelector<HTMLButtonElement>('#user-menu-btn');
 
     if (userMenu && userMenuBtn) {
       const target = event.target as HTMLElement;
@@ -105,7 +103,7 @@ class UserNavMenu extends HTMLElement {
   };
 
   toggleUserMenu = () => {
-    const userMenu = this.querySelector('#user-menu') as HTMLDivElement | null;
+    const userMenu = this.querySelector<HTMLDivElement>('#user-menu');
 
     if (!userMenu) return;
 
@@ -143,18 +141,12 @@ class UserNavMenu extends HTMLElement {
 
   setup() {
     // user menu
-    this.querySelector('#user-menu-btn')?.addEventListener(
-      'click',
-      this.toggleUserMenu
-    );
+    this.querySelector('#user-menu-btn')?.addEventListener('click', this.toggleUserMenu);
 
     document.addEventListener('click', this.closeUserMenu);
 
     // logout btn
-    this.querySelector('#logout-btn')?.addEventListener(
-      'click',
-      this.handleLogout
-    );
+    this.querySelector('#logout-btn')?.addEventListener('click', this.handleLogout);
   }
 
   connectedCallback() {

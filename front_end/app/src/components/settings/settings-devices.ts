@@ -30,16 +30,10 @@ class SettingsDevices extends HTMLElement {
             <div class="card-content p-6">
               ${!this.sessions
                 ? html`
-                    <p class="text-sm text-muted-foreground">
-                      Failed to fetch active sessions.
-                    </p>
+                    <p class="text-sm text-muted-foreground">Failed to fetch active sessions.</p>
                   `
                 : this.sessions.length === 0
-                ? html`
-                    <p class="text-sm text-muted-foreground">
-                      No active sessions found.
-                    </p>
-                  `
+                ? html` <p class="text-sm text-muted-foreground">No active sessions found.</p> `
                 : html`
                     <ul class="space-y-4">
                       ${this.sessions.map(
@@ -48,9 +42,7 @@ class SettingsDevices extends HTMLElement {
                             class="flex items-center justify-between p-4 border rounded-md bg-background hover:bg-muted/50 transition-colors"
                           >
                             <div>
-                              <p class="font-medium text-foreground">
-                                IP Address: ${session.ip}
-                              </p>
+                              <p class="font-medium text-foreground">IP Address: ${session.ip}</p>
                               <p class="text-sm text-muted-foreground">
                                 Connected: ${this.formatDate(session.created)}
                               </p>
@@ -84,12 +76,8 @@ class SettingsDevices extends HTMLElement {
   }
 
   setup() {
-    const revokeButtons = this.querySelectorAll(
-      'button[data-token-id]'
-    ) as NodeListOf<HTMLButtonElement>;
-    const revokeAllButton = this.querySelector(
-      '#revoke-all-sessions-btn'
-    ) as HTMLButtonElement;
+    const revokeButtons = this.querySelectorAll<HTMLButtonElement>('button[data-token-id]');
+    const revokeAllButton = this.querySelector<HTMLButtonElement>('#revoke-all-sessions-btn')!;
 
     revokeButtons.forEach((button) => {
       button.addEventListener('click', async () => {

@@ -62,10 +62,7 @@ class ProfileInfo extends HTMLElement {
               <div class="space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <label for="username-input" class="label">Username</label>
-                  <span
-                    id="username-error-message"
-                    class="text-sm text-destructive"
-                  ></span>
+                  <span id="username-error" class="text-sm text-destructive"></span>
                 </div>
                 <input
                   name="username"
@@ -76,10 +73,7 @@ class ProfileInfo extends HTMLElement {
                   value="${user.get()!.username}"
                   autocomplete="off"
                 />
-                <p
-                  id="username-availability"
-                  class="text-xs text-muted-foreground"
-                >
+                <p id="username-availability" class="text-xs text-muted-foreground">
                   Your unique display name.
                 </p>
               </div>
@@ -95,17 +89,11 @@ class ProfileInfo extends HTMLElement {
                 >
 ${user.get()!.bio}</textarea
                 >
-                <p class="text-xs text-muted-foreground">
-                  A brief description about you.
-                </p>
+                <p class="text-xs text-muted-foreground">A brief description about you.</p>
               </div>
             </div>
             <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
-              <button
-                type="submit"
-                id="save-profile-btn"
-                class="btn btn-primary"
-              >
+              <button type="submit" id="save-profile-btn" class="btn btn-primary">
                 Save Changes
               </button>
             </div>
@@ -120,7 +108,7 @@ ${user.get()!.bio}</textarea
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
 
-    const avatarInput = this.querySelector('#avatar-input') as HTMLInputElement;
+    const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
     const hasAvatar = avatarInput.files?.length;
 
     if (!hasAvatar) {
@@ -173,19 +161,11 @@ ${user.get()!.bio}</textarea
   };
 
   setup() {
-    const removeAvatarBtn = this.querySelector(
-      '#remove-avatar-btn'
-    ) as HTMLButtonElement;
-    const usernameInput = this.querySelector(
-      "input[name='username']"
-    ) as HTMLInputElement;
-    const changeAvatarBtn = this.querySelector(
-      '#change-avatar-btn'
-    ) as HTMLButtonElement;
-    const avatarInput = this.querySelector('#avatar-input') as HTMLInputElement;
-    const avatarPreview = this.querySelector(
-      '#avatar-preview'
-    ) as HTMLImageElement;
+    const removeAvatarBtn = this.querySelector<HTMLButtonElement>('#remove-avatar-btn')!;
+    const usernameInput = this.querySelector<HTMLInputElement>("input[name='username']")!;
+    const changeAvatarBtn = this.querySelector<HTMLButtonElement>('#change-avatar-btn')!;
+    const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
+    const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
 
     if (user.get()!.picture_url !== '/static/profile/default.jpg') {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
@@ -206,14 +186,10 @@ ${user.get()!.bio}</textarea
     usernameInput.addEventListener('keyup', (e) => {
       clearTimeout(this.debounceTimeout);
       const target = e.target as HTMLInputElement;
-      const errorSpan = this.querySelector(
-        '#username-error-message'
-      ) as HTMLSpanElement;
+      const errorSpan = this.querySelector<HTMLSpanElement>('#username-error')!;
       errorSpan.innerText = '';
 
-      const saveBtn = this.querySelector(
-        '#save-profile-btn'
-      ) as HTMLButtonElement;
+      const saveBtn = this.querySelector<HTMLButtonElement>('#save-profile-btn')!;
       this.debounceTimeout = window.setTimeout(async () => {
         if (e.key === 'Enter') return;
         if (!target.value || target.value === user.get()!.username) {
@@ -223,13 +199,10 @@ ${user.get()!.bio}</textarea
         }
 
         try {
-          const res = await fetchWithAuth(
-            `/api/user/namecheck?username=${target.value}`,
-            {
-              method: 'GET',
-              cache: 'no-store',
-            }
-          );
+          const res = await fetchWithAuth(`/api/user/namecheck?username=${target.value}`, {
+            method: 'GET',
+            cache: 'no-store',
+          });
           if (!res.ok) {
             const errorMessage = await res.text();
             errorSpan.innerText = errorMessage || `Username already taken`;
@@ -245,9 +218,7 @@ ${user.get()!.bio}</textarea
       }, 500);
     });
 
-    const userDetailsForm = this.querySelector(
-      '#user-details-form'
-    ) as HTMLFormElement;
+    const userDetailsForm = this.querySelector<HTMLFormElement>('#user-details-form')!;
     userDetailsForm.addEventListener('submit', this.updateProfile);
   }
 

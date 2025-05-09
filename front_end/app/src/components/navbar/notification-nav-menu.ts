@@ -3,9 +3,7 @@ import { html } from '~/lib/html';
 
 class NotificationNavMenu extends HTMLElement {
   setNotificationCount(count: number) {
-    const notificationCount = this.querySelector(
-      '#notification-count'
-    ) as HTMLSpanElement | null;
+    const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
 
     if (notificationCount) {
       notificationCount.textContent = count.toString();
@@ -28,9 +26,7 @@ class NotificationNavMenu extends HTMLElement {
           id="notification-menu"
           class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
         >
-          <div
-            class="flex justify-between items-center px-4 py-2 border-b border-muted"
-          >
+          <div class="flex justify-between items-center px-4 py-2 border-b border-muted">
             <h4 class="text-sm font-semibold">Notifications</h4>
             <button
               class="cursor-pointer text-sm text-muted-foreground hover:underline focus:outline-none"
@@ -44,27 +40,21 @@ class NotificationNavMenu extends HTMLElement {
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
               <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet.
-              </p>
+              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
             </a>
             <a
               href="#"
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
               <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet.
-              </p>
+              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
             </a>
             <a
               href="#"
               class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
             >
               <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet.
-              </p>
+              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
             </a>
           </div>
         </div>
@@ -75,9 +65,7 @@ class NotificationNavMenu extends HTMLElement {
   }
 
   toggle = () => {
-    const notificationMenu = this.querySelector(
-      '#notification-menu'
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (!notificationMenu) return;
 
@@ -89,9 +77,7 @@ class NotificationNavMenu extends HTMLElement {
   };
 
   open = () => {
-    const notificationMenu = this.querySelector(
-      '#notification-menu'
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (!notificationMenu) return;
 
@@ -111,9 +97,7 @@ class NotificationNavMenu extends HTMLElement {
   };
 
   close = () => {
-    const notificationMenu = this.querySelector(
-      '#notification-menu'
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (!notificationMenu) return;
 
@@ -133,13 +117,9 @@ class NotificationNavMenu extends HTMLElement {
   };
 
   setup() {
-    const notificationBtn = this.querySelector(
-      '#notification-btn'
-    ) as HTMLButtonElement | null;
+    const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
 
-    const notificationMenu = this.querySelector(
-      '#notification-menu'
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (notificationBtn && notificationMenu) {
       notificationBtn.addEventListener('click', this.toggle);
