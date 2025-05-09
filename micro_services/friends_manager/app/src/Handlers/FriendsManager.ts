@@ -349,6 +349,20 @@ function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       }
     }
   }
+  {
+    const Notification: NotificationBody = {
+      type: NotificationType.FriendRemove,
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: RMqRequest.message
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: {} as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
+  }
   RMqResponse.message = "Friend removed successfully";
   RMqResponse.status = 200;
   return RMqResponse;

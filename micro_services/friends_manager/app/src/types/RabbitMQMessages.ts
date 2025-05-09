@@ -29,6 +29,7 @@ export enum RabbitMQNotificationsOp {
 
 export enum NotificationType {
   NewFriendRequest = 1,
+  FriendRemove,
   FriendRequestAccepted,
   FriendRequestDenied,
   GameInvite,
