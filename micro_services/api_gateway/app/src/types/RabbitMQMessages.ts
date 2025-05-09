@@ -45,7 +45,8 @@ export enum NotificationType {
 
 export type NotificationBody = {
   type: NotificationType,
-  from_uid: string
+  from_uid: string,
+  to_uid: string
 }
 
 export type UpdateUser = {

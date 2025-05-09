@@ -1,6 +1,7 @@
 import db from "../classes/Databases";
 import { notifications_table_name } from "../types/DbTables";
 import {
+  NotificationBody,
   RabbitMQMicroServices,
   RabbitMQNotificationsOp,
   RabbitMQRequest,
@@ -66,8 +67,9 @@ const DeleteNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespo
 const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
   if (!RMqRequest.message)
     throw 'DeleteNotification(): Error no notification message';
+  const notificationBody = JSON.parse(RMqRequest.message) as NotificationBody;
   const query = db.persistent.prepare(`INSERT INTO ${notifications_table_name} (UID, user_uid, messageJson,is_read) VALUES ( ? , ? , ? , ? );`);
-  const res = query.run(crypto.randomUUID(), RMqRequest.JWT.sub, RMqRequest.message, 0);
+  const res = query.run(crypto.randomUUID(), notificationBody.to_uid, RMqRequest.message, 0);
   if (res.changes !== 1)
     throw 'database error';
   const RMqResponse: RabbitMQResponse = {
@@ -75,7 +77,7 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
     service: RabbitMQMicroServices.NOTIFICATIONS,
     op: RabbitMQNotificationsOp.PING_USER,
     status: 200,
-    message: RMqRequest.JWT.sub
+    message: RMqRequest.message
   }
   return RMqResponse;
 }

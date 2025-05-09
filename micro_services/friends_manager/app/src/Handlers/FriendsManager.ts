@@ -129,13 +129,14 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   {
     const Notification: NotificationBody = {
       type: NotificationType.NewFriendRequest,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: RMqRequest.message
     }
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: RMqRequest.message } as JWT
+      JWT: {} as JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }
@@ -216,13 +217,14 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   {
     const Notification: NotificationBody = {
       type: NotificationType.FriendRequestAccepted,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: request.from_uid
     }
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: request.from_uid } as JWT
+      JWT: {} as JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }
@@ -271,13 +273,14 @@ function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   if (RMqRequest.JWT.sub == request.to_uid) {
     const Notification: NotificationBody = {
       type: NotificationType.FriendRequestDenied,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: request.from_uid
     }
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: request.from_uid } as JWT
+      JWT: {} as JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }
@@ -382,13 +385,14 @@ function PokeFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   const Notification: NotificationBody = {
     type: NotificationType.Poke,
-    from_uid: RMqRequest.JWT.sub
+    from_uid: RMqRequest.JWT.sub,
+    to_uid: RMqRequest.message
   }
   const notificationRequest: RabbitMQRequest = {
     id: '',
     op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
     message: JSON.stringify(Notification),
-    JWT: { sub: RMqRequest.message } as JWT
+    JWT: {} as JWT
   };
   rabbitmq.sendToNotificationQueue(notificationRequest);
   RMqResponse.message = "Poke registred";

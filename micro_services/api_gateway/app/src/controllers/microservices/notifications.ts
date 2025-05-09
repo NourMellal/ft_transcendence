@@ -3,7 +3,7 @@ import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
 import { GetRandomString } from "../Common";
 import { state_expiree_sec } from "../../types/DbTables";
-import { RabbitMQFriendsManagerOp, RabbitMQNotificationsOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
+import { NotificationBody, RabbitMQFriendsManagerOp, RabbitMQNotificationsOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
 import rabbitmq from "../../classes/RabbitMQ";
 
 const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
@@ -22,16 +22,17 @@ const removeSocket = function (socket: WebSocket, uid: string) {
   }
 };
 
-export const pingUser = function (uid: string) {
-  console.log(`Ping Request for uid=${uid}:`);
-  const sockets = PushNotificationSocketsMap.get(uid);
+export const pingUser = function (notificationRaw: string) {
+  const notification = JSON.parse(notificationRaw) as NotificationBody;
+  console.log(`Ping Request for uid=${notification.to_uid}:`);
+  const sockets = PushNotificationSocketsMap.get(notification.to_uid);
   if (sockets) {
     for (let i = 0; i < sockets.length; i++) {
       try {
-        sockets[i].ping();
-        console.log(`pinging uid=${uid} on registred web socket.`);
+        sockets[i].send(notificationRaw);
+        console.log(`pinging uid=${notification.to_uid} on registred web socket.`);
       } catch (error) {
-        console.log(`error pinging user uid=${uid}: ${error}`);
+        console.log(`error pinging user uid=${notification.to_uid}: ${error}`);
       }
     }
   }
