@@ -28,10 +28,7 @@ export const setupUser = async () => {
 
   try {
     // user info
-    const res = await fetchWithAuth('/api/user/info?uid=me', {
-      method: 'GET',
-      cache: 'no-store',
-    });
+    const res = await fetchWithAuth('/api/user/info?uid=me');
     if (!res.ok) throw new Error('User not signed in');
 
     const userDetails = await res.json();
