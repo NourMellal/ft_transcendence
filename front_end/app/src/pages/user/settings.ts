@@ -1,4 +1,3 @@
-import { setupUser } from '~/api/user';
 import { navigateTo } from '~/components/app-router';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
@@ -9,11 +8,8 @@ import '~/components/settings/settings-devices';
 import { user } from '~/app-state';
 
 export default class SettingsPage extends HTMLElement {
-  currentUser = user.get();
-
   render = async () => {
-    await setupUser();
-    if (!this.currentUser) {
+    if (!user.get()) {
       return navigateTo('/signin');
     }
     this.replaceChildren(html`
@@ -25,12 +21,7 @@ export default class SettingsPage extends HTMLElement {
         <settings-2fa></settings-2fa>
       </div>
     `);
-    this.setup();
   };
-
-  setup() {
-    //
-  }
 
   connectedCallback() {
     this.render();

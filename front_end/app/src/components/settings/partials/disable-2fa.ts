@@ -1,5 +1,6 @@
 import { fetchWithAuth } from '~/api/auth';
-import { setupUser } from '~/api/user';
+import { fetchUserInfo } from '~/api/user';
+import { user } from '~/app-state';
 import { showToast } from '~/components/toast';
 import { html } from '~/lib/html';
 
@@ -54,7 +55,7 @@ class Disable2FA extends HTMLElement {
           type: 'success',
           message: '2FA disabled successfully.',
         });
-        await setupUser();
+        user.set(await fetchUserInfo());
       } else {
         showToast({
           type: 'error',

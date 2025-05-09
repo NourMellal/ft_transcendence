@@ -1,6 +1,5 @@
 import { navigateTo } from '../app-router';
 import { fetchWithAuth } from '~/api/auth';
-import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import { user } from '~/app-state';
 import { UserIcon, CogIcon, LogoutIcon } from '~/icons';
@@ -63,7 +62,7 @@ class UserNavMenu extends HTMLElement {
         throw new Error('Logout failed');
       }
 
-      await setupUser();
+      user.set(null);
 
       navigateTo('/signin');
     } catch (error) {

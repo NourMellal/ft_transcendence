@@ -2,7 +2,8 @@ import QrCode from 'qrcode';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { setupUser } from '~/api/user';
+import { fetchUserInfo } from '~/api/user';
+import { user } from '~/app-state';
 
 class Enable2Fa extends HTMLElement {
   render() {
@@ -77,7 +78,7 @@ class Enable2Fa extends HTMLElement {
           type: 'success',
           message: '2FA enabled successfully.',
         });
-        await setupUser();
+        user.set(await fetchUserInfo());
       } else {
         showToast({
           type: 'error',

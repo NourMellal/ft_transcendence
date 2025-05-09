@@ -19,8 +19,6 @@ export const fetchUserInfo = async () => {
 };
 
 export const setupUser = async () => {
-  const websocket = pushNotification.get();
-
   try {
     // user info
     const res = await fetchWithAuth('/api/user/info?uid=me');
@@ -33,10 +31,5 @@ export const setupUser = async () => {
     friendRequests.set(await fetchFriendRequests());
   } catch {
     user.set(null);
-
-    if (websocket) {
-      websocket.close();
-      pushNotification.set(null);
-    }
   }
 };

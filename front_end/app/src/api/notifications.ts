@@ -44,3 +44,11 @@ export const setupNotificationsSocket = async () => {
   };
   pushNotification.set(socket);
 };
+
+export const closeNotificationSocket = () => {
+  const socket = pushNotification.get();
+  if (socket) {
+    socket.close();
+    pushNotification.set(null);
+  }
+};

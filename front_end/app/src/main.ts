@@ -1,7 +1,10 @@
 import { fetchFriendRequests } from './api/friends';
-import { setupNotificationsSocket } from './api/notifications';
+import {
+  closeNotificationSocket,
+  setupNotificationsSocket,
+} from './api/notifications';
 import { fetchUserInfo } from './api/user';
-import { friendRequests, user } from './app-state';
+import { friendRequests, notifications, user } from './app-state';
 import './style.css';
 import { handleEffect } from './utils';
 
@@ -27,6 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
       await setupNotificationsSocket();
       friendRequests.set(await fetchFriendRequests());
     }
+
+    user.subscribe((u) => {
+      if (u === null) {
+        closeNotificationSocket();
+        friendRequests.set(null);
+        notifications.set(null);
+      }
+    });
+
     const root = document.querySelector('#app');
     if (!root) throw Error('App Root Not Found!');
 
