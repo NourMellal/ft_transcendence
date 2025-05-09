@@ -93,15 +93,28 @@ const MarkNotificationAsRead = function (RMqRequest: RabbitMQRequest): RabbitMQR
     RMqResponse.message = 'bad request';
     return RMqResponse;
   }
-  const query = db.persistent.prepare(`UPDATE ${notifications_table_name} SET is_read = 1 WHERE UID = ? AND user_uid = ? ;`)
-  const res = query.run(RMqRequest.message, RMqRequest.JWT.sub);
-  if (res.changes !== 1) {
+  const uids = RMqRequest.message.split(';');
+  if (uids.length == 0) {
+    RMqResponse.status = 400;
+    RMqResponse.message = 'bad request';
+    return RMqResponse;
+  }
+  let queryString = `UPDATE ${notifications_table_name} SET is_read = 1 WHERE user_uid = ? AND ( `;
+  for (let i = 0; i < uids.length; i++) {
+    queryString += 'UID = ? ';
+    if (i < uids.length - 1)
+      queryString += '|| ';
+  }
+  queryString += ' );';
+  const query = db.persistent.prepare(queryString);
+  const res = query.run(RMqRequest.JWT.sub, ...uids);
+  if (res.changes === 0) {
     RMqResponse.status = 400;
     RMqResponse.message = 'bad request';
   }
   else {
     RMqResponse.status = 200;
-    RMqResponse.message = 'notification marked as read';
+    RMqResponse.message = 'notifications marked as read';
   }
   return RMqResponse;
 }
