@@ -1,7 +1,16 @@
-const sanitizeHtml = (content: string) => {
-  const div = document.createElement('div');
-  div.innerText = content;
-  return div.innerText;
+const sanitizeHtml = (input: string) => {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
+  };
+
+  return input.replace(/[&<>"'`=\/]/g, (char) => map[char]);
 };
 
 type NodeMarkerInfo = {
@@ -44,10 +53,10 @@ export const html = (
 
       nodesToInsertLater.push({ marker, fragment: nodesContainer });
       htmlString += `<template ${fragmentMarkerAttribute}="${marker}"></template>`;
-      htmlString += sanitizeHtml(nextStringLiteralPart);
+      htmlString += nextStringLiteralPart;
     } else {
-      htmlString += String(value ?? '');
-      htmlString += sanitizeHtml(nextStringLiteralPart);
+      htmlString += sanitizeHtml(String(value ?? ''));
+      htmlString += nextStringLiteralPart;
     }
   });
 
@@ -69,4 +78,10 @@ export const html = (
   });
 
   return result;
+};
+
+export const raw = (html: string) => {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  return template.content;
 };

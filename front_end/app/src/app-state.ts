@@ -1,5 +1,6 @@
 import { FriendRequest } from './api/friends';
-import { NotificationData, User } from './api/user';
+import { NotificationData } from './api/notifications';
+import { User } from './api/user';
 import { createStateStore } from './lib/state';
 
 const user = createStateStore<User | null>(null);

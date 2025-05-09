@@ -3,7 +3,7 @@ import { showToast } from '../toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { user } from '~/app-state';
-import { setupUser } from '~/api/user';
+import { fetchUserInfo } from '~/api/user';
 
 class ProfileInfo extends HTMLElement {
   debounceTimeout: number | undefined; // for the username check
@@ -140,7 +140,7 @@ ${user.get()!.bio}</textarea
           type: 'success',
           message: 'Profile updated successfully',
         });
-        await setupUser();
+        user.set(await fetchUserInfo());
       } else {
         showToast({
           type: 'error',
@@ -165,7 +165,7 @@ ${user.get()!.bio}</textarea
           type: 'success',
           message: 'Picture removed successfully',
         });
-        await setupUser();
+        user.set(await fetchUserInfo());
       } else {
         showToast({ type: 'error', message: 'something went wrong' });
       }

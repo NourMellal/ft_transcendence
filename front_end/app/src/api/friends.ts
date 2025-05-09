@@ -5,8 +5,6 @@ export type FriendRequest = {
   REQ_ID: string;
   from_uid: string;
   to_uid: string;
-  username?: string;
-  picture_url?: string;
 };
 
 export const fetchFriendRequests = async () => {

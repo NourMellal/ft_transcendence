@@ -6,7 +6,8 @@ import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { user } from '~/app-state';
+import { friendRequests, user } from '~/app-state';
+import { fetchFriendRequests } from '~/api/friends';
 
 enum FriendStatus {
   NONE,
@@ -24,7 +25,7 @@ interface ProfileState {
 
 export default class ProfilePage extends HTMLElement {
   private state: ProfileState | null = null;
-  currentUser = user.get();
+  private cleanupCallbacks = new Array<Function>();
 
   async loadProfileData(): Promise<ProfileState | null> {
     if (!user.get()) {
@@ -150,10 +151,21 @@ export default class ProfilePage extends HTMLElement {
 
     switch (friendStatus) {
       case FriendStatus.FRIEND:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
             <button class="btn-ghost" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -166,7 +178,18 @@ export default class ProfilePage extends HTMLElement {
               data-action="remove"
               data-id="${user.UID}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <line x1="18" y1="8" x2="23" y2="13"></line>
@@ -178,14 +201,25 @@ export default class ProfilePage extends HTMLElement {
         `;
 
       case FriendStatus.PENDING_INCOMING:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
             <button
               class="btn btn-primary friend-action"
               data-action="accept"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
@@ -196,7 +230,18 @@ export default class ProfilePage extends HTMLElement {
               data-action="deny"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -206,10 +251,21 @@ export default class ProfilePage extends HTMLElement {
         `;
 
       case FriendStatus.PENDING_OUTGOING:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
             <button class="btn-ghost" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M20 6L9 17l-5-5"></path>
               </svg>
               <span>Request Sent</span>
@@ -219,7 +275,18 @@ export default class ProfilePage extends HTMLElement {
               data-action="cancel"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -229,13 +296,24 @@ export default class ProfilePage extends HTMLElement {
         `;
 
       default:
-        return /*html*/ `
+        return html`
           <button
             class="btn btn-outlined friend-action"
             data-action="add"
             data-id="${user.UID}"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4"
+            >
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <line x1="19" y1="8" x2="19" y2="14"></line>
@@ -296,6 +374,8 @@ export default class ProfilePage extends HTMLElement {
         message: `Failed to ${action} friend. Please try again.`,
       });
     }
+
+    friendRequests.set(await fetchFriendRequests());
   }
 
   setup() {
@@ -424,6 +504,11 @@ export default class ProfilePage extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.cleanupCallbacks.push(friendRequests.subscribe(() => this.render()));
+  }
+
+  disconnectedCallback() {
+    this.cleanupCallbacks.forEach((cleanup) => cleanup());
   }
 }
 

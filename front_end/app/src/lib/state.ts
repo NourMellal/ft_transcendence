@@ -24,13 +24,17 @@ export function createStateStore<T>(initialState: T): StateStore<T> {
   };
 
   const set = (newStateOrUpdateFn: T | UpdateFn<T>): void => {
+    // console.log(`State updated:`, newStateOrUpdateFn);
+
     const newState =
       typeof newStateOrUpdateFn === 'function'
         ? (newStateOrUpdateFn as UpdateFn<T>)(state)
         : newStateOrUpdateFn;
 
     state = newState;
-    subscribers.forEach((listener) => listener(state));
+    queueMicrotask(() => {
+      subscribers.forEach((listener) => listener(state));
+    });
   };
 
   return {

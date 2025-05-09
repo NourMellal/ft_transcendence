@@ -1,4 +1,7 @@
-import { setupUser } from './api/user';
+import { fetchFriendRequests } from './api/friends';
+import { setupNotificationsSocket } from './api/notifications';
+import { fetchUserInfo } from './api/user';
+import { friendRequests, user } from './app-state';
 import './style.css';
 import { handleEffect } from './utils';
 
@@ -19,7 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
 
   handleEffect(document.body, async () => {
-    await setupUser();
+    user.set(await fetchUserInfo());
+    if (user.get() !== null) {
+      await setupNotificationsSocket();
+      friendRequests.set(await fetchFriendRequests());
+    }
     const root = document.querySelector('#app');
     if (!root) throw Error('App Root Not Found!');
 
