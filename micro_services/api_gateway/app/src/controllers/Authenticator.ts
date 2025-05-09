@@ -293,7 +293,8 @@ export const LogOutCurrentUser = async (
       `DELETE FROM ${refresh_token_table_name} WHERE UID = ? AND token = ?`
     );
     const res = query.run(request.jwt.sub, refresh_token);
-    if (res.changes !== 1) return reply.code(400).send("bad request");
+    // This check is unneccessary in case a user revoked all active session
+    // if (res.changes !== 1) return reply.code(400).send("bad request");
   }
   reply.raw.appendHeader("set-cookie", `jwt=; Path=/; Secure; HttpOnly`);
   reply.raw.appendHeader(
