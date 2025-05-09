@@ -2,42 +2,13 @@ import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { UsersIcon } from '~/icons';
-
-interface FriendRequest {
-  REQ_ID: string;
-  from_uid: string;
-  to_uid: string;
-  username?: string;
-  picture_url?: string;
-}
+import { friendRequests } from '~/app-state';
+import { fetchFriendRequests } from '~/api/friends';
 
 class FriendsNavMenu extends HTMLElement {
-  private friendRequests: FriendRequest[] = [];
-  private friendsBtn: HTMLButtonElement | null = null;
-  private friendsMenu: HTMLDivElement | null = null;
-
-  constructor() {
-    super();
-    this.replaceChildren(html`
-      <div class="relative">
-        <button id="friends-btn" class="btn-outlined btn-icon">
-          ${UsersIcon}
-          <span
-            id="friends-count"
-            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
-          >
-            0
-          </span>
-        </button>
-        <div
-          id="friends-menu"
-          class="hidden fixed sm:absolute right-0 w-[280px] sm:w-[320px] max-w-[90vw] bg-background border border-muted rounded-lg shadow-lg overflow-hidden z-40"
-        ></div>
-      </div>
-    `);
-    this.friendsBtn = this.querySelector('#friends-btn');
-    this.friendsMenu = this.querySelector('#friends-menu');
-  }
+  cleanupCallbacks = new Array<Function>();
+  friendsBtn: HTMLButtonElement | null = null;
+  friendsMenu: HTMLDivElement | null = null;
 
   private setFriendsCount(count: number) {
     const countEl = this.querySelector(
@@ -50,55 +21,6 @@ class FriendsNavMenu extends HTMLElement {
     }
   }
 
-  async fetchFriendRequests() {
-    try {
-      const response = await fetchWithAuth('/api/friends/requests', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch friend requests: ${response.status}`);
-      }
-      const requests: FriendRequest[] = await response.json();
-      this.friendRequests = requests;
-
-      await Promise.allSettled(
-        this.friendRequests.map(async (request) => {
-          try {
-            const userResponse = await fetchWithAuth(
-              `/api/user/info?uid=${request.from_uid}`,
-              {
-                credentials: 'include',
-                cache: 'no-store',
-              }
-            );
-            if (userResponse.ok) {
-              const userInfo = await userResponse.json();
-              request.username = userInfo.username;
-              request.picture_url = userInfo.picture_url;
-            } else {
-              showToast({
-                type: 'error',
-                message: `Failed to fetch user info for ${request.from_uid}`,
-              });
-            }
-          } catch (error) {
-            showToast({
-              type: 'error',
-              message: `Failed to fetch user info for ${request.from_uid}`,
-            });
-          }
-        })
-      );
-
-      this.render();
-    } catch (error) {
-      console.error('Failed to load friend requests:', error);
-      this.friendRequests = [];
-      this.render();
-    }
-  }
-
   async acceptFriendRequest(reqId: string) {
     try {
       const response = await fetchWithAuth(`/api/friends/accept?uid=${reqId}`, {
@@ -108,12 +30,14 @@ class FriendsNavMenu extends HTMLElement {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to accept friend request: ${response.status}`);
+        throw new Error(`Failed to accept friend request`);
       }
-      showToast({ type: 'success', message: 'Friend request accepted!' });
-      await this.fetchFriendRequests();
+
+      showToast({
+        type: 'success',
+        message: 'Friend request accepted!',
+      });
     } catch (error) {
-      console.error('Failed to accept request:', error);
       showToast({
         type: 'error',
         message: 'Failed to accept request',
@@ -132,10 +56,11 @@ class FriendsNavMenu extends HTMLElement {
       if (!response.ok) {
         throw new Error(`Failed to deny friend request: ${response.status}`);
       }
-      showToast({ type: 'info', message: 'Friend request declined.' });
-      await this.fetchFriendRequests();
+      showToast({
+        type: 'info',
+        message: 'Friend request declined.',
+      });
     } catch (error) {
-      console.error('Failed to deny request:', error);
       showToast({
         type: 'error',
         message: 'Failed to deny request',
@@ -144,55 +69,79 @@ class FriendsNavMenu extends HTMLElement {
   }
 
   private render() {
-    if (!this.friendsMenu) return;
+    const requests = friendRequests.get();
 
-    this.friendsMenu.replaceChildren(html`
-      <div class="px-4 py-2 border-b border-muted">
-        <h4 class="text-sm font-semibold">Friend Requests</h4>
+    this.replaceChildren(html`
+      <div class="relative">
+        <button id="friends-btn" class="btn-outlined btn-icon">
+          ${UsersIcon}
+          <span
+            id="friends-count"
+            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
+          >
+            0
+          </span>
+        </button>
+        <div
+          id="friends-menu"
+          class="hidden fixed sm:absolute right-0 w-[280px] sm:w-[320px] max-w-[90vw] bg-background border border-muted rounded-lg shadow-lg overflow-hidden z-40"
+        >
+          ${html`
+            <div class="px-4 py-2 border-b border-muted">
+              <h4 class="text-sm font-semibold">Friend Requests</h4>
+            </div>
+            <ul class="divide-y divide-muted max-h-60 overflow-y-auto">
+              ${!requests || requests?.length === 0
+                ? html`
+                    <li
+                      class="px-4 py-3 text-center text-sm text-muted-foreground"
+                    >
+                      No pending friend requests
+                    </li>
+                  `
+                : requests.map(
+                    (request) => html`
+                      <li class="flex items-center px-4 py-3 hover:bg-muted/50">
+                        <img
+                          src="/api/${request.picture_url ||
+                          'static/profile/default.jpg'}"
+                          alt="${request.username || 'User'}"
+                          class="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div class="ml-3 flex-1 min-w-0">
+                          <p class="text-sm font-medium truncate">
+                            ${request.username || 'Unknown User'}
+                          </p>
+                        </div>
+                        <div class="flex space-x-2 ml-2">
+                          <button
+                            class="btn-primary btn-sm"
+                            data-action="accept"
+                            data-req-id="${request.REQ_ID}"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            class="btn-sm btn-destructive"
+                            data-action="deny"
+                            data-req-id="${request.REQ_ID}"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </li>
+                    `
+                  )}
+            </ul>
+          `}
+        </div>
       </div>
-      <ul class="divide-y divide-muted max-h-60 overflow-y-auto">
-        ${this.friendRequests.length === 0
-          ? html`
-              <li class="px-4 py-3 text-center text-sm text-muted-foreground">
-                No pending friend requests
-              </li>
-            `
-          : this.friendRequests.map(
-              (request) => html`
-                <li class="flex items-center px-4 py-3 hover:bg-muted/50">
-                  <img
-                    src="/api/${request.picture_url ||
-                    'static/profile/default.jpg'}"
-                    alt="${request.username || 'User'}"
-                    class="w-8 h-8 rounded-full object-cover"
-                  />
-                  <div class="ml-3 flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate">
-                      ${request.username || 'Unknown User'}
-                    </p>
-                  </div>
-                  <div class="flex space-x-2 ml-2">
-                    <button
-                      class="btn-primary btn-sm"
-                      data-action="accept"
-                      data-req-id="${request.REQ_ID}"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      class="btn-sm btn-destructive"
-                      data-action="deny"
-                      data-req-id="${request.REQ_ID}"
-                    >
-                      Decline
-                    </button>
-                  </div>
-                </li>
-              `
-            )}
-      </ul>
     `);
-    this.setFriendsCount(this.friendRequests.length);
+
+    this.friendsBtn = this.querySelector('#friends-btn');
+    this.friendsMenu = this.querySelector('#friends-menu');
+    this.setup();
+    this.setFriendsCount(requests?.length || 0);
     this.setupActionButtonsListeners();
   }
 
@@ -211,12 +160,10 @@ class FriendsNavMenu extends HTMLElement {
       this.friendsBtn.addEventListener('click', this.toggle);
     }
     document.addEventListener('click', this.handleOutsideClick);
-    this.fetchFriendRequests();
   }
 
   private setupActionButtonsListeners() {
     this.querySelectorAll('button[data-req-id]').forEach((button) => {
-      button.removeEventListener('click', this.handleFriendRequestAction);
       button.addEventListener('click', this.handleFriendRequestAction);
     });
   }
@@ -234,6 +181,7 @@ class FriendsNavMenu extends HTMLElement {
       } else if (action === 'deny') {
         await this.denyFriendRequest(reqId);
       }
+      friendRequests.set(await fetchFriendRequests());
     }
   };
 
@@ -283,20 +231,16 @@ class FriendsNavMenu extends HTMLElement {
   };
 
   connectedCallback() {
-    this.friendsBtn = this.querySelector('#friends-btn');
-    this.friendsMenu = this.querySelector('#friends-menu');
-    this.setup();
+    this.render();
+    this.cleanupCallbacks.push(friendRequests.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {
+    this.cleanupCallbacks.forEach((callback) => callback());
     if (this.friendsBtn) {
       this.friendsBtn.removeEventListener('click', this.toggle);
     }
     document.removeEventListener('click', this.handleOutsideClick);
-
-    this.querySelectorAll('button[data-req-id]').forEach((button) => {
-      button.removeEventListener('click', this.handleFriendRequestAction);
-    });
   }
 }
 

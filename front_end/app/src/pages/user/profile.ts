@@ -152,7 +152,7 @@ export default class ProfilePage extends HTMLElement {
       case FriendStatus.FRIEND:
         return /*html*/ `
           <div class="flex gap-2">
-            <button class="btn btn-disabled" disabled>
+            <button class="btn-ghost" disabled>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
