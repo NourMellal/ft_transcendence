@@ -1,4 +1,4 @@
-import { friendRequests, notifications, pushNotification } from '~/app-state';
+import { friendRequests, pushNotification } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 
@@ -26,29 +26,39 @@ export const setupNotificationsSocket = async () => {
     websocketTicket,
   ]);
   const notificationSound = new Audio('/notification.mp3');
-  socket.onmessage = async (event) => {
+  socket.addEventListener('error', (err) => {
+    console.error('WebSocket error:', err);
+  });
+
+  socket.addEventListener('message', async (event) => {
     console.log(event);
 
-    const data = JSON.parse(event.data) as NotificationData;
-    if (
-      data.type === NotificationType.NewFriendRequest ||
-      data.type === NotificationType.Poke
-    ) {
-      notificationSound.play();
-    }
+    try {
+      const data = JSON.parse(event.data) as NotificationData;
+      if (
+        data.type === NotificationType.NewFriendRequest ||
+        data.type === NotificationType.Poke
+      ) {
+        try {
+          notificationSound.play();
+        } catch {}
+      }
 
-    switch (data.type) {
-      case NotificationType.NewFriendRequest:
-      case NotificationType.FriendRequestDenied:
-      case NotificationType.FriendRequestAccepted:
-        friendRequests.set(await fetchFriendRequests());
-        break;
-      case NotificationType.Poke:
-        console.log(data);
+      switch (data.type) {
+        case NotificationType.NewFriendRequest:
+        case NotificationType.FriendRequestDenied:
+        case NotificationType.FriendRequestAccepted:
+          friendRequests.set(await fetchFriendRequests());
+          break;
+        case NotificationType.Poke:
+          console.log(data);
 
-        break;
+          break;
+      }
+    } catch {
+      console.error('Error parsing notification data');
     }
-  };
+  });
   pushNotification.set(socket);
 };
 

@@ -11,8 +11,8 @@ export type User = {
   totp_enabled: boolean;
 };
 
-export const fetchUserInfo = async () => {
-  const res = await fetch('/api/user/info?uid=me');
+export const fetchUserInfo = async (username?: string) => {
+  const res = await fetch(`/api/user/info?uid=${username ?? 'me'}`);
   if (res.ok) {
     return await res.json();
   }
