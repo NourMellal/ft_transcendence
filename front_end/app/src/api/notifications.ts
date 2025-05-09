@@ -19,18 +19,26 @@ export type NotificationData = {
 export const setupNotificationsSocket = async () => {
   if (pushNotification.get()) return;
 
-  const websocketTicket = await (
+  const notificationSound = new Audio('/notification.mp3');
+  let pingInterval: NodeJS.Timeout;
+
+  const ticket = await (
     await fetchWithAuth('/api/notifications/ticket')
   ).text();
-  const socket = new WebSocket('/api/notifications/push_notification', [
-    websocketTicket,
-  ]);
-  const notificationSound = new Audio('/notification.mp3');
-  socket.addEventListener('error', (err) => {
+
+  const ws = new WebSocket('/api/notifications/push_notification', [ticket]);
+  ws.addEventListener('error', (err) => {
     console.error('WebSocket error:', err);
   });
 
-  socket.addEventListener('message', async (event) => {
+  ws.onopen = (socket) => {
+    console.log('WebSocket connected:', socket);
+    pingInterval = setInterval(() => {
+      ws.send(JSON.stringify({ type: 'ping' }));
+    }, 30_000);
+  };
+
+  ws.onmessage = async (event) => {
     console.log(event);
 
     try {
@@ -58,8 +66,13 @@ export const setupNotificationsSocket = async () => {
     } catch {
       console.error('Error parsing notification data');
     }
-  });
-  pushNotification.set(socket);
+  };
+
+  ws.onclose = (event) => {
+    console.log(`WebSocket closed`, event);
+    clearInterval(pingInterval);
+  };
+  pushNotification.set(ws);
 };
 
 export const closeNotificationSocket = () => {

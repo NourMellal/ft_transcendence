@@ -101,7 +101,11 @@ ${user.get()!.bio}</textarea
               </div>
             </div>
             <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
-              <button id="save-profile-btn" class="btn btn-primary">
+              <button
+                type="submit"
+                id="save-profile-btn"
+                class="btn btn-primary"
+              >
                 Save Changes
               </button>
             </div>
@@ -114,25 +118,21 @@ ${user.get()!.bio}</textarea
 
   updateProfile = (e: SubmitEvent) => {
     e.preventDefault();
-    const formData = new FormData(
-      this.querySelector('#user-details-form') as HTMLFormElement
-    );
+    const formData = new FormData(e.target as HTMLFormElement);
 
     const avatarInput = this.querySelector('#avatar-input') as HTMLInputElement;
-    const avatar = avatarInput.files?.[0];
+    const hasAvatar = avatarInput.files?.length;
 
-    if (!avatar) {
+    if (!hasAvatar) {
       formData.delete('picture');
     }
 
-    const fieldset = document.querySelector('fieldset')!;
+    const fieldset = this.querySelector('fieldset')!;
     fieldset.disabled = true;
     handleEffect(document.body, async () => {
       const res = await fetchWithAuth('/api/user/info', {
         method: 'POST',
-        credentials: 'include',
         body: formData,
-        cache: 'no-store',
       });
 
       if (res.ok) {
@@ -206,7 +206,7 @@ ${user.get()!.bio}</textarea
     usernameInput.addEventListener('keyup', (e) => {
       clearTimeout(this.debounceTimeout);
       const target = e.target as HTMLInputElement;
-      const errorSpan = document.querySelector(
+      const errorSpan = this.querySelector(
         '#username-error-message'
       ) as HTMLSpanElement;
       errorSpan.innerText = '';
