@@ -5,6 +5,7 @@ import '~/components/navbar/navigation-bar';
 import '~/components/settings/settings-info';
 import '~/components/settings/settings-2fa';
 import '~/components/settings/settings-password';
+import '~/components/settings/settings-devices';
 import { user } from '~/app-state';
 
 export default class SettingsPage extends HTMLElement {
@@ -20,6 +21,7 @@ export default class SettingsPage extends HTMLElement {
       <div class="container mt-16">
         <profile-info></profile-info>
         <settings-password></settings-password>
+        <settings-devices></settings-devices>
         <settings-2fa></settings-2fa>
       </div>
     `);

@@ -15,3 +15,12 @@ export const fetchWithAuth = async (
 
   return response;
 };
+
+export const fetchActiveSessions = async () => {
+  const res = await fetch('/api/jwt/list');
+  if (res.ok) {
+    return (await res.json()) || [];
+  }
+
+  return [];
+};

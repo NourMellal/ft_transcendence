@@ -4,9 +4,10 @@ import { fetchFriendRequests } from './friends';
 
 enum NotificationType {
   NewFriendRequest = 1,
-  FriendRequestAccepted = 2,
-  FriendRequestDenied = 3,
-  Poke = 4,
+  FriendRequestAccepted,
+  FriendRequestDenied,
+  GameInvite,
+  Poke,
 }
 
 export type NotificationData = {
