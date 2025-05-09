@@ -2,9 +2,15 @@ import { html } from '~/lib/html';
 import '~/components/settings/partials/disable-2fa';
 import '~/components/settings/partials/enable-2fa';
 import { user } from '~/app-state';
+import { User } from '~/api/user';
 class Settings2FA extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
+
   render() {
+    const currentUser = user.get();
+
+    if (!currentUser) return;
+
     this.replaceChildren(html`
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
@@ -25,13 +31,13 @@ class Settings2FA extends HTMLElement {
         </div>
       </div>
     `);
-    this.setup();
+    this.setup(currentUser);
   }
 
-  setup() {
+  setup(currentUser: User) {
     const container = this.querySelector<HTMLDivElement>('#totp-container')!;
 
-    if (user.get()!.totp_enabled) {
+    if (currentUser.totp_enabled) {
       container.appendChild(document.createElement('disable-2fa'));
     } else {
       container.appendChild(document.createElement('enable-2fa'));

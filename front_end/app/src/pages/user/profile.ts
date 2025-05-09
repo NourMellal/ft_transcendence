@@ -28,7 +28,8 @@ export default class ProfilePage extends HTMLElement {
   private cleanupCallbacks = new Array<Function>();
 
   async loadProfileData(): Promise<ProfileState | null> {
-    if (!user.get()) {
+    const currentUser = user.get();
+    if (!currentUser) {
       navigateTo('/signin');
       return null;
     }
@@ -38,7 +39,7 @@ export default class ProfilePage extends HTMLElement {
     const username = urlParams.get('username');
 
     try {
-      let profileUser: User;
+      let profileUser: User | null;
       if (userId || username) {
         const queryParam = username ? `uname=${username}` : `uid=${userId}`;
         const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
@@ -52,10 +53,15 @@ export default class ProfilePage extends HTMLElement {
         }
         profileUser = await res.json();
       } else {
-        profileUser = user.get()!;
+        profileUser = currentUser;
       }
 
-      const isOwnProfile = profileUser.UID === user.get()!.UID;
+      if (!profileUser) {
+        navigateTo('/signin');
+        return null;
+      }
+
+      const isOwnProfile = profileUser.UID === currentUser.UID;
 
       if (isOwnProfile) {
         return {
@@ -81,7 +87,7 @@ export default class ProfilePage extends HTMLElement {
   }
 
   async getFriendStatus(
-    targetUid: string,
+    targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
       const friendsRes = await fetchWithAuth('/api/friends', {
@@ -447,7 +453,7 @@ export default class ProfilePage extends HTMLElement {
                 <p class="text-2xl font-bold">${stat.value}</p>
                 <p class="text-sm text-muted-foreground">${stat.label}</p>
               </div>
-            `,
+            `
           )}
         </div>
 

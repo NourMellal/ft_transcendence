@@ -32,9 +32,8 @@ export function createStateStore<T>(initialState: T): StateStore<T> {
         : newStateOrUpdateFn;
 
     state = newState;
-    queueMicrotask(() => {
-      subscribers.forEach((listener) => listener(state));
-    });
+
+    subscribers.forEach((listener) => listener(state));
   };
 
   return {

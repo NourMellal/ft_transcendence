@@ -27,7 +27,7 @@ class ProfileInfo extends HTMLElement {
                 <div class="flex items-center gap-4">
                   <img
                     id="avatar-preview"
-                    src="/api/${user.get()!.picture_url}"
+                    src="/api/${user.get()?.picture_url}"
                     alt="Avatar"
                     class="h-16 w-16 rounded-full object-cover border"
                   />
@@ -70,7 +70,7 @@ class ProfileInfo extends HTMLElement {
                   type="text"
                   class="input w-full"
                   placeholder="Your username"
-                  value="${user.get()!.username}"
+                  value="${user.get()?.username}"
                   autocomplete="off"
                 />
                 <p id="username-availability" class="text-xs text-muted-foreground">
@@ -87,7 +87,7 @@ class ProfileInfo extends HTMLElement {
                   class="input w-full min-h-[80px]"
                   placeholder="Tell us a little about yourself"
                 >
-${user.get()!.bio}</textarea
+${user.get()?.bio}</textarea
                 >
                 <p class="text-xs text-muted-foreground">A brief description about you.</p>
               </div>
@@ -167,7 +167,7 @@ ${user.get()!.bio}</textarea
     const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
     const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
 
-    if (user.get()!.picture_url !== '/static/profile/default.jpg') {
+    if (user.get()?.picture_url !== '/static/profile/default.jpg') {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
@@ -192,7 +192,7 @@ ${user.get()!.bio}</textarea
       const saveBtn = this.querySelector<HTMLButtonElement>('#save-profile-btn')!;
       this.debounceTimeout = window.setTimeout(async () => {
         if (e.key === 'Enter') return;
-        if (!target.value || target.value === user.get()!.username) {
+        if (!target.value || target.value === user.get()?.username) {
           errorSpan.innerText = '';
           saveBtn.disabled = false;
           return;
