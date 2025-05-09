@@ -33,31 +33,31 @@ class SettingsDevices extends HTMLElement {
                     <p class="text-sm text-muted-foreground">Failed to fetch active sessions.</p>
                   `
                 : this.sessions.length === 0
-                ? html` <p class="text-sm text-muted-foreground">No active sessions found.</p> `
-                : html`
-                    <ul class="space-y-4">
-                      ${this.sessions.map(
-                        (session) => html`
-                          <li
-                            class="flex items-center justify-between p-4 border rounded-md bg-background hover:bg-muted/50 transition-colors"
-                          >
-                            <div>
-                              <p class="font-medium text-foreground">IP Address: ${session.ip}</p>
-                              <p class="text-sm text-muted-foreground">
-                                Connected: ${this.formatDate(session.created)}
-                              </p>
-                            </div>
-                            <button
-                              class="btn btn-sm btn-destructive"
-                              data-token-id="${session.token_id}"
+                  ? html` <p class="text-sm text-muted-foreground">No active sessions found.</p> `
+                  : html`
+                      <ul class="space-y-4">
+                        ${this.sessions.map(
+                          (session) => html`
+                            <li
+                              class="flex items-center justify-between p-4 border rounded-md bg-background hover:bg-muted/50 transition-colors"
                             >
-                              Revoke
-                            </button>
-                          </li>
-                        `
-                      )}
-                    </ul>
-                  `}
+                              <div>
+                                <p class="font-medium text-foreground">IP Address: ${session.ip}</p>
+                                <p class="text-sm text-muted-foreground">
+                                  Connected: ${this.formatDate(session.created)}
+                                </p>
+                              </div>
+                              <button
+                                class="btn btn-sm btn-destructive"
+                                data-token-id="${session.token_id}"
+                              >
+                                Revoke
+                              </button>
+                            </li>
+                          `,
+                        )}
+                      </ul>
+                    `}
             </div>
             <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
               <button
@@ -100,7 +100,7 @@ class SettingsDevices extends HTMLElement {
               method: 'POST',
             });
           }
-        })
+        }),
       );
       this.render();
     });

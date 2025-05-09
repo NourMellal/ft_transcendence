@@ -37,9 +37,7 @@ export default class ChatPage extends HTMLElement {
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container mx-auto">
-        <div
-          class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden"
-        >
+        <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
           <!-- Sidebar - Friends List -->
           <aside
             id="friendsList"
@@ -50,9 +48,7 @@ export default class ChatPage extends HTMLElement {
             style="z-index: 20;"
           >
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-card-foreground">
-                Friends
-              </h2>
+              <h2 class="text-lg font-semibold text-card-foreground">Friends</h2>
               <button
                 class="md:hidden p-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
               >
@@ -84,11 +80,9 @@ export default class ChatPage extends HTMLElement {
                       alt="${friend.name}"
                       class="w-8 h-8 rounded-full object-cover"
                     />
-                    <span class="text-sm font-medium text-foreground"
-                      >${friend.name}</span
-                    >
+                    <span class="text-sm font-medium text-foreground">${friend.name}</span>
                   </a>
-                `
+                `,
               )}
             </div>
           </aside>
@@ -114,18 +108,14 @@ export default class ChatPage extends HTMLElement {
                   />
                 </svg>
               </button>
-              <h3 class="text-lg font-semibold text-card-foreground">
-                Chat with Alice
-              </h3>
+              <h3 class="text-lg font-semibold text-card-foreground">Chat with Alice</h3>
             </header>
 
             <!-- Messages -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
               ${messages.map(
                 (msg) => html`
-                  <div
-                    class="flex ${msg.isOwn ? 'justify-end' : 'justify-start'}"
-                  >
+                  <div class="flex ${msg.isOwn ? 'justify-end' : 'justify-start'}">
                     <div class="max-w-xs lg:max-w-md">
                       <div
                         class="text-xs text-muted-foreground mb-1 ${msg.isOwn
@@ -143,18 +133,14 @@ export default class ChatPage extends HTMLElement {
                       </div>
                     </div>
                   </div>
-                `
+                `,
               )}
             </div>
 
             <!-- Message Input -->
             <footer class="border-t p-4 bg-card">
               <div class="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  class="input flex-1"
-                />
+                <input type="text" placeholder="Type your message..." class="input flex-1" />
                 <button class="btn btn-primary">Send</button>
               </div>
             </footer>

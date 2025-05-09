@@ -59,7 +59,7 @@ export default class TotpVerify extends HTMLElement {
         duration: 300,
         easing: 'ease-out',
         fill: 'forwards',
-      }
+      },
     );
     form.querySelector('input')!.focus();
 

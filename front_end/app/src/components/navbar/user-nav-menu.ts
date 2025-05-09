@@ -94,7 +94,7 @@ class UserNavMenu extends HTMLElement {
             duration: 200,
             easing: 'ease-in-out',
             fill: 'forwards',
-          }
+          },
         );
 
         animation.onfinish = () => userMenu.classList.add('hidden');
@@ -120,7 +120,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        }
+        },
       );
       userMenu.classList.remove('hidden');
     } else {
@@ -133,7 +133,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        }
+        },
       );
       animation.onfinish = () => userMenu.classList.add('hidden');
     }

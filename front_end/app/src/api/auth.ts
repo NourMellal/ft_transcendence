@@ -1,9 +1,6 @@
 import { navigateTo } from '~/components/app-router';
 
-export const fetchWithAuth = async (
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> => {
+export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const response = await fetch(url, {
     ...options,
     credentials: 'include',

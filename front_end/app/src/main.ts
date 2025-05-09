@@ -1,8 +1,5 @@
 import { fetchFriendRequests } from './api/friends';
-import {
-  closeNotificationSocket,
-  setupNotificationsSocket,
-} from './api/notifications';
+import { closeNotificationSocket, setupNotificationsSocket } from './api/notifications';
 import { fetchUserInfo } from './api/user';
 import { friendRequests, notifications, user } from './app-state';
 import './style.css';

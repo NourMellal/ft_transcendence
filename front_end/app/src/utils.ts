@@ -6,7 +6,7 @@ export async function handleEffect(
   component: HTMLElement,
   fetchDataAsync: () => Promise<any>,
   delay: number = 300,
-  loadingElement: HTMLElement = document.createElement('app-loader')
+  loadingElement: HTMLElement = document.createElement('app-loader'),
 ): Promise<void> {
   if (debounceTimer) {
     clearTimeout(debounceTimer);

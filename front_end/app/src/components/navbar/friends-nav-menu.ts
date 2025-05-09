@@ -125,7 +125,7 @@ class FriendsNavMenu extends HTMLElement {
                           </button>
                         </div>
                       </li>
-                    `
+                    `,
                   )}
             </ul>
           `}
@@ -196,7 +196,7 @@ class FriendsNavMenu extends HTMLElement {
           { opacity: 0, transform: 'translateY(-10px)' },
           { opacity: 1, transform: 'translateY(0)' },
         ],
-        animOpts
+        animOpts,
       );
     } else {
       this.close();
@@ -215,7 +215,7 @@ class FriendsNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
     animation.onfinish = () => {
       if (this.friendsMenu) {

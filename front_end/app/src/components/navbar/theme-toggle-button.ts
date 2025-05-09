@@ -5,9 +5,7 @@ class ThemeToggleButton extends HTMLElement {
   render() {
     const isDark = document.documentElement.classList.contains('dark');
     this.replaceChildren(html`
-      <button class="btn-outlined btn-icon">
-        ${isDark ? SunIcon : MoonIcon}
-      </button>
+      <button class="btn-outlined btn-icon">${isDark ? SunIcon : MoonIcon}</button>
     `);
     this.setup();
   }

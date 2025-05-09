@@ -39,9 +39,7 @@ export default class LeaderboardPage extends HTMLElement {
         <h1 class="text-3xl font-bold mb-6">Leaderboard</h1>
         ${leaderboardData.length === 0
           ? html`
-              <div class="text-muted-foreground p-4 rounded-md border">
-                No data available.
-              </div>
+              <div class="text-muted-foreground p-4 rounded-md border">No data available.</div>
             `
           : html`
               <div class="border rounded-lg overflow-hidden mb-4">
@@ -73,21 +71,13 @@ export default class LeaderboardPage extends HTMLElement {
                   <tbody class="[&_tr:last-child]:border-0">
                     ${paginatedData.map(
                       (player) => html`
-                        <tr
-                          class="border-b transition-colors hover:bg-muted/50"
-                        >
-                          <td class="p-4 align-middle font-medium">
-                            ${player.rank}
-                          </td>
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                          <td class="p-4 align-middle font-medium">${player.rank}</td>
                           <td class="p-4 align-middle">${player.name}</td>
-                          <td class="p-4 align-middle text-right">
-                            ${player.wins}
-                          </td>
-                          <td class="p-4 align-middle text-right">
-                            ${player.losses}
-                          </td>
+                          <td class="p-4 align-middle text-right">${player.wins}</td>
+                          <td class="p-4 align-middle text-right">${player.losses}</td>
                         </tr>
-                      `
+                      `,
                     )}
                   </tbody>
                 </table>

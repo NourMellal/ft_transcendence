@@ -92,7 +92,7 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
   };
 
@@ -110,7 +110,7 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
 
     animation.onfinish = () => notificationMenu.classList.add('hidden');

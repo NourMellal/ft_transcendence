@@ -62,8 +62,7 @@ export default class SigninPage extends HTMLElement {
 
       const params = {
         state,
-        client_id:
-          '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
+        client_id: '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
         redirect_uri: 'https://transcendence.fr/api/OAuth/code', // <Error 400: redirect_uri_mismatch>: Rely on discovery doc to fetch and set all routes so i don't have to fix them manually. this one should be something like: discoverDocument.ServerUrl + discoverDocument.OAuthRoutes.OAuthRedirectRoute.route
         scope:
           'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
@@ -78,8 +77,7 @@ export default class SigninPage extends HTMLElement {
 
       window.open(url, '_self');
     } catch (err) {
-      if (err instanceof Error)
-        showToast({ type: 'error', message: err.message });
+      if (err instanceof Error) showToast({ type: 'error', message: err.message });
       else showToast({ type: 'error', message: 'Unexpected error occured!' });
     }
   };
@@ -121,11 +119,7 @@ export default class SigninPage extends HTMLElement {
             </button>
           </form>
           <div class="shrink-0 bg-border h-[1px] w-full my-4"></div>
-          <button
-            id="google-auth-btn"
-            class="btn btn-primary w-full"
-            type="button"
-          >
+          <button id="google-auth-btn" class="btn btn-primary w-full" type="button">
             ${GoogleIcon}
             <span>Sign-in with Google</span>
           </button>
@@ -137,12 +131,8 @@ export default class SigninPage extends HTMLElement {
 
   setup() {
     const signinForm = this.querySelector('form');
-    const googleAuthBtn = this.querySelector('#google-auth-btn') as
-      | HTMLButtonElement
-      | undefined;
-    const userInput = this.querySelector('#user-name') as
-      | HTMLInputElement
-      | undefined;
+    const googleAuthBtn = this.querySelector('#google-auth-btn') as HTMLButtonElement | undefined;
+    const userInput = this.querySelector('#user-name') as HTMLInputElement | undefined;
 
     signinForm?.addEventListener('submit', this.handleSumbit);
     googleAuthBtn?.addEventListener('click', this.handleSignin);

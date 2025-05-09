@@ -81,7 +81,7 @@ export default class ProfilePage extends HTMLElement {
   }
 
   async getFriendStatus(
-    targetUid: string
+    targetUid: string,
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
       const friendsRes = await fetchWithAuth('/api/friends', {
@@ -447,7 +447,7 @@ export default class ProfilePage extends HTMLElement {
                 <p class="text-2xl font-bold">${stat.value}</p>
                 <p class="text-sm text-muted-foreground">${stat.label}</p>
               </div>
-            `
+            `,
           )}
         </div>
 

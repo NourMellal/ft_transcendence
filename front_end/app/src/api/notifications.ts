@@ -22,9 +22,7 @@ export const setupNotificationsSocket = async () => {
   const notificationSound = new Audio('/notification.mp3');
   let pingInterval: NodeJS.Timeout;
 
-  const ticket = await (
-    await fetchWithAuth('/api/notifications/ticket')
-  ).text();
+  const ticket = await (await fetchWithAuth('/api/notifications/ticket')).text();
 
   const ws = new WebSocket('/api/notifications/push_notification', [ticket]);
   ws.addEventListener('error', (err) => {
@@ -43,10 +41,7 @@ export const setupNotificationsSocket = async () => {
 
     try {
       const data = JSON.parse(event.data) as NotificationData;
-      if (
-        data.type === NotificationType.NewFriendRequest ||
-        data.type === NotificationType.Poke
-      ) {
+      if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
           notificationSound.play();
         } catch {}
