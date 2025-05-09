@@ -18,7 +18,6 @@ import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
 import {
   CreateRefreshToken,
-  escapeHtml,
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
 } from "./Common";
@@ -34,7 +33,7 @@ export const IsDisplayNameAvailable = async (
     const query = db.persistent.prepare(
       `SELECT username FROM '${users_table_name}' where username = ? ;`
     );
-    const res = query.get(escapeHtml(username));
+    const res = query.get(username);
     if (res === undefined) return reply.code(200).send();
     return reply.code(406).send();
   } catch (error) {
@@ -141,7 +140,7 @@ export const SignInStandardUser = async (
       `SELECT * from '${users_table_name}' WHERE username = ? AND password_hash = ? ;`
     );
     const res = query.get(
-      escapeHtml(username.field_value),
+      username.field_value,
       hasher.digest().toString()
     ) as UserModel;
     if (res) {

@@ -10,7 +10,6 @@ import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
-import { escapeHtml } from "../Common";
 
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
@@ -28,7 +27,7 @@ export const FetchUserInfo = async (
         const query = db.persistent.prepare(
           `SELECT UID FROM '${users_table_name}' WHERE username = ? ;`
         );
-        const res = query.get(escapeHtml(uname)) as UserModel;
+        const res = query.get(uname) as UserModel;
         if (!res) throw "no user found";
         UID = res.UID;
       } catch (err) {
@@ -94,7 +93,7 @@ export const UpdateUserInfo = async (
       fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
     }
     if (bio) {
-      UpdatedInfo.bio = escapeHtml(bio.field_value);
+      UpdatedInfo.bio = bio.field_value;
     }
     if (username) {
       if (username.field_value.length < 3)
@@ -104,7 +103,7 @@ export const UpdateUserInfo = async (
           `UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`
         );
         const res = query.run(
-          escapeHtml(username.field_value),
+          username.field_value,
           request.jwt.sub
         );
         if (res.changes !== 1) throw "UpdateUserInfo(): database error";
