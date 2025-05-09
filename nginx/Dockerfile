@@ -20,6 +20,8 @@ COPY ./conf/default.conf /etc/nginx/sites-enabled/default
 
 COPY ./conf/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf /usr/local/modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
 
+COPY ./conf/crs-setup.conf /usr/local/modsecurity-crs/crs-setup.conf
+
 EXPOSE 443
 
 ENTRYPOINT [ "nginx" ]
