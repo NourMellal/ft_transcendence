@@ -12,9 +12,14 @@ export type User = {
 };
 
 export const fetchUserInfo = async (username?: string) => {
-  const res = await fetch(`/api/user/info?uid=${username ?? 'me'}`);
+  const res = await fetch(`/api/user/info?uid=${username ?? 'me'}`, {
+    cache: 'no-store',
+  });
   if (res.ok) {
-    return await res.json();
+    const data = (await res.json()) as User;
+    // to avoid the broser from caching the image
+    data.picture_url += `?t=${Date.now()}`;
+    return data;
   }
   return null;
 };

@@ -5,7 +5,9 @@ export type ActiveSession = {
 };
 
 export const fetchActiveSessions = async (): Promise<ActiveSession[] | null> => {
-  const res = await fetch('/api/jwt/list');
+  const res = await fetch('/api/jwt/list', {
+    cache: 'no-store',
+  });
   if (res.ok) {
     return (await res.json()) || [];
   }

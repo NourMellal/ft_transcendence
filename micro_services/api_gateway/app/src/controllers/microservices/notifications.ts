@@ -3,7 +3,12 @@ import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
 import { GetRandomString } from "../Common";
 import { state_expiree_sec } from "../../types/DbTables";
-import { NotificationBody, RabbitMQFriendsManagerOp, RabbitMQNotificationsOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
+import {
+  NotificationBody,
+  RabbitMQFriendsManagerOp,
+  RabbitMQNotificationsOp,
+  RabbitMQRequest,
+} from "../../types/RabbitMQMessages";
 import rabbitmq from "../../classes/RabbitMQ";
 
 const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
@@ -30,7 +35,9 @@ export const pingUser = function (notificationRaw: string) {
     for (let i = 0; i < sockets.length; i++) {
       try {
         sockets[i].send(notificationRaw);
-        console.log(`pinging uid=${notification.to_uid} on registred web socket.`);
+        console.log(
+          `pinging uid=${notification.to_uid} on registred web socket.`
+        );
       } catch (error) {
         console.log(`error pinging user uid=${notification.to_uid}: ${error}`);
       }
@@ -54,6 +61,9 @@ export const PushNotificationHandler = function (socket: WebSocket) {
     console.log(`PushNotificationHandler(): socket error ${error}`);
     ws.close();
   });
+  socket.on("message", (RawData: WebSocket.Data) => {
+    socket.send(JSON.stringify({ type: "pong" }));
+  });
 };
 
 export const GetPushNotificationTicket = async (
@@ -62,11 +72,14 @@ export const GetPushNotificationTicket = async (
 ) => {
   const state = GetRandomString(8);
   if (PushNotificationStates.has(state))
-    return reply.code(500).send('Try Again');
+    return reply.code(500).send("Try Again");
   PushNotificationStates.set(state, request.jwt.sub);
-  setTimeout(() => PushNotificationStates.delete(state), state_expiree_sec * 1000);
+  setTimeout(
+    () => PushNotificationStates.delete(state),
+    state_expiree_sec * 1000
+  );
   return reply.code(200).send(state);
-}
+};
 
 export const GetUnreadNotification = async (
   request: FastifyRequest,
@@ -75,15 +88,15 @@ export const GetUnreadNotification = async (
   reply.hijack();
   const RabbitMQReq: RabbitMQRequest = {
     op: RabbitMQNotificationsOp.LIST_UNREAD,
-    message: '',
-    id: '',
+    message: "",
+    id: "",
     JWT: request.jwt,
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
-}
+};
 
 export const GetAllNotification = async (
   request: FastifyRequest,
@@ -92,15 +105,15 @@ export const GetAllNotification = async (
   reply.hijack();
   const RabbitMQReq: RabbitMQRequest = {
     op: RabbitMQNotificationsOp.LIST_ALL,
-    message: '',
-    id: '',
+    message: "",
+    id: "",
     JWT: request.jwt,
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
-}
+};
 
 export const MarkNotificationAsRead = async (
   request: FastifyRequest<{ Querystring: { uid: string } }>,
@@ -110,14 +123,14 @@ export const MarkNotificationAsRead = async (
   const RabbitMQReq: RabbitMQRequest = {
     op: RabbitMQNotificationsOp.MARK_READ,
     message: request.query.uid,
-    id: '',
+    id: "",
     JWT: request.jwt,
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
-}
+};
 
 export const DeleteNotification = async (
   request: FastifyRequest<{ Querystring: { uid: string } }>,
@@ -127,14 +140,14 @@ export const DeleteNotification = async (
   const RabbitMQReq: RabbitMQRequest = {
     op: RabbitMQNotificationsOp.DELETE,
     message: request.query.uid,
-    id: '',
+    id: "",
     JWT: request.jwt,
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
-}
+};
 
 export const PokeFriend = async (
   request: FastifyRequest<{ Querystring: { uid: string } }>,
@@ -144,11 +157,11 @@ export const PokeFriend = async (
   const RabbitMQReq: RabbitMQRequest = {
     op: RabbitMQFriendsManagerOp.POKE_FRIEND,
     message: request.query.uid,
-    id: '',
+    id: "",
     JWT: request.jwt,
   };
   rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
-}
+};

@@ -9,36 +9,37 @@ import { user } from '~/app-state';
 
 import { LockIcon, MenuIcon, RocketIcon } from '~/icons';
 
+const UserLinks = [
+  {
+    name: 'Play',
+    href: '/play',
+  },
+  {
+    name: 'Chat',
+    href: '/chat',
+  },
+  {
+    name: 'LeaderBoard',
+    href: '/leaderboard',
+  },
+];
+
+const GuestLinks = [
+  {
+    name: 'Home',
+    href: '/',
+  },
+  {
+    name: 'LeaderBoard',
+    href: '/leaderboard',
+  },
+];
+
 class NavigationBar extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
 
   render() {
-    const pages = user.get()
-      ? [
-          {
-            name: 'Play',
-            href: '/play',
-          },
-          {
-            name: 'Chat',
-            href: '/chat',
-          },
-          {
-            name: 'LeaderBoard',
-            href: '/leaderboard',
-          },
-        ]
-      : [
-          {
-            name: 'Home',
-            href: '/',
-          },
-          {
-            name: 'LeaderBoard',
-            href: '/leaderboard',
-          },
-        ];
-
+    const pages = user.get() ? UserLinks : GuestLinks;
     const mobileNav = document.createElement('mobile-navigation');
     mobileNav.setAttribute('pages', JSON.stringify(pages));
 
@@ -54,7 +55,7 @@ class NavigationBar extends HTMLElement {
             class="hidden md:flex gap-2 [&>a]:text-muted-foreground [&>a]:hover:text-foreground transition-colors [&>a]:p-2 [&>a]:py-4"
           >
             ${pages.map(
-              (page) => html` <a class="cursor-pointer" href="${page.href}"> ${page.name} </a> `,
+              (page) => html` <a class="cursor-pointer" href="${page.href}"> ${page.name} </a> `
             )}
           </div>
           <div class="ms-auto flex gap-4 items-center justify-center">

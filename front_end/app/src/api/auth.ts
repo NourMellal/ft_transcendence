@@ -4,6 +4,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
   const response = await fetch(url, {
     ...options,
     credentials: 'include',
+    cache: 'no-store',
   });
 
   if (response.status === 401) {

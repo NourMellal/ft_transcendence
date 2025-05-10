@@ -167,7 +167,7 @@ ${user.get()?.bio}</textarea
     const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
     const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
 
-    if (user.get()?.picture_url !== '/static/profile/default.jpg') {
+    if (user.get()?.picture_url.split('?')[0] !== '/static/profile/default.jpg') {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;

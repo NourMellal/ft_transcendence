@@ -4,6 +4,7 @@ import { fetchFriendRequests } from './friends';
 
 enum NotificationType {
   NewFriendRequest = 1,
+  FriendRemove,
   FriendRequestAccepted,
   FriendRequestDenied,
   GameInvite,
@@ -25,15 +26,15 @@ export const setupNotificationsSocket = async () => {
   const ticket = await (await fetchWithAuth('/api/notifications/ticket')).text();
 
   const ws = new WebSocket('/api/notifications/push_notification', [ticket]);
-  ws.addEventListener('error', (err) => {
+  ws.onerror = (err) => {
     console.error('WebSocket error:', err);
-  });
+  };
 
   ws.onopen = (socket) => {
     console.log('WebSocket connected:', socket);
     pingInterval = setInterval(() => {
       ws.send(JSON.stringify({ type: 'ping' }));
-    }, 30_000);
+    }, 20_000);
   };
 
   ws.onmessage = async (event) => {
@@ -51,6 +52,7 @@ export const setupNotificationsSocket = async () => {
         case NotificationType.NewFriendRequest:
         case NotificationType.FriendRequestDenied:
         case NotificationType.FriendRequestAccepted:
+        case NotificationType.FriendRemove:
           friendRequests.set(await fetchFriendRequests());
           break;
         case NotificationType.Poke:
