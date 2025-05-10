@@ -186,19 +186,19 @@ export const Verify2FACode = async (
 ) => {
   if (!request.is_valid_multipart) return reply.code(400).send("bad request");
   const state = Totp.states.get(request.query.state);
-  if (!state) return reply.code(401).send("request unauthorized");
+  if (!state) return reply.code(400).send("request unauthorized");
   if (Date.now() / 1000 - state.created > state_expiree_sec) {
     Totp.states.delete(request.query.state);
-    return reply.code(401).send("request expired");
+    return reply.code(400).send("request expired");
   }
   const requestCode: multipart_fields | undefined = request.fields.find(
     (field: multipart_fields, i) => field.field_name === "code"
   );
   if (!requestCode || requestCode.field_value.length !== 6)
-    return reply.code(401).send("invalid totp_code");
+    return reply.code(400).send("invalid totp_code");
   const code = Totp.generateTOTP(state.totp_key);
   if (code !== requestCode.field_value)
-    return reply.code(401).send("invalid totp_code");
+    return reply.code(400).send("invalid totp_code");
   try {
     const refresh_token = CreateRefreshToken(state.UID, request.ip);
     Totp.states.delete(request.query.state);
@@ -237,7 +237,7 @@ export const RefreshToken = async (
   const res = query.get(refresh_token.field_value) as
     | RefreshTokenModel
     | undefined;
-  if (!res) return reply.code(401).send("request unauthorized");
+  if (!res) return reply.code(400).send("request unauthorized");
   const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
   const token = AuthProvider.jwtFactory.SignJWT(jwt);
   const expiresDate = new Date(jwt.exp * 1000).toUTCString();

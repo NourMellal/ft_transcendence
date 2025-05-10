@@ -147,7 +147,7 @@ export const UpdateUserPassword = async (
     );
     {
       if (!new_password || new_password.field_value.length < 8)
-        return reply.code(401).send("provide valid credentials > 7 chars");
+        return reply.code(400).send("provide valid credentials > 7 chars");
       const query = db.persistent.prepare(
         `SELECT password_hash FROM '${users_table_name}' WHERE UID = ? ;`
       );
@@ -157,11 +157,11 @@ export const UpdateUserPassword = async (
           (field: multipart_fields, i) => field.field_name === "old_password"
         );
         if (!old_password || old_password.field_value.length < 8)
-          return reply.code(401).send("provide valid credentials > 7 chars");
+          return reply.code(400).send("provide valid credentials > 7 chars");
         const hasher = crypto.createHash("sha256");
         hasher.update(Buffer.from(old_password.field_value));
         if (hasher.digest().toString() !== result.password_hash)
-          return reply.code(401).send("invalid old password");
+          return reply.code(400).send("invalid old password");
       }
     }
     const hasher = crypto.createHash("sha256");

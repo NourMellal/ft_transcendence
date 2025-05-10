@@ -95,7 +95,7 @@ export const isRequestAuthorizedHook = async (
   } catch (error) {
     console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
     reply.code(401);
-    throw "request unauthorized";
+    return reply.send();
   }
 };
 

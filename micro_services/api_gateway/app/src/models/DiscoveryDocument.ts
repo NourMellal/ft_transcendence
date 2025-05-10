@@ -41,7 +41,7 @@ export const discoveryDocument = {
     },
     SignInUserRoute: {
       description:
-        "HTTP: sign in user using username and password. returns jwt cookie or 401",
+        "HTTP: sign in user using username and password. returns jwt cookie or 400",
       notes:
         "don't use the decoded jwt to infer user's info instead fetch the user info route.",
       route: "/api/user/signin",
