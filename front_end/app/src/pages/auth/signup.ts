@@ -1,3 +1,5 @@
+import '~/components/signin/google-signin-btn';
+
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
 import { handleEffect } from '~/utils';
@@ -140,6 +142,8 @@ export default class SignupPage extends HTMLElement {
               <span>Signup</span>
             </button>
           </form>
+          <div class="shrink-0 bg-border h-[1px] w-full my-4"></div>
+          <google-signin-btn></google-signin-btn>
         </div>
       </fieldset>
     `);

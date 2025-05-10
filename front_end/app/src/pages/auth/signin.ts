@@ -1,3 +1,5 @@
+import '~/components/signin/google-signin-btn';
+
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
 import { handleEffect } from '~/utils';
@@ -5,7 +7,7 @@ import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
 import { user } from '~/app-state';
-import { LockIcon, GoogleIcon } from '~/icons';
+import { LockIcon } from '~/icons';
 
 export default class SigninPage extends HTMLElement {
   handleSumbit = (e: SubmitEvent) => {
@@ -46,42 +48,6 @@ export default class SigninPage extends HTMLElement {
     }
   };
 
-  getAuthState = async () => {
-    const res = await fetch('/api/OAuth/state', {
-      cache: 'no-store',
-      method: 'GET',
-    });
-    if (!res.ok) throw Error('Unexpected error occured!');
-
-    return res.text();
-  };
-
-  handleSignin = async () => {
-    try {
-      const state = await this.getAuthState();
-
-      const params = {
-        state,
-        client_id: '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
-        redirect_uri: 'https://transcendence.fr/api/OAuth/code', // <Error 400: redirect_uri_mismatch>: Rely on discovery doc to fetch and set all routes so i don't have to fix them manually. this one should be something like: discoverDocument.ServerUrl + discoverDocument.OAuthRoutes.OAuthRedirectRoute.route
-        scope:
-          'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-        include_granted_scopes: 'true',
-        response_type: 'code',
-        access_type: 'offline',
-      };
-
-      const queryString = new URLSearchParams(params).toString();
-
-      const url = `https://accounts.google.com/o/oauth2/v2/auth?${queryString}`;
-
-      window.open(url, '_self');
-    } catch (err) {
-      if (err instanceof Error) showToast({ type: 'error', message: err.message });
-      else showToast({ type: 'error', message: 'Unexpected error occured!' });
-    }
-  };
-
   async render() {
     if (user.get()) return navigateTo('/profile');
 
@@ -119,10 +85,7 @@ export default class SigninPage extends HTMLElement {
             </button>
           </form>
           <div class="shrink-0 bg-border h-[1px] w-full my-4"></div>
-          <button id="google-auth-btn" class="btn btn-primary w-full" type="button">
-            ${GoogleIcon}
-            <span>Sign-in with Google</span>
-          </button>
+          <google-signin-btn></google-signin-btn>
         </div>
       </fieldset>
     `);
@@ -131,11 +94,9 @@ export default class SigninPage extends HTMLElement {
 
   setup() {
     const signinForm = this.querySelector('form');
-    const googleAuthBtn = this.querySelector('#google-auth-btn') as HTMLButtonElement | undefined;
-    const userInput = this.querySelector('#user-name') as HTMLInputElement | undefined;
+    const userInput = this.querySelector<HTMLInputElement>('#user-name');
 
     signinForm?.addEventListener('submit', this.handleSumbit);
-    googleAuthBtn?.addEventListener('click', this.handleSignin);
     userInput?.focus();
   }
 

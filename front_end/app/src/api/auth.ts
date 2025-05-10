@@ -7,7 +7,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
     cache: 'no-store',
   });
 
-  if (response.status === 403) {
+  if (response.status === 401) {
     navigateTo('/signin');
   }
 
