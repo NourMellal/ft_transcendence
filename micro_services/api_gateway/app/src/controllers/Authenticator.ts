@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
   refresh_token_table_name,
-  RefreshTokenModel,
   state_expiree_sec,
   UserModel,
   users_table_name,
@@ -220,31 +219,6 @@ export const Verify2FACode = async (
     console.log(error);
     return reply.code(500).redirect("internal server error");
   }
-};
-
-export const RefreshToken = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
-  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
-  const refresh_token: multipart_fields | undefined = request.fields.find(
-    (field: multipart_fields, i) => field.field_name === "refresh_token"
-  );
-  if (!refresh_token) return reply.code(400).send("bad request");
-  const query = db.persistent.prepare(
-    `SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`
-  );
-  const res = query.get(refresh_token.field_value) as
-    | RefreshTokenModel
-    | undefined;
-  if (!res) return reply.code(400).send("request unauthorized");
-  const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
-  const token = AuthProvider.jwtFactory.SignJWT(jwt);
-  const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-  reply.headers({
-    "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`,
-  });
-  return reply.code(200).send();
 };
 
 export const ListActiveConnection = async (

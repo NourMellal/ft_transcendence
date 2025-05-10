@@ -4,7 +4,6 @@ import {
   IsDisplayNameAvailable,
   ListActiveConnection,
   LogOutCurrentUser,
-  RefreshToken,
   RemoveRefreshToken,
   SignInStandardUser,
   SignUpNewStandardUser,
@@ -69,10 +68,6 @@ export async function AuthenticatorRoutes(fastify: FastifyInstance) {
     discoveryDocument.TwoFactorAuthRoutes.VerifyCode.route,
     Verify2FAOpts,
     Verify2FACode
-  );
-  fastify.post(
-    discoveryDocument.RefreshTokenRoutes.RefreshJWT.route,
-    RefreshToken
   );
 }
 

@@ -59,14 +59,6 @@ export const discoveryDocument = {
     method: "POST"
   },
   RefreshTokenRoutes: {
-    RefreshJWT: {
-      description: "HTTP: get a fresh jwt token",
-      route: "/api/jwt/refresh",
-      multipart_params: [
-        { name: "refresh_token", type: "text/plain" },
-      ],
-      method: "POST"
-    },
     ListActiveConnection: {
       description: "HTTP: get a list of active connections",
       route: "/api/jwt/list",
