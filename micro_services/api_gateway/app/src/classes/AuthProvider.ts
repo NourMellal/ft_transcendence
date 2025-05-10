@@ -57,9 +57,9 @@ class OAuthProvider {
     const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
     const token = AuthProvider.jwtFactory.SignJWT(jwt);
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-    reply.headers({
-      "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`,
-    });
+    reply.raw.setHeader(
+      "set-cookie", `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    );
     return jwt;
   }
   public ValidateJWT_Cookie(RawCookie: string): JWT | string {
