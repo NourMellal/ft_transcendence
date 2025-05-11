@@ -33,11 +33,8 @@ const AddLoss = function (RMqRequest: RabbitMQRequest): null {
 }
 
 const ListAllRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  const query = db.persistent.prepare(`SELECT * FROM ${leaderboard_table_name} ORDER BY losses ASC, wins DESC;`);
+  const query = db.persistent.prepare(`SELECT *, RANK() OVER(ORDER BY losses ASC, wins DESC) AS rank FROM ${leaderboard_table_name};`);
   const res = query.all();
-  for (let i = 0; i < res.length; i++) {
-    res[i].rank = i + 1;
-  }
   const response: RabbitMQResponse = {
     service: RabbitMQMicroServices.Leaderboard,
     op: RabbitMQLeaderboardOp.LIST_ALL_RANK,
@@ -49,22 +46,14 @@ const ListAllRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 const ListUserRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  const query = db.persistent.prepare(`SELECT * FROM ${leaderboard_table_name} ORDER BY losses ASC, wins DESC;`);
-  const res = query.all();
-  let result = null;
-  for (let i = 0; i < res.length; i++) {
-    if (res[i].UID === RMqRequest.JWT.sub) {
-      result = res[i];
-      result.rank = i + 1;
-      break;
-    }
-  }
+  const query = db.persistent.prepare(`SELECT * FROM (SELECT *, RANK() OVER(ORDER BY losses ASC, wins DESC) AS rank FROM ${leaderboard_table_name}) WHERE UID = ?;`);
+  const res = query.get(RMqRequest.JWT.sub);
   const response: RabbitMQResponse = {
     service: RabbitMQMicroServices.Leaderboard,
     op: RabbitMQLeaderboardOp.LIST_USER_RANK,
     req_id: RMqRequest.id,
     status: 200,
-    message: JSON.stringify(result)
+    message: JSON.stringify(res)
   };
   return response;
 }
