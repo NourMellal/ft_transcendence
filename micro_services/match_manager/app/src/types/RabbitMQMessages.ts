@@ -9,6 +9,13 @@ export enum RabbitMQMicroServices {
   match_manager
 }
 
+export enum RabbitMQLeaderboardOp {
+  ADD_WIN = 1,
+  ADD_LOSS,
+  LIST_ALL_RANK,
+  LIST_USER_RANK,
+}
+
 export enum RabbitMQMatchManagerOp {
   CREATE_MATCH = 1,
   LIST_MATCHS,

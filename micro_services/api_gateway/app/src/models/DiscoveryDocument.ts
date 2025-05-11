@@ -257,7 +257,7 @@ export const discoveryDocument = {
       method: "POST",
     },
   },
-  LeaderboardRoutes:{
+  LeaderboardRoutes: {
     ListAllRank: {
       description: "HTTP: get leaderboard rankes for all users.",
       route: "/api/leaderboard/list",
@@ -269,6 +269,49 @@ export const discoveryDocument = {
       route: "/api/leaderboard/myrank",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
+    },
+  },
+  MatchManagerRoutes: {
+    ListMatchHistory: {
+      description: "HTTP: list match history for a user (omit query param for current user).",
+      route: "/api/match/history",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+    MatchTypeEnum: {
+      description: "Enum: available match types to pass as 'match_type' query param.",
+      types: [
+        { Single1v1: 1 },
+        { Single2v2: 2 },
+        { Tournament: 3 },
+        { AI: 4 },
+      ]
+    },
+    CreateNewMatch: {
+      description: "HTTP: create new match with the specified type.",
+      route: "/api/match/create",
+      QueryParams: [{ name: "match_type" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "POST",
+    },
+    WinMatch: {
+      description: "HTTP: win a match by id.",
+      route: "/api/match/win",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      multipart_params: [
+        { name: "match_uid", type: "text/plain" },
+      ],
+      method: "POST",
+    },
+    LoseMatch: {
+      description: "HTTP: lose a match by id.",
+      route: "/api/match/lose",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      multipart_params: [
+        { name: "match_uid", type: "text/plain" },
+      ],
+      method: "POST",
     },
   },
 };
