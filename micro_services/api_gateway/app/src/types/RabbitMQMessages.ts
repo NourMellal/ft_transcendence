@@ -5,6 +5,8 @@ export enum RabbitMQMicroServices {
   USER_MANAGER,
   FRIENDS_MANAGER,
   NOTIFICATIONS,
+  Leaderboard,
+  history
 }
 
 export enum RabbitMQUserManagerOp {
@@ -24,6 +26,13 @@ export enum RabbitMQFriendsManagerOp {
   LIST_REQUESTS,
   LIST_SENT_REQUESTS,
   POKE_FRIEND
+}
+
+export enum RabbitMQLeaderboardOp {
+  ADD_WIN = 1,
+  ADD_LOSS,
+  LIST_ALL_RANK,
+  LIST_USER_RANK,
 }
 
 export enum RabbitMQNotificationsOp {

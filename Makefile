@@ -25,6 +25,7 @@ create_volumes_dir:
 	@mkdir -p /home/${VOL_USER}/docker_volumes/user_manager_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/friends_manager_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/notifications_db_volume
+	@mkdir -p /home/${VOL_USER}/docker_volumes/leaderboard_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/static_data_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/rabbit_mq_log_volume
 #Set host to fake route domains used to localhost

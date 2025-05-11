@@ -9,28 +9,22 @@ export enum RabbitMQMicroServices {
   history
 }
 
-export enum RabbitMQUserManagerOp {
-  CREATE_GOOGLE = 1,
-  CREATE_STANDARD,
-  UPDATE,
-  DELETE,
-  FETCH,
+export enum RabbitMQLeaderboardOp {
+  ADD_WIN = 1,
+  ADD_LOSS,
+  LIST_ALL_RANK,
+  LIST_USER_RANK,
 }
 
-export type UpdateUser = {
-  picture_url: string | null;
-  bio: string | null;
-};
-
 export type RabbitMQRequest = {
-  op: RabbitMQUserManagerOp;
+  op: RabbitMQLeaderboardOp;
   message?: string;
   id: string;
   JWT: JWT;
 };
 
 export type RabbitMQResponse = {
-  op: RabbitMQUserManagerOp;
+  op: RabbitMQLeaderboardOp;
   status: number;
   message?: string;
   req_id: string;

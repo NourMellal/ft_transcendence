@@ -297,4 +297,21 @@ Sec-WebSocket-Protocol: {{jwt_token}}
 
 
 
+###### START LEADERBOARD TESTs (Authorization required) ######
+
+# Get a leaderboard rank for all users:
+GET https://transcendence.fr/api/leaderboard/list
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Get a leaderboard rank for current user:
+GET https://transcendence.fr/api/leaderboard/myrank
+#Cookie: jwt={{jwt_token}}
+
+###### END LEADERBOARD TESTs ######
+
+
+
 @jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token

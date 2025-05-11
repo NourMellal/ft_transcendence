@@ -14,6 +14,7 @@ import {
   SetupWebSocketServer,
 } from "./routes/microservices/notifications";
 import ParseMultipart from "./controllers/multipart";
+import LeaderboardRoutes from "./routes/microservices/leaderboard";
 
 db.init();
 AuthProvider.init();
@@ -34,6 +35,7 @@ app.register(TwoFactorAuthRoutes);
 app.register(UserManagerRoutes);
 app.register(FriendsManagerRoutes);
 app.register(NotificationRoutes);
+app.register(LeaderboardRoutes);
 
 app.listen({ port: port, host: "0.0.0.0" }, (err, addr) => {
   if (err) {

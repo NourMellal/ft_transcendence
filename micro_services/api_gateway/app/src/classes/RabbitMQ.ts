@@ -23,6 +23,7 @@ class RabbitMQ {
   friends_manager_queue = process.env
     .RABBITMQ_FRIENDS_MANAGER_QUEUE_NAME as string;
   notifications_queue = process.env.RABBITMQ_NOTIFICATIONS_QUEUE_NAME as string;
+  leaderboard_queue = process.env.RABBITMQ_LEADEBOARD_QUEUE_NAME as string;
   reply_map = new Map<string, (response: RabbitMQResponse) => void>();
   constructor() {
     this.connection = {} as amqp.ChannelModel;
@@ -47,6 +48,9 @@ class RabbitMQ {
         durable: false,
       });
       await this.channel.assertQueue(this.notifications_queue, {
+        durable: false,
+      });
+      await this.channel.assertQueue(this.leaderboard_queue, {
         durable: false,
       });
       await this.channel.consume(
@@ -135,6 +139,20 @@ class RabbitMQ {
     this.reply_map.set(req.id, callback);
     this.channel.sendToQueue(
       this.notifications_queue,
+      Buffer.from(JSON.stringify(req))
+    );
+  }
+  public sendToLeaderboardQueue(
+    req: RabbitMQRequest,
+    callback: (response: RabbitMQResponse) => void
+  ) {
+    if (!this.isReady) throw "RabbitMQ class not ready";
+    req.id = crypto.randomUUID();
+    if (this.reply_map.has(req.id))
+      throw `request id with UID=${req.id} already exist`;
+    this.reply_map.set(req.id, callback);
+    this.channel.sendToQueue(
+      this.leaderboard_queue,
       Buffer.from(JSON.stringify(req))
     );
   }

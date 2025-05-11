@@ -257,6 +257,20 @@ export const discoveryDocument = {
       method: "POST",
     },
   },
+  LeaderboardRoutes:{
+    ListAllRank: {
+      description: "HTTP: get leaderboard rankes for all users.",
+      route: "/api/leaderboard/list",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+    ListUserRank: {
+      description: "HTTP: get leaderboard ranke for current user.",
+      route: "/api/leaderboard/myrank",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+  },
 };
 
 export const discoveryDocumentSerialized = JSON.stringify(discoveryDocument);

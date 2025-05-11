@@ -25,6 +25,8 @@ services:
         RABBITMQ_FRIENDS_MANAGER_PASSWORD: ${RABBITMQ_FRIENDS_MANAGER_PASSWORD}
         RABBITMQ_NOTIFICATIONS_USER: ${RABBITMQ_NOTIFICATIONS_USER}
         RABBITMQ_NOTIFICATIONS_PASSWORD: ${RABBITMQ_NOTIFICATIONS_PASSWORD}
+        RABBITMQ_LEADERBOARD_USER: ${RABBITMQ_LEADERBOARD_USER}
+        RABBITMQ_LEADERBOARD_PASSWORD: ${RABBITMQ_LEADERBOARD_PASSWORD}
     volumes:
       - rabbit_mq_log_volume:/var/log/rabbitmq:rw
     networks:
@@ -63,6 +65,14 @@ services:
     build: ./micro_services/notifications
     volumes:
       - notifications_db_volume:/database:rw
+    networks:
+      - ft_transcendence
+    restart: always
+  leaderboard:
+    container_name: leaderboard
+    build: ./micro_services/leaderboard
+    volumes:
+      - leaderboard_db_volume:/database:rw
     networks:
       - ft_transcendence
     restart: always
@@ -111,6 +121,13 @@ volumes:
       type: "none"
       o: "bind"
       device: "${HOME}/docker_volumes/notifications_db_volume"
+  leaderboard_db_volume:
+    name: leaderboard_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/leaderboard_db_volume"
   static_data_volume:
     name: static_data_volume
     driver: local
