@@ -5,20 +5,20 @@ import {
   RabbitMQRequest,
   RabbitMQResponse,
 } from "../types/RabbitMQMessages";
-import HandleMessage from "../Handlers/Leaderboard";
+import HandleMessage from "../Handlers/MatchManager";
 
 class RabbitMQ {
   isReady = false;
   connection_option: Options.Connect = {
     hostname: process.env.RABBITMQ_HOST,
     port: (process.env.RABBITMQ_PORT || 5577) as number,
-    username: process.env.RABBITMQ_LEADERBOARD_USER || "",
-    password: process.env.RABBITMQ_LEADERBOARD_PASSWORD || "",
+    username: process.env.RABBITMQ_MATCH_MANAGER_USER || "",
+    password: process.env.RABBITMQ_MATCH_MANAGER_PASSWORD || "",
   };
   connection: amqp.ChannelModel;
   channel: amqp.Channel;
   api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
-  leaderboard_queue = process.env.RABBITMQ_LEADERBOARD_QUEUE_NAME as string;
+  match_manager_queue = process.env.RABBITMQ_MATCH_MANAGER_QUEUE_NAME as string;
   constructor() {
     this.connection = {} as amqp.ChannelModel;
     this.channel = {} as amqp.Channel;
@@ -35,12 +35,12 @@ class RabbitMQ {
       await this.channel.assertQueue(this.api_gateway_queue, {
         durable: false,
       });
-      await this.channel.assertQueue(this.leaderboard_queue, {
+      await this.channel.assertQueue(this.match_manager_queue, {
         durable: false,
       });
       await this.channel.consume(
-        this.leaderboard_queue,
-        this.consumeLeaderboardQueue,
+        this.match_manager_queue,
+        this.consumeMatchManagerQueue,
         { noAck: true }
       );
       this.channel.on("close", async () => {
@@ -55,29 +55,28 @@ class RabbitMQ {
       this.AttemptConnection();
     }
   }
-  consumeLeaderboardQueue(msg: amqp.ConsumeMessage | null) {
+  consumeMatchManagerQueue(msg: amqp.ConsumeMessage | null) {
     if (!msg) return;
     var RMqRequest: RabbitMQRequest;
     try {
       RMqRequest = JSON.parse(msg.content.toString());
+      if (!RMqRequest.id || RMqRequest.id === "")
+        throw 'consumeMatchManagerQueue(): got request with no id';
     } catch (error) {
       console.log(
-        `Error: rabbitmq consumeLeaderboardQueue(): parse error ${error}`
+        `Error: rabbitmq consumeMatchManagerQueue(): parse error ${error}`
       );
       return;
     }
     try {
       const RMqResponse = HandleMessage(RMqRequest);
-      if (RMqResponse)
-        rabbitmq.sendToAPIGatewayQueue(RMqResponse);
+      rabbitmq.sendToAPIGatewayQueue(RMqResponse);
     } catch (error) {
       console.log(
-        `Error: rabbitmq consumeLeaderboardQueue(): ${error} | request id: ${RMqRequest.id}`
+        `Error: rabbitmq consumeMatchManagerQueue(): ${error} | request id: ${RMqRequest.id}`
       );
-      if (!RMqRequest.id || RMqRequest.id === "")
-        return;
       const RMqResponse: RabbitMQResponse = {
-        service: RabbitMQMicroServices.Leaderboard,
+        service: RabbitMQMicroServices.match_manager,
         op: RMqRequest.op,
         req_id: RMqRequest.id,
         status: 500,

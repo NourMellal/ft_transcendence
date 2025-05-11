@@ -9,28 +9,22 @@ export enum RabbitMQMicroServices {
   match_manager
 }
 
-export enum RabbitMQUserManagerOp {
-  CREATE_GOOGLE = 1,
-  CREATE_STANDARD,
-  UPDATE,
-  DELETE,
-  FETCH,
+export enum RabbitMQMatchManagerOp {
+  CREATE_MATCH = 1,
+  LIST_MATCHS,
+  WIN_MATCH,
+  LOSE_MATCH,
 }
 
-export type UpdateUser = {
-  picture_url: string | null;
-  bio: string | null;
-};
-
 export type RabbitMQRequest = {
-  op: RabbitMQUserManagerOp;
+  op: RabbitMQMatchManagerOp;
   message?: string;
   id: string;
   JWT: JWT;
 };
 
 export type RabbitMQResponse = {
-  op: RabbitMQUserManagerOp;
+  op: RabbitMQMatchManagerOp;
   status: number;
   message?: string;
   req_id: string;

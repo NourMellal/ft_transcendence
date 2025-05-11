@@ -6,7 +6,7 @@ export enum RabbitMQMicroServices {
   FRIENDS_MANAGER,
   NOTIFICATIONS,
   Leaderboard,
-  history
+  match_manager
 }
 
 export enum RabbitMQNotificationsOp {

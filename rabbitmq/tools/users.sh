@@ -16,3 +16,5 @@ echo $RABBITMQ_NOTIFICATIONS_PASSWORD | rabbitmqctl add_user $RABBITMQ_NOTIFICAT
 rabbitmqctl set_permissions -p / $RABBITMQ_NOTIFICATIONS_USER ".*" ".*" ".*"
 echo $RABBITMQ_LEADERBOARD_PASSWORD | rabbitmqctl add_user $RABBITMQ_LEADERBOARD_USER
 rabbitmqctl set_permissions -p / $RABBITMQ_LEADERBOARD_USER ".*" ".*" ".*"
+echo $RABBITMQ_MATCH_MANAGER_PASSWORD | rabbitmqctl add_user $RABBITMQ_MATCH_MANAGER_USER
+rabbitmqctl set_permissions -p / $RABBITMQ_MATCH_MANAGER_USER ".*" ".*" ".*"
