@@ -2,7 +2,7 @@ import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { UsersIcon } from '~/icons';
-import { friendRequests } from '~/app-state';
+import { friendRequestsState } from '~/app-state';
 import { fetchFriendRequests } from '~/api/friends';
 
 class FriendsNavMenu extends HTMLElement {
@@ -67,7 +67,7 @@ class FriendsNavMenu extends HTMLElement {
   }
 
   private render() {
-    const requests = friendRequests.get();
+    const requests = friendRequestsState.get();
 
     this.replaceChildren(html`
       <div class="relative">
@@ -125,7 +125,7 @@ class FriendsNavMenu extends HTMLElement {
                           </button>
                         </div>
                       </li>
-                    `,
+                    `
                   )}
             </ul>
           `}
@@ -176,7 +176,7 @@ class FriendsNavMenu extends HTMLElement {
       } else if (action === 'deny') {
         await this.denyFriendRequest(reqId);
       }
-      friendRequests.set(await fetchFriendRequests());
+      friendRequestsState.set(await fetchFriendRequests());
     }
   };
 
@@ -196,7 +196,7 @@ class FriendsNavMenu extends HTMLElement {
           { opacity: 0, transform: 'translateY(-10px)' },
           { opacity: 1, transform: 'translateY(0)' },
         ],
-        animOpts,
+        animOpts
       );
     } else {
       this.close();
@@ -215,7 +215,7 @@ class FriendsNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      },
+      }
     );
     animation.onfinish = () => {
       if (this.friendsMenu) {
@@ -226,7 +226,7 @@ class FriendsNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(friendRequests.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(friendRequestsState.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

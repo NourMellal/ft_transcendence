@@ -1,3 +1,6 @@
+import { NotificationData, NotificationType } from '~/api/notifications';
+import { fetchUserInfo } from '~/api/user';
+import { notificationsState } from '~/app-state';
 import { BellIcon } from '~/icons';
 import { html } from '~/lib/html';
 
@@ -11,7 +14,45 @@ class NotificationNavMenu extends HTMLElement {
     }
   }
 
-  render() {
+  getNotificationTitle(type: NotificationType) {
+    switch (type) {
+      case NotificationType.NewFriendRequest:
+        return 'You have a new friend request';
+      case NotificationType.FriendRequestAccepted:
+        return 'Your friend request has been accepted';
+      case NotificationType.FriendRequestDenied:
+        return 'Your friend request has been denied';
+      case NotificationType.GameInvite:
+        return 'You have a new game invite';
+      case NotificationType.Poke:
+        return 'You have been poked';
+      default:
+        return 'You have a new notification';
+    }
+  }
+
+  async getNotificationMessage(data: NotificationData) {
+    const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
+
+    switch (data.type) {
+      case NotificationType.NewFriendRequest:
+        return `${fromUsername} sent you a friend request`;
+      case NotificationType.FriendRequestAccepted:
+        return `${fromUsername} accepted your friend request`;
+      case NotificationType.FriendRequestDenied:
+        return `${fromUsername} denied your friend request`;
+      case NotificationType.GameInvite:
+        return `${fromUsername} invited you to play a game`;
+      case NotificationType.Poke:
+        return `${fromUsername} poked you`;
+      default:
+        return 'You have a new notification';
+    }
+  }
+
+  async render() {
+    const notifications = notificationsState.get();
+
     this.replaceChildren(html`
       <div class="relative">
         <button id="notification-btn" class="btn-outlined btn-icon">
@@ -19,8 +60,9 @@ class NotificationNavMenu extends HTMLElement {
           <span
             id="notification-count"
             class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
-            >0</span
           >
+            0
+          </span>
         </button>
         <div
           id="notification-menu"
@@ -35,33 +77,33 @@ class NotificationNavMenu extends HTMLElement {
             </button>
           </div>
           <div class="divide-y divide-border">
-            <a
-              href="#"
-              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-            >
-              <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-            </a>
-            <a
-              href="#"
-              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-            >
-              <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-            </a>
-            <a
-              href="#"
-              class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-            >
-              <h4>Notification Title</h4>
-              <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-            </a>
+            ${notifications?.length
+              ? await Promise.all(
+                  notifications.map(
+                    async (data) =>
+                      html`
+                        <button
+                          class="text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+                        >
+                          <h4>${this.getNotificationTitle(data.type)}</h4>
+                          <p class="text-sm text-muted-foreground">
+                            ${await this.getNotificationMessage(data)}
+                          </p>
+                        </button>
+                      `
+                  )
+                )
+              : html`
+                  <div class="flex items-center justify-center p-4">
+                    <p class="text-sm text-muted-foreground">No notifications</p>
+                  </div>
+                `}
           </div>
         </div>
       </div>
     `);
     this.setup();
-    this.setNotificationCount(3);
+    this.setNotificationCount(notificationsState.get()?.length || 0);
   }
 
   toggle = () => {
@@ -92,7 +134,7 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      },
+      }
     );
   };
 
@@ -110,7 +152,7 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      },
+      }
     );
 
     animation.onfinish = () => notificationMenu.classList.add('hidden');

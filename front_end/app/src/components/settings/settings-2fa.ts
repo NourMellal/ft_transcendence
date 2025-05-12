@@ -1,13 +1,13 @@
 import { html } from '~/lib/html';
 import '~/components/settings/partials/disable-2fa';
 import '~/components/settings/partials/enable-2fa';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 import { User } from '~/api/user';
 class Settings2FA extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
 
   render() {
-    const currentUser = user.get();
+    const currentUser = userState.get();
 
     if (!currentUser) return;
 
@@ -46,7 +46,7 @@ class Settings2FA extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(user.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(userState.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

@@ -1,7 +1,6 @@
-import { friendRequests, user } from '~/app-state';
-import { fetchWithAuth } from './auth';
+import { friendRequestsState, notificationsState, userState } from '~/app-state';
 import { fetchFriendRequests } from './friends';
-import { setupNotificationsSocket } from './notifications';
+import { fetchUndreadNotifications, setupNotificationsSocket } from './notifications';
 
 export type User = {
   UID: string;
@@ -11,14 +10,13 @@ export type User = {
   totp_enabled: boolean;
 };
 
-export const fetchUserInfo = async (username?: string) => {
-  const res = await fetch(`/api/user/info?uid=${username ?? 'me'}`, {
+export const fetchUserInfo = async (uid?: string) => {
+  const res = await fetch(`/api/user/info?uid=${uid ?? 'me'}`, {
     cache: 'no-store',
   });
   if (res.ok) {
     const data = (await res.json()) as User;
-    // to avoid the broser from caching the image
-    data.picture_url += `?t=${Date.now()}`;
+    data.picture_url += `?t=${Date.now()}`; // to avoid the broser from caching the image
     return data;
   }
   return null;
@@ -27,18 +25,16 @@ export const fetchUserInfo = async (username?: string) => {
 export const setupUser = async () => {
   try {
     // user info
-    const res = await fetchWithAuth('/api/user/info?uid=me');
-    if (!res.ok) throw new Error('User not signed in');
-
-    const userDetails = await res.json();
-    user.set(userDetails);
+    userState.set(await fetchUserInfo());
+    if (!userState.get()) throw Error('User Not Logged-in');
 
     // friend requests
-    friendRequests.set(await fetchFriendRequests());
+    friendRequestsState.set(await fetchFriendRequests());
 
     // notifications
-    setupNotificationsSocket();
+    await setupNotificationsSocket();
+    notificationsState.set(await fetchUndreadNotifications());
   } catch {
-    user.set(null);
+    userState.set(null);
   }
 };

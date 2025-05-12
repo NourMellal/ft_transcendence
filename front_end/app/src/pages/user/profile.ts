@@ -6,7 +6,7 @@ import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { friendRequests, user } from '~/app-state';
+import { friendRequestsState, userState } from '~/app-state';
 import { fetchFriendRequests } from '~/api/friends';
 
 enum FriendStatus {
@@ -28,7 +28,7 @@ export default class ProfilePage extends HTMLElement {
   private cleanupCallbacks = new Array<Function>();
 
   async loadProfileData(): Promise<ProfileState | null> {
-    const currentUser = user.get();
+    const currentUser = userState.get();
     if (!currentUser) {
       navigateTo('/signin');
       return null;
@@ -368,7 +368,7 @@ export default class ProfilePage extends HTMLElement {
       });
     }
 
-    friendRequests.set(await fetchFriendRequests());
+    friendRequestsState.set(await fetchFriendRequests());
   }
 
   setup() {
@@ -491,7 +491,7 @@ export default class ProfilePage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(friendRequests.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(friendRequestsState.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

@@ -1,7 +1,6 @@
-import { fetchFriendRequests } from './api/friends';
-import { closeNotificationSocket, setupNotificationsSocket } from './api/notifications';
-import { fetchUserInfo } from './api/user';
-import { friendRequests, notifications, user } from './app-state';
+import { closeNotificationSocket } from './api/notifications';
+import { setupUser } from './api/user';
+import { friendRequestsState, notificationsState, userState } from './app-state';
 import { handleEffect } from './utils';
 
 function initTheme() {
@@ -23,17 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
 
   handleEffect(document.body, async () => {
-    user.set(await fetchUserInfo());
-    if (user.get() !== null) {
-      await setupNotificationsSocket();
-      friendRequests.set(await fetchFriendRequests());
-    }
+    await setupUser();
 
-    user.subscribe((u) => {
+    userState.subscribe((u) => {
       if (u === null) {
         closeNotificationSocket();
-        friendRequests.set(null);
-        notifications.set(null);
+        friendRequestsState.set(null);
+        notificationsState.set(null);
       }
     });
 

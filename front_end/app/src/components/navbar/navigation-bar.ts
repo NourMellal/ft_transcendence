@@ -5,7 +5,7 @@ import '~/components/navbar/theme-toggle-button';
 import '~/components/navbar/user-nav-menu';
 
 import { html } from '~/lib/html';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 
 import { LockIcon, MenuIcon, RocketIcon } from '~/icons';
 
@@ -39,7 +39,7 @@ class NavigationBar extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
 
   render() {
-    const pages = user.get() ? UserLinks : GuestLinks;
+    const pages = userState.get() ? UserLinks : GuestLinks;
     const mobileNav = document.createElement('mobile-navigation');
     mobileNav.setAttribute('pages', JSON.stringify(pages));
 
@@ -60,7 +60,7 @@ class NavigationBar extends HTMLElement {
           </div>
           <div class="ms-auto flex gap-4 items-center justify-center">
             <theme-toggle-button></theme-toggle-button>
-            ${user.get()
+            ${userState.get()
               ? html`
                   <friends-nav-menu></friends-nav-menu>
                   <notification-nav-menu></notification-nav-menu>
@@ -85,7 +85,7 @@ class NavigationBar extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(user.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(userState.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

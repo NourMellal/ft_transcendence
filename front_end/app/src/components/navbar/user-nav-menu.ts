@@ -1,12 +1,12 @@
 import { navigateTo } from '../app-router';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 import { UserIcon, CogIcon, LogoutIcon } from '~/icons';
 
 class UserNavMenu extends HTMLElement {
   render() {
-    const currentUser = user.get();
+    const currentUser = userState.get();
 
     if (!currentUser) return;
     this.replaceChildren(html`
@@ -62,7 +62,7 @@ class UserNavMenu extends HTMLElement {
         throw new Error('Logout failed');
       }
 
-      user.set(null);
+      userState.set(null);
 
       navigateTo('/signin');
     } catch (error) {
@@ -94,7 +94,7 @@ class UserNavMenu extends HTMLElement {
             duration: 200,
             easing: 'ease-in-out',
             fill: 'forwards',
-          },
+          }
         );
 
         animation.onfinish = () => userMenu.classList.add('hidden');
@@ -120,7 +120,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        },
+        }
       );
       userMenu.classList.remove('hidden');
     } else {
@@ -133,7 +133,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        },
+        }
       );
       animation.onfinish = () => userMenu.classList.add('hidden');
     }

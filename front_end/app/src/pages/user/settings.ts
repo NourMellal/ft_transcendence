@@ -5,11 +5,11 @@ import '~/components/settings/settings-info';
 import '~/components/settings/settings-2fa';
 import '~/components/settings/settings-password';
 import '~/components/settings/settings-devices';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 
 export default class SettingsPage extends HTMLElement {
   render = async () => {
-    if (!user.get()) {
+    if (!userState.get()) {
       return navigateTo('/signin');
     }
     this.replaceChildren(html`

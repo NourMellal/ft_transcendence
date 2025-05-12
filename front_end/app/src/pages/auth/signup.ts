@@ -6,7 +6,7 @@ import { handleEffect } from '~/utils';
 import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 import { LockIcon } from '~/icons';
 
 export default class SignupPage extends HTMLElement {
@@ -68,7 +68,7 @@ export default class SignupPage extends HTMLElement {
   };
 
   async render() {
-    if (user.get()) {
+    if (userState.get()) {
       return navigateTo('/profile');
     }
     this.replaceChildren(html`

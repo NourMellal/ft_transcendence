@@ -3,7 +3,7 @@ import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { fetchUserInfo } from '~/api/user';
-import { user } from '~/app-state';
+import { userState } from '~/app-state';
 
 class Enable2Fa extends HTMLElement {
   render() {
@@ -71,7 +71,7 @@ class Enable2Fa extends HTMLElement {
           type: 'success',
           message: '2FA enabled successfully.',
         });
-        user.set(await fetchUserInfo());
+        userState.set(await fetchUserInfo());
       } else {
         showToast({
           type: 'error',

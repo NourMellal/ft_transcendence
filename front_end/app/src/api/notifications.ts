@@ -1,8 +1,8 @@
-import { friendRequests, pushNotification } from '~/app-state';
+import { friendRequestsState, pushNotificationState } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 
-enum NotificationType {
+export enum NotificationType {
   NewFriendRequest = 1,
   FriendRemove,
   FriendRequestAccepted,
@@ -15,10 +15,11 @@ export type NotificationData = {
   type: NotificationType;
   from_uid: string;
   to_uid: string;
+  is_read: boolean;
 };
 
 export const setupNotificationsSocket = async () => {
-  if (pushNotification.get()) return;
+  if (pushNotificationState.get()) return;
 
   const notificationSound = new Audio('/notification.mp3');
   let pingInterval: NodeJS.Timeout;
@@ -30,8 +31,7 @@ export const setupNotificationsSocket = async () => {
     console.error('WebSocket error:', err);
   };
 
-  ws.onopen = (socket) => {
-    console.log('WebSocket connected:', socket);
+  ws.onopen = () => {
     pingInterval = setInterval(() => {
       ws.send(JSON.stringify({ type: 'ping' }));
     }, 20_000);
@@ -53,7 +53,7 @@ export const setupNotificationsSocket = async () => {
         case NotificationType.FriendRequestDenied:
         case NotificationType.FriendRequestAccepted:
         case NotificationType.FriendRemove:
-          friendRequests.set(await fetchFriendRequests());
+          friendRequestsState.set(await fetchFriendRequests());
           break;
         case NotificationType.Poke:
           console.log(data);
@@ -65,17 +65,76 @@ export const setupNotificationsSocket = async () => {
     }
   };
 
-  ws.onclose = (event) => {
-    console.log(`WebSocket closed`, event);
+  ws.onclose = () => {
     clearInterval(pingInterval);
   };
-  pushNotification.set(ws);
+  pushNotificationState.set(ws);
 };
 
 export const closeNotificationSocket = () => {
-  const socket = pushNotification.get();
+  const socket = pushNotificationState.get();
   if (socket) {
     socket.close();
-    pushNotification.set(null);
+    pushNotificationState.set(null);
   }
+};
+
+export type Notification = {
+  UID: string;
+  messageJson: string;
+  is_read: number;
+};
+
+export const fetchUndreadNotifications = async () => {
+  const response = await fetch(`/api/notifications/list_unread`);
+  const jsonResponse = (await response.json()) as Notification[];
+  if (response.ok) {
+    return jsonResponse.map((json) => JSON.parse(json.messageJson) as NotificationData);
+  }
+
+  return null;
+};
+
+export const fetchAllNotifications = async () => {
+  const response = await fetch(`/api/notifications/list_all`);
+  const jsonResponse = (await response.json()) as Notification[];
+  if (response.ok) {
+    return jsonResponse.map((json) => JSON.parse(json.messageJson) as NotificationData);
+  }
+
+  return null;
+};
+
+export const markNotificationAsRead = async () => {
+  const response = await fetch(`/api/notifications/mark_as_read`, {
+    method: 'POST',
+  });
+  if (response.ok) {
+    return true;
+  }
+
+  return false;
+};
+
+export const deleteNotification = async () => {
+  const response = await fetch(`/api/notifications/delete`, {
+    method: 'POST',
+  });
+  if (response.ok) {
+    return true;
+  }
+
+  return false;
+};
+
+export const pokeFriend = async (uid: string) => {
+  const response = await fetch(`/api/poke?uid=${uid}`, {
+    method: 'POST',
+  });
+
+  if (response.ok) {
+    return true;
+  }
+
+  return false;
 };
