@@ -4,9 +4,7 @@
 
 :root {
   font-family: Inter, sans-serif;
-  font-feature-settings:
-    'liga' 1,
-    'calt' 1; /* fix for Chrome */
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -127,12 +125,16 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
+  body:has(navigation-bar) {
     @apply bg-background text-foreground;
   }
 
   #app {
-    @apply relative pb-8 md:pt-20 pt-16;
+    @apply relative;
+  }
+
+  #app:has(navigation-bar) {
+    @apply pb-8 md:pt-20 pt-16;
   }
 }
 

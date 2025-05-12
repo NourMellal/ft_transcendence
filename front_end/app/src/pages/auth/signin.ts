@@ -10,6 +10,8 @@ import { userState } from '~/app-state';
 import { LockIcon } from '~/icons';
 
 export default class SigninPage extends HTMLElement {
+  intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
+
   handleSumbit = (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
     e.preventDefault();
@@ -22,7 +24,6 @@ export default class SigninPage extends HTMLElement {
           method: 'POST',
           body: formData,
           credentials: 'include',
-          redirect: 'follow',
           cache: 'no-store',
         });
 
@@ -32,18 +33,13 @@ export default class SigninPage extends HTMLElement {
           return;
         }
 
-        if (res.redirected) {
-          const url = new URL(res.url);
-          return navigateTo(url.pathname + url.search);
-        }
-
         await setupUser();
 
         showToast({
           type: 'success',
           message: `Welcome back!`,
         });
-        navigateTo('/profile');
+        navigateTo(this.intended);
       });
     }
   };

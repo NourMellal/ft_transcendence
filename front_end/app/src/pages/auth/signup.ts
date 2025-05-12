@@ -10,6 +10,8 @@ import { userState } from '~/app-state';
 import { LockIcon } from '~/icons';
 
 export default class SignupPage extends HTMLElement {
+  intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
+
   handleSumbit = async (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
 
@@ -52,7 +54,7 @@ export default class SignupPage extends HTMLElement {
           type: 'success',
           message: `Welcome to ft_transcendence!`,
         });
-        navigateTo('/profile');
+        navigateTo(this.intended);
       });
     }
   };
