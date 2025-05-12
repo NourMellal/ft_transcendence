@@ -1,5 +1,3 @@
-// TODO: refactor this mess
-
 import { navigateTo } from '~/components/app-router';
 import { User } from '~/api/user';
 import { showToast } from '~/components/toast';

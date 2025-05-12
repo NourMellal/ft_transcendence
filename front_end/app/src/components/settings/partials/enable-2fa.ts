@@ -27,8 +27,8 @@ class Enable2Fa extends HTMLElement {
               inputmode="numeric"
               pattern="[0-9]*"
               maxlength="6"
-              class="input w-full tracking-widest"
-              placeholder="123456"
+              class="input w-full tracking-wider"
+              placeholder="XXXXXX"
             />
           </div>
           <button id="verify-2fa-btn" class="btn btn-primary">Verify & Enable</button>

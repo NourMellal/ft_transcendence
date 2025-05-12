@@ -22,7 +22,7 @@ export function showToast(toast: Omit<Toast, 'id'>) {
 
 class ToastContainer extends HTMLElement {
   private toasts: Toast[] = [];
-  private readonly transitionDuration = 300; // ms
+  private readonly transitionDuration = 300;
 
   private closeIconSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
@@ -69,7 +69,7 @@ class ToastContainer extends HTMLElement {
       {
         duration: this.transitionDuration,
         easing: 'ease-out',
-      },
+      }
     );
 
     leaveAnim.onfinish = () => {
@@ -99,7 +99,6 @@ class ToastContainer extends HTMLElement {
     toastElement.append(contentDiv, closeButton);
     this.append(toastElement);
 
-    // enter animation via Web Animations API
     toastElement.animate(
       [
         { transform: 'translateY(16px)', opacity: 0 },
@@ -108,7 +107,7 @@ class ToastContainer extends HTMLElement {
       {
         duration: this.transitionDuration,
         easing: 'ease-out',
-      },
+      }
     );
   }
 

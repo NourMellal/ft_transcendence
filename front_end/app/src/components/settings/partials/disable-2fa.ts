@@ -18,8 +18,8 @@ class Disable2FA extends HTMLElement {
               inputmode="numeric"
               pattern="[0-9]*"
               maxlength="6"
-              class="input w-full tracking-widest"
-              placeholder="123456"
+              class="input w-full tracking-wider"
+              placeholder="XXXXXX"
             />
             <p id="totp-disable-error" class="text-xs text-destructive mt-1"></p>
           </div>

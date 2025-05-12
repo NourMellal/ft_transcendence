@@ -82,7 +82,7 @@ export default class ChatPage extends HTMLElement {
                     />
                     <span class="text-sm font-medium text-foreground">${friend.name}</span>
                   </a>
-                `,
+                `
               )}
             </div>
           </aside>
@@ -133,7 +133,7 @@ export default class ChatPage extends HTMLElement {
                       </div>
                     </div>
                   </div>
-                `,
+                `
               )}
             </div>
 
@@ -177,9 +177,7 @@ export default class ChatPage extends HTMLElement {
     this.render();
   }
 
-  disconnectedCallback() {
-    // Clean up event listeners or other resources if needed
-  }
+  disconnectedCallback() {}
 }
 
 customElements.define('chat-page', ChatPage);

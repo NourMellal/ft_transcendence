@@ -142,7 +142,6 @@ class UserNavMenu extends HTMLElement {
   setup() {
     // user menu
     this.querySelector('#user-menu-btn')?.addEventListener('click', this.toggleUserMenu);
-
     document.addEventListener('click', this.closeUserMenu);
 
     // logout btn
