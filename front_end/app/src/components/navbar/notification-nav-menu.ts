@@ -1,134 +1,174 @@
-import BellIcon from "~/icons/bell.svg?raw";
+import { NotificationData, NotificationType } from '~/api/notifications';
+import { fetchUserInfo } from '~/api/user';
+import { notificationsState } from '~/app-state';
+import { BellIcon } from '~/icons';
+import { html } from '~/lib/html';
 
 class NotificationNavMenu extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   setNotificationCount(count: number) {
-    const notificationCount = this.querySelector(
-      "#notification-count"
-    ) as HTMLSpanElement | null;
+    const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
 
     if (notificationCount) {
       notificationCount.textContent = count.toString();
-      notificationCount.style.display = count > 0 ? "flex" : "none";
+      notificationCount.style.display = count > 0 ? 'flex' : 'none';
     }
   }
 
-  render() {
-    this.innerHTML = /*html*/ `
+  getNotificationTitle(type: NotificationType) {
+    switch (type) {
+      case NotificationType.NewFriendRequest:
+        return 'You have a new friend request';
+      case NotificationType.FriendRequestAccepted:
+        return 'Your friend request has been accepted';
+      case NotificationType.FriendRequestDenied:
+        return 'Your friend request has been denied';
+      case NotificationType.GameInvite:
+        return 'You have a new game invite';
+      case NotificationType.Poke:
+        return 'You have been poked';
+      default:
+        return 'You have a new notification';
+    }
+  }
+
+  async getNotificationMessage(data: NotificationData) {
+    const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
+
+    switch (data.type) {
+      case NotificationType.NewFriendRequest:
+        return `${fromUsername} sent you a friend request`;
+      case NotificationType.FriendRequestAccepted:
+        return `${fromUsername} accepted your friend request`;
+      case NotificationType.FriendRequestDenied:
+        return `${fromUsername} denied your friend request`;
+      case NotificationType.GameInvite:
+        return `${fromUsername} invited you to play a game`;
+      case NotificationType.Poke:
+        return `${fromUsername} poked you`;
+      default:
+        return 'You have a new notification';
+    }
+  }
+
+  async render() {
+    const notifications = notificationsState.get();
+
+    this.replaceChildren(html`
       <div class="relative">
-      <button id="notification-btn" class="cursor-pointer p-2 rounded-md hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent">
-        ${BellIcon}
-        <span
-          id="notification-count"
-          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
-        >0</span>
-      </button>
-      <div
-        id="notification-menu"
-        class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
-      >
-        <div class="flex justify-end px-2 pt-2">
-        <button class="text-sm text-muted-foreground hover:underline focus:outline-none">
-          Mark all as read
+        <button id="notification-btn" class="btn-outlined btn-icon">
+          ${BellIcon}
+          <span
+            id="notification-count"
+            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-medium"
+          >
+            0
+          </span>
         </button>
-        </div>
-        <div class="divide-y divide-border">
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+        <div
+          id="notification-menu"
+          class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
         >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-        >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
-        <a
-          href="#"
-          class="flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
-        >
-          <h4 class="text-sm font-semibold">Notification Title</h4>
-          <p class="text-sm text-muted-foreground">Lorem ipsum dolor sit amet.</p>
-        </a>
+          <div class="flex justify-between items-center px-4 py-2 border-b border-muted">
+            <h4 class="text-sm font-semibold">Notifications</h4>
+            <button
+              class="cursor-pointer text-sm text-muted-foreground hover:underline focus:outline-none"
+            >
+              Mark all as read
+            </button>
+          </div>
+          <div class="divide-y divide-border">
+            ${notifications?.length
+              ? await Promise.all(
+                  notifications.map(
+                    async (data) =>
+                      html`
+                        <button
+                          class="text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+                        >
+                          <h4>${this.getNotificationTitle(data.type)}</h4>
+                          <p class="text-sm text-muted-foreground">
+                            ${await this.getNotificationMessage(data)}
+                          </p>
+                        </button>
+                      `
+                  )
+                )
+              : html`
+                  <div class="flex items-center justify-center p-4">
+                    <p class="text-sm text-muted-foreground">No notifications</p>
+                  </div>
+                `}
+          </div>
         </div>
       </div>
-      </div>
-    `;
+    `);
+    this.setup();
+    this.setNotificationCount(notificationsState.get()?.length || 0);
   }
 
   toggle = () => {
-    const notificationMenu = this.querySelector(
-      "#notification-menu"
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (!notificationMenu) return;
 
-    const isHidden = notificationMenu.classList.contains("hidden");
-    const animationOpts: KeyframeAnimationOptions = {
-      duration: 200,
-      easing: "ease-in-out",
-      fill: "forwards",
-    };
-
-    if (isHidden) {
-      notificationMenu.classList.remove("hidden");
-
-      notificationMenu.animate(
-        [
-          { opacity: 0, transform: "translateY(-10px)" },
-          { opacity: 1, transform: "translateY(0)" },
-        ],
-        animationOpts
-      );
+    if (notificationMenu.classList.contains('hidden')) {
+      this.open();
     } else {
       this.close();
     }
   };
 
+  open = () => {
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+
+    if (!notificationMenu) return;
+
+    notificationMenu.classList.remove('hidden');
+
+    notificationMenu.animate(
+      [
+        { opacity: 0, transform: 'translateY(-10px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ],
+      {
+        duration: 200,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      }
+    );
+  };
+
   close = () => {
-    const notificationMenu = this.querySelector(
-      "#notification-menu"
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (!notificationMenu) return;
 
     const animation = notificationMenu.animate(
       [
-        { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0, transform: "translateY(-10px)" },
+        { opacity: 1, transform: 'translateY(0)' },
+        { opacity: 0, transform: 'translateY(-10px)' },
       ],
       {
         duration: 200,
-        easing: "ease-in-out",
-        fill: "forwards",
+        easing: 'ease-in-out',
+        fill: 'forwards',
       }
     );
 
-    animation.onfinish = () => notificationMenu.classList.add("hidden");
+    animation.onfinish = () => notificationMenu.classList.add('hidden');
   };
 
   setup() {
-    const notificationBtn = this.querySelector(
-      "#notification-btn"
-    ) as HTMLButtonElement | null;
+    const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
 
-    const notificationMenu = this.querySelector(
-      "#notification-menu"
-    ) as HTMLDivElement | null;
+    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
 
     if (notificationBtn && notificationMenu) {
-      notificationBtn.addEventListener("click", this.toggle);
-      document.addEventListener("click", (event) => {
+      notificationBtn.addEventListener('click', this.toggle);
+      document.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
         if (
-          !notificationMenu.classList.contains("hidden") &&
+          !notificationMenu.classList.contains('hidden') &&
           !notificationMenu.contains(target) &&
           !notificationBtn.contains(target)
         ) {
@@ -140,9 +180,7 @@ class NotificationNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.setup();
-    this.setNotificationCount(3);
   }
 }
 
-customElements.define("notification-nav-menu", NotificationNavMenu);
+customElements.define('notification-nav-menu', NotificationNavMenu);

@@ -10,7 +10,6 @@ import { multipart_fields, multipart_files } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
-import { escapeHtml } from "../Common";
 
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
@@ -28,7 +27,7 @@ export const FetchUserInfo = async (
         const query = db.persistent.prepare(
           `SELECT UID FROM '${users_table_name}' WHERE username = ? ;`
         );
-        const res = query.get(escapeHtml(uname)) as UserModel;
+        const res = query.get(uname) as UserModel;
         if (!res) throw "no user found";
         UID = res.UID;
       } catch (err) {
@@ -94,14 +93,8 @@ export const UpdateUserInfo = async (
       fs.writeFileSync(UpdatedInfo.picture_url, image.field_file.read());
     }
     if (bio) {
-      UpdatedInfo.bio = escapeHtml(bio.field_value);
+      UpdatedInfo.bio = bio.field_value;
     }
-    if (
-      username === undefined &&
-      UpdatedInfo.bio === null &&
-      UpdatedInfo.picture_url === null
-    )
-      return reply.code(400).send("bad request no field is supplied");
     if (username) {
       if (username.field_value.length < 3)
         return reply.code(400).send("bad request provide a valid username");
@@ -110,7 +103,7 @@ export const UpdateUserInfo = async (
           `UPDATE '${users_table_name}' SET username = ? WHERE UID = ? ;`
         );
         const res = query.run(
-          escapeHtml(username.field_value),
+          username.field_value,
           request.jwt.sub
         );
         if (res.changes !== 1) throw "UpdateUserInfo(): database error";
@@ -119,6 +112,11 @@ export const UpdateUserInfo = async (
         return reply.code(400).send("username is taken");
       }
     }
+    if (
+      UpdatedInfo.bio === null &&
+      UpdatedInfo.picture_url === null
+    )
+      return reply.code(200).send('username updated');
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
       op: RabbitMQUserManagerOp.UPDATE,
@@ -149,7 +147,7 @@ export const UpdateUserPassword = async (
     );
     {
       if (!new_password || new_password.field_value.length < 8)
-        return reply.code(401).send("provide valid credentials > 7 chars");
+        return reply.code(400).send("provide valid credentials > 7 chars");
       const query = db.persistent.prepare(
         `SELECT password_hash FROM '${users_table_name}' WHERE UID = ? ;`
       );
@@ -159,11 +157,11 @@ export const UpdateUserPassword = async (
           (field: multipart_fields, i) => field.field_name === "old_password"
         );
         if (!old_password || old_password.field_value.length < 8)
-          return reply.code(401).send("provide valid credentials > 7 chars");
+          return reply.code(400).send("provide valid credentials > 7 chars");
         const hasher = crypto.createHash("sha256");
         hasher.update(Buffer.from(old_password.field_value));
         if (hasher.digest().toString() !== result.password_hash)
-          return reply.code(401).send("invalid old password");
+          return reply.code(400).send("invalid old password");
       }
     }
     const hasher = crypto.createHash("sha256");

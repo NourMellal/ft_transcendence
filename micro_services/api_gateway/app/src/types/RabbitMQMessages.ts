@@ -5,6 +5,8 @@ export enum RabbitMQMicroServices {
   USER_MANAGER,
   FRIENDS_MANAGER,
   NOTIFICATIONS,
+  Leaderboard,
+  match_manager
 }
 
 export enum RabbitMQUserManagerOp {
@@ -26,6 +28,20 @@ export enum RabbitMQFriendsManagerOp {
   POKE_FRIEND
 }
 
+export enum RabbitMQLeaderboardOp {
+  ADD_WIN = 1,
+  ADD_LOSS,
+  LIST_ALL_RANK,
+  LIST_USER_RANK,
+}
+
+export enum RabbitMQMatchManagerOp {
+  CREATE_MATCH = 1,
+  LIST_MATCHS,
+  WIN_MATCH,
+  LOSE_MATCH,
+}
+
 export enum RabbitMQNotificationsOp {
   SAVE_NOTIFICATION = 1,
   MARK_READ,
@@ -37,6 +53,7 @@ export enum RabbitMQNotificationsOp {
 
 export enum NotificationType {
   NewFriendRequest = 1,
+  FriendRemove,
   FriendRequestAccepted,
   FriendRequestDenied,
   GameInvite,
@@ -45,7 +62,8 @@ export enum NotificationType {
 
 export type NotificationBody = {
   type: NotificationType,
-  from_uid: string
+  from_uid: string,
+  to_uid: string
 }
 
 export type UpdateUser = {

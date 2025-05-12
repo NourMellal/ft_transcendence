@@ -1,4 +1,6 @@
-import { fetchWithAuth } from "./auth";
+import { friendRequestsState, notificationsState, userState } from '~/app-state';
+import { fetchFriendRequests } from './friends';
+import { fetchUndreadNotifications, setupNotificationsSocket } from './notifications';
 
 export type User = {
   UID: string;
@@ -8,27 +10,31 @@ export type User = {
   totp_enabled: boolean;
 };
 
-export const getUser = async () => {
-  try {
-    const res = await fetchWithAuth("/api/user/info?uid=me", {
-      method: "GET",
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Failed to fetch user info");
+export const fetchUserInfo = async (uid?: string) => {
+  const res = await fetch(`/api/user/info?uid=${uid ?? 'me'}`, {
+    cache: 'no-store',
+  });
+  if (res.ok) {
+    const data = (await res.json()) as User;
+    data.picture_url += `?t=${Date.now()}`; // to avoid the broser from caching the image
+    return data;
+  }
+  return null;
+};
 
-    window._currentUser = await res.json();
-    const websocketTicket = await (
-      await fetchWithAuth("/api/notifications/ticket")
-    ).text();
-    window._pushNotificationSocket = new WebSocket(
-      "/api/notifications/push_notification",
-      [websocketTicket]
-    );
+export const setupUser = async () => {
+  try {
+    // user info
+    userState.set(await fetchUserInfo());
+    if (!userState.get()) throw Error('User Not Logged-in');
+
+    // friend requests
+    friendRequestsState.set(await fetchFriendRequests());
+
+    // notifications
+    await setupNotificationsSocket();
+    notificationsState.set(await fetchUndreadNotifications());
   } catch {
-    window._currentUser = null;
-    if (window._pushNotificationSocket) {
-      window._pushNotificationSocket.close();
-      window._pushNotificationSocket = null;
-    }
+    userState.set(null);
   }
 };

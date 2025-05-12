@@ -86,16 +86,17 @@ export const isRequestAuthorizedHook = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
-    request.jwt = AuthProvider.ValidateJWT_Cookie(
+    const verification = AuthProvider.ValidateJWT_Cookie(
       request.headers.cookie as string
     );
-    // request.jwt = AuthProvider.ValidateJWT_AuthHeader(
-    //   request.headers.authorization as string
-    // );
+    if (typeof verification === "string")
+      request.jwt = AuthProvider.RefreshToken(verification, reply);
+    else
+      request.jwt = verification;
   } catch (error) {
     console.log(`ERROR: isRequestAuthorizedHook(): ${error}`);
     reply.code(401);
-    throw "request unauthorized";
+    return reply.send();
   }
 };
 

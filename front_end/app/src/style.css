@@ -1,10 +1,10 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   font-family: Inter, sans-serif;
-  font-feature-settings: "liga" 1, "calt" 1; /* fix for Chrome */
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -125,51 +125,74 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
+  body:has(navigation-bar) {
     @apply bg-background text-foreground;
   }
 
   #app {
-    @apply relative pb-8 md:pt-20 pt-16;
+    @apply relative;
+  }
+
+  #app:has(navigation-bar) {
+    @apply pb-8 md:pt-20 pt-16;
   }
 }
 
 @layer components {
   /* Base button */
-  button * {
+  button *,
+  a * {
     @apply pointer-events-none;
   }
 
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 py-2 cursor-pointer;
+  /* Button Variants */
+  .btn-primary {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-destructive {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .btn-outlined {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-secondary {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-ghost {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-link {
+    @apply whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 text-primary underline-offset-4 hover:underline;
+  }
+
+  /* Button Sizes */
+  .btn-lg {
+    @apply h-11 rounded-md px-8 [&_svg]:size-5 [&_svg]:shrink-0 text-lg;
+  }
+
+  .btn-base {
+    @apply h-10 px-4 py-2 [&_svg]:size-4 [&_svg]:shrink-0 text-sm; /* Default size */
   }
 
   .btn-sm {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 cursor-pointer h-8 px-3 text-xs;
+    @apply h-9 rounded-md px-3 py-2 text-xs [&_svg]:size-3 [&_svg]:shrink-0;
   }
 
-  /* Button variants */
-  .btn-primary {
-    @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-4;
-  }
-  .btn-destructive {
-    @apply bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90;
-  }
-  .btn-outlined {
-    @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-10;
-  }
-  .btn-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground;
-  }
-  .btn-link {
-    @apply text-primary underline-offset-4 hover:underline;
+  .btn-icon {
+    @apply h-10 w-10 [&_svg]:size-4 [&_svg]:shrink-0;
   }
 
-  /* Other components */
-  .label {
-    @apply block text-sm font-medium text-foreground;
-  }
+  /* Forms */
   .input {
-    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .label {
+    @apply block pb-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
   }
 }

@@ -7,7 +7,6 @@ import {
   UserRoles,
   users_table_name,
 } from "../types/DbTables";
-import { escapeHtml } from "../controllers/Common";
 
 class Databases {
   persistent: DatabaseSync;
@@ -61,7 +60,7 @@ class Databases {
   ): UserModel {
     const User: UserModel = {
       UID: crypto.randomUUID(),
-      username: escapeHtml(username) as string,
+      username: username,
       password_hash: password_hash,
       totp_enabled: 0,
       provider: UserProviders.PASSWD,

@@ -1,7 +1,11 @@
-import { navigateTo } from "~/components/app-router";
-import { User } from "~/api/user";
-import { showToast } from "~/components/toast";
-import { fetchWithAuth } from "~/api/auth";
+import { navigateTo } from '~/components/app-router';
+import { User } from '~/api/user';
+import { showToast } from '~/components/toast';
+import { fetchWithAuth } from '~/api/auth';
+import { html } from '~/lib/html';
+import '~/components/navbar/navigation-bar';
+import { friendRequestsState, userState } from '~/app-state';
+import { fetchFriendRequests } from '~/api/friends';
 
 enum FriendStatus {
   NONE,
@@ -17,62 +21,65 @@ interface ProfileState {
   pendingRequestId: string | null;
 }
 
-class ProfilePage extends HTMLElement {
+export default class ProfilePage extends HTMLElement {
   private state: ProfileState | null = null;
-
-  constructor() {
-    super();
-  }
+  private cleanupCallbacks = new Array<Function>();
 
   async loadProfileData(): Promise<ProfileState | null> {
-    if (!window._currentUser) {
-      navigateTo("/signin");
+    const currentUser = userState.get();
+    if (!currentUser) {
+      navigateTo('/signin');
       return null;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get("id");
-    const username = urlParams.get("username");
+    const userId = urlParams.get('id');
+    const username = urlParams.get('username');
 
     try {
-      let user: User;
+      let profileUser: User | null;
       if (userId || username) {
         const queryParam = username ? `uname=${username}` : `uid=${userId}`;
         const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
-          credentials: "include",
-          cache: "no-store",
+          credentials: 'include',
+          cache: 'no-store',
         });
 
         if (!res.ok) {
-          navigateTo("/profile");
+          navigateTo('/profile');
           return null;
         }
-        user = await res.json();
+        profileUser = await res.json();
       } else {
-        user = window._currentUser;
+        profileUser = currentUser;
       }
 
-      const isOwnProfile = user.UID === window._currentUser.UID;
+      if (!profileUser) {
+        navigateTo('/signin');
+        return null;
+      }
+
+      const isOwnProfile = profileUser.UID === currentUser.UID;
 
       if (isOwnProfile) {
         return {
-          user,
+          user: profileUser,
           isOwnProfile,
           friendStatus: FriendStatus.NONE,
           pendingRequestId: null,
         };
       }
 
-      const friendStatus = await this.getFriendStatus(user.UID);
+      const friendStatus = await this.getFriendStatus(profileUser.UID);
 
       return {
-        user,
+        user: profileUser,
         isOwnProfile,
         ...friendStatus,
       };
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      navigateTo("/profile");
+      console.error('Error fetching user data:', error);
+      navigateTo('/profile');
       return null;
     }
   }
@@ -81,9 +88,9 @@ class ProfilePage extends HTMLElement {
     targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
-      const friendsRes = await fetchWithAuth("/api/friends", {
-        credentials: "include",
-        cache: "no-store",
+      const friendsRes = await fetchWithAuth('/api/friends', {
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (friendsRes.ok) {
@@ -93,16 +100,14 @@ class ProfilePage extends HTMLElement {
         }
       }
 
-      const requestsRes = await fetchWithAuth("/api/friends/requests", {
-        credentials: "include",
-        cache: "no-store",
+      const requestsRes = await fetchWithAuth('/api/friends/requests', {
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (requestsRes.ok) {
         const requests = await requestsRes.json();
-        const incomingRequest = requests.find(
-          (request: any) => request.from_uid === targetUid
-        );
+        const incomingRequest = requests.find((request: any) => request.from_uid === targetUid);
 
         if (incomingRequest) {
           return {
@@ -112,19 +117,14 @@ class ProfilePage extends HTMLElement {
         }
       }
 
-      const sentRequestsRes = await fetchWithAuth(
-        "/api/friends/sent_requests",
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
+      const sentRequestsRes = await fetchWithAuth('/api/friends/sent_requests', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
 
       if (sentRequestsRes.ok) {
         const sentRequests = await sentRequestsRes.json();
-        const outgoingRequest = sentRequests.find(
-          (request: any) => request.to_uid === targetUid
-        );
+        const outgoingRequest = sentRequests.find((request: any) => request.to_uid === targetUid);
 
         if (outgoingRequest) {
           return {
@@ -136,22 +136,33 @@ class ProfilePage extends HTMLElement {
 
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     } catch (error) {
-      console.error("Error checking friend status:", error);
+      console.error('Error checking friend status:', error);
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     }
   }
 
   renderFriendActionButtons() {
-    if (!this.state || this.state.isOwnProfile) return "";
+    if (!this.state || this.state.isOwnProfile) return '';
 
     const { user, friendStatus, pendingRequestId } = this.state;
 
     switch (friendStatus) {
       case FriendStatus.FRIEND:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
-            <button class="btn btn-disabled" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            <button class="btn-ghost" disabled>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -164,7 +175,18 @@ class ProfilePage extends HTMLElement {
               data-action="remove"
               data-id="${user.UID}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <line x1="18" y1="8" x2="23" y2="13"></line>
@@ -176,14 +198,25 @@ class ProfilePage extends HTMLElement {
         `;
 
       case FriendStatus.PENDING_INCOMING:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
             <button
               class="btn btn-primary friend-action"
               data-action="accept"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
@@ -194,7 +227,18 @@ class ProfilePage extends HTMLElement {
               data-action="deny"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -204,10 +248,21 @@ class ProfilePage extends HTMLElement {
         `;
 
       case FriendStatus.PENDING_OUTGOING:
-        return /*html*/ `
+        return html`
           <div class="flex gap-2">
-            <button class="btn btn-disabled" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+            <button class="btn-ghost" disabled>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <path d="M20 6L9 17l-5-5"></path>
               </svg>
               <span>Request Sent</span>
@@ -217,7 +272,18 @@ class ProfilePage extends HTMLElement {
               data-action="cancel"
               data-id="${pendingRequestId}"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -227,13 +293,20 @@ class ProfilePage extends HTMLElement {
         `;
 
       default:
-        return /*html*/ `
-          <button
-            class="btn btn-outlined friend-action"
-            data-action="add"
-            data-id="${user.UID}"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+        return html`
+          <button class="btn btn-outlined friend-action" data-action="add" data-id="${user.UID}">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4"
+            >
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <line x1="19" y1="8" x2="19" y2="14"></line>
@@ -247,61 +320,61 @@ class ProfilePage extends HTMLElement {
 
   async handleFriendAction(action: string, id: string) {
     try {
-      let endpoint = "";
-      let successMessage = "";
+      let endpoint = '';
+      let successMessage = '';
 
       switch (action) {
-        case "add":
+        case 'add':
           endpoint = `/api/friends/request?uid=${id}`;
-          successMessage = "Friend request sent";
+          successMessage = 'Friend request sent';
           break;
-        case "accept":
+        case 'accept':
           endpoint = `/api/friends/accept?uid=${id}`;
-          successMessage = "Friend request accepted";
+          successMessage = 'Friend request accepted';
           break;
-        case "deny":
-        case "cancel":
+        case 'deny':
+        case 'cancel':
           endpoint = `/api/friends/deny?uid=${id}`;
           successMessage =
-            action === "deny"
-              ? "Friend request declined"
-              : "Friend request canceled";
+            action === 'deny' ? 'Friend request declined' : 'Friend request canceled';
           break;
-        case "remove":
+        case 'remove':
           endpoint = `/api/friends/remove?uid=${id}`;
-          successMessage = "Friend removed successfully";
+          successMessage = 'Friend removed successfully';
           break;
         default:
-          throw new Error("Invalid friend action");
+          throw new Error('Invalid friend action');
       }
 
       const response = await fetchWithAuth(endpoint, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
       });
 
       if (!response.ok) {
         throw new Error(`Failed to ${action} friend`);
       }
 
-      showToast({ type: "success", message: successMessage });
+      showToast({ type: 'success', message: successMessage });
       await this.render();
     } catch (error) {
       console.error(`Error with friend action (${action}):`, error);
       showToast({
-        type: "error",
+        type: 'error',
         message: `Failed to ${action} friend. Please try again.`,
       });
     }
+
+    friendRequestsState.set(await fetchFriendRequests());
   }
 
   setup() {
-    const buttons = this.querySelectorAll(".friend-action");
+    const buttons = this.querySelectorAll('.friend-action');
 
     buttons.forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const target = event.currentTarget as HTMLElement;
+      button.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
         const action = target.dataset.action;
         const id = target.dataset.id;
 
@@ -319,12 +392,12 @@ class ProfilePage extends HTMLElement {
     const { user, isOwnProfile } = this.state;
 
     const stats = [
-      { label: "Games Played", value: "42" },
-      { label: "Win Rate", value: "65%" },
-      { label: "Rank", value: "#12" },
+      { label: 'Games Played', value: '42' },
+      { label: 'Win Rate', value: '65%' },
+      { label: 'Rank', value: '#12' },
     ];
 
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container space-y-8 mt-16">
         <!-- Profile Header -->
@@ -335,41 +408,51 @@ class ProfilePage extends HTMLElement {
               alt="${user.username}"
               class="w-32 h-32 rounded-full ring ring-ring ring-offset-2 ring-offset-background object-cover"
             />
-            ${
-              isOwnProfile
-                ? /*html*/ `
-              <a href="/settings" class="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                  <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"></path>
-                </svg>
-              </a>
-            `
-                : ""
-            }
+            ${isOwnProfile
+              ? html`
+                  <a
+                    href="/settings"
+                    class="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                    >
+                      <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <path
+                        d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"
+                      ></path>
+                    </svg>
+                  </a>
+                `
+              : ''}
           </div>
           <div class="text-center space-y-1">
             <h1 class="text-2xl font-bold">${user.username}</h1>
-            <p class="text-muted-foreground">${user.bio || "No bio yet"}</p>
+            <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
-          <div class="flex gap-2">
-            ${!isOwnProfile ? this.renderFriendActionButtons() : ""}
-          </div>
+          <div class="flex gap-2">${!isOwnProfile ? this.renderFriendActionButtons() : ''}</div>
         </div>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          ${stats
-            .map(
-              (stat) => /*html*/ `
-            <div class="card border rounded-lg p-6 text-center">
-              <p class="text-2xl font-bold">${stat.value}</p>
-              <p class="text-sm text-muted-foreground">${stat.label}</p>
-            </div>
-          `
-            )
-            .join("")}
+          ${stats.map(
+            (stat) => html`
+              <div class="card border rounded-lg p-6 text-center">
+                <p class="text-2xl font-bold">${stat.value}</p>
+                <p class="text-sm text-muted-foreground">${stat.label}</p>
+              </div>
+            `
+          )}
         </div>
 
         <!-- Recent Activity -->
@@ -393,20 +476,25 @@ class ProfilePage extends HTMLElement {
                   <p class="text-sm font-medium">Lost against janedoe</p>
                   <p class="text-xs text-muted-foreground">5 hours ago</p>
                 </div>
-                <span class="text-sm font-medium text-destructive">-15 pts</span>
+                <span class="text-sm font-medium text-destructive"> -15 pts </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    `;
+    `);
 
     this.setup();
   }
 
   connectedCallback() {
     this.render();
+    this.cleanupCallbacks.push(friendRequestsState.subscribe(() => this.render()));
+  }
+
+  disconnectedCallback() {
+    this.cleanupCallbacks.forEach((cleanup) => cleanup());
   }
 }
 
-customElements.define("profile-page", ProfilePage);
+customElements.define('profile-page', ProfilePage);

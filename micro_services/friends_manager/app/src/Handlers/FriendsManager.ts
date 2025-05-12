@@ -129,15 +129,18 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   {
     const Notification: NotificationBody = {
       type: NotificationType.NewFriendRequest,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: RMqRequest.message
     }
-    const notificationRequest: RabbitMQRequest = {
-      id: '',
-      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+    const notificationRequest: RabbitMQResponse = {
+      req_id: '',
+      service: RabbitMQMicroServices.NOTIFICATIONS,
+      op: RabbitMQNotificationsOp.PING_USER as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: RMqRequest.message } as JWT
+      status: 200
     };
-    rabbitmq.sendToNotificationQueue(notificationRequest);
+    // Send directly to api gateway to ping the user and avoiding saving the notification to database.
+    rabbitmq.sendToAPIGatewayQueue(notificationRequest);
   }
   return RMqResponse;
 }
@@ -216,13 +219,14 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   {
     const Notification: NotificationBody = {
       type: NotificationType.FriendRequestAccepted,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: request.from_uid
     }
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: request.from_uid } as JWT
+      JWT: {} as JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }
@@ -271,13 +275,14 @@ function DenyFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   if (RMqRequest.JWT.sub == request.to_uid) {
     const Notification: NotificationBody = {
       type: NotificationType.FriendRequestDenied,
-      from_uid: RMqRequest.JWT.sub
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: request.from_uid
     }
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: { sub: request.from_uid } as JWT
+      JWT: {} as JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }
@@ -346,6 +351,20 @@ function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       }
     }
   }
+  {
+    const Notification: NotificationBody = {
+      type: NotificationType.FriendRemove,
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: RMqRequest.message
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: {} as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
+  }
   RMqResponse.message = "Friend removed successfully";
   RMqResponse.status = 200;
   return RMqResponse;
@@ -382,13 +401,14 @@ function PokeFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   const Notification: NotificationBody = {
     type: NotificationType.Poke,
-    from_uid: RMqRequest.JWT.sub
+    from_uid: RMqRequest.JWT.sub,
+    to_uid: RMqRequest.message
   }
   const notificationRequest: RabbitMQRequest = {
     id: '',
     op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
     message: JSON.stringify(Notification),
-    JWT: { sub: RMqRequest.message } as JWT
+    JWT: {} as JWT
   };
   rabbitmq.sendToNotificationQueue(notificationRequest);
   RMqResponse.message = "Poke registred";

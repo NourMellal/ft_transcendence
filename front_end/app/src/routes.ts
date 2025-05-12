@@ -1,57 +1,59 @@
+type LazyLoadedPage = () => Promise<{ default: CustomElementConstructor }>;
+
 type Route = {
   pathname: string;
-  component: string;
+  component: LazyLoadedPage;
   title?: string;
 };
 
 export const routes: Route[] = [
   {
-    pathname: "/",
-    component: "home-page",
+    pathname: '/',
+    component: () => import('./pages/home'),
   },
   {
-    pathname: "/signin",
-    component: "signin-page",
-    title: "Sign-in",
+    pathname: '/signin',
+    component: () => import('./pages/auth/signin'),
+    title: 'Sign-in',
   },
   {
-    pathname: "/signup",
-    component: "signup-page",
-    title: "Sign-up",
+    pathname: '/signup',
+    component: () => import('./pages/auth/signup'),
+    title: 'Sign-up',
   },
   {
-    pathname: "/2fa/verify",
-    component: "totp-verify-page",
-    title: "Two Factor Authentication",
+    pathname: '/2fa/verify',
+    component: () => import('./pages/auth/totp'),
+    title: 'Two Factor Authentication',
   },
   {
-    pathname: "/profile",
-    component: "profile-page",
-    title: "Profile",
+    pathname: '/profile',
+    component: () => import('./pages/user/profile'),
+    title: 'Profile',
   },
   {
-    pathname: "/settings",
-    component: "settings-page",
-    title: "Settings",
+    pathname: '/settings',
+    component: () => import('./pages/user/settings'),
+    title: 'Settings',
   },
   {
-    pathname: "/chat",
-    component: "chat-page",
-    title: "Chat",
+    pathname: '/chat',
+    component: () => import('./pages/user/chat'),
+    title: 'Chat',
   },
   {
-    pathname: "/leaderboard",
-    component: "leaderboard-page",
-    title: "LeaderBoard",
+    pathname: '/leaderboard',
+    component: () => import('./pages/leaderboard'),
+    title: 'LeaderBoard',
   },
   {
-    pathname: "/play",
-    component: "play-page",
-    title: "Play",
+    pathname: '/play',
+    component: () => import('./pages/user/play'),
+    title: 'Play',
   },
   {
-    pathname: "*",
-    component: "not-found",
-    title: "404 - Not Found",
+    pathname: '*',
+    component: () => import('./pages/not-found'),
+    title: '404 - Not Found',
   },
 ];

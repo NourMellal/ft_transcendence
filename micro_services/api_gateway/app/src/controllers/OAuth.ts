@@ -98,10 +98,10 @@ export const AuthenticateUser = async (
     const { state, code } = request.query;
     const created = AuthProvider.GoogleSignInStates.get(state);
     if (!created)
-      return reply.code(401).send(`state_code=${state} is invalid.`);
+      return reply.code(400).send(`state_code=${state} is invalid.`);
     AuthProvider.GoogleSignInStates.delete(state);
     if (Date.now() / 1000 - created > state_expiree_sec)
-      return reply.code(401).send(`state_code=${state} has been expired.`);
+      return reply.code(400).send(`state_code=${state} has been expired.`);
     var OAuthRes = await OAuthExchangeCode(code);
     const getUserQuery = db.persistent.prepare(
       `SELECT * FROM '${users_table_name}' WHERE UID = ?;`

@@ -1,0 +1,28 @@
+import { raw } from '~/lib/html';
+import BellSvg from './bell.svg?raw';
+import CogSvg from './cog.svg?raw';
+import GoogleSvg from './google.svg?raw';
+import LoadingSvg from './loading.svg?raw';
+import LockSvg from './lock.svg?raw';
+import LogoutSvg from './logout.svg?raw';
+import MenuSvg from './menu.svg?raw';
+import MoonSvg from './moon.svg?raw';
+import RocketSvg from './rocket.svg?raw';
+import SunSvg from './sun.svg?raw';
+import UserSvg from './user.svg?raw';
+import UsersSvg from './users.svg?raw';
+import XSvg from './x.svg?raw';
+
+export const BellIcon = raw(BellSvg);
+export const CogIcon = raw(CogSvg);
+export const GoogleIcon = raw(GoogleSvg);
+export const LoadingIcon = raw(LoadingSvg);
+export const LockIcon = raw(LockSvg);
+export const LogoutIcon = raw(LogoutSvg);
+export const MenuIcon = raw(MenuSvg);
+export const MoonIcon = raw(MoonSvg);
+export const RocketIcon = raw(RocketSvg);
+export const SunIcon = raw(SunSvg);
+export const UserIcon = raw(UserSvg);
+export const UsersIcon = raw(UsersSvg);
+export const XIcon = raw(XSvg);

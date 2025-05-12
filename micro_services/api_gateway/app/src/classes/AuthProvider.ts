@@ -2,6 +2,9 @@ import crypto from "crypto";
 import { JWT, JWTHeaders, JWTKeyCert } from "../types/AuthProvider";
 import { GoogleDiscoveryDocument } from "../types/OAuth";
 import JWTFactory from "./JWTFactory";
+import db from "./Databases";
+import { refresh_token_table_name, RefreshTokenModel } from "../types/DbTables";
+import { FastifyReply } from "fastify";
 
 class OAuthProvider {
   isReady: boolean = false;
@@ -43,18 +46,49 @@ class OAuthProvider {
       process.exit(1);
     }
   }
-  public ValidateJWT_Cookie(RawCookie: string): JWT {
+  public RefreshToken(refresh_token: string, reply: FastifyReply): JWT {
+    const query = db.persistent.prepare(
+      `SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`
+    );
+    const res = query.get(refresh_token) as
+      | RefreshTokenModel
+      | undefined;
+    if (!res) throw `Error RefreshToken(): bad refresh_token!`;
+    const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
+    const token = AuthProvider.jwtFactory.SignJWT(jwt);
+    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    reply.raw.setHeader(
+      "set-cookie", `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    );
+    return jwt;
+  }
+  public ValidateJWT_Cookie(RawCookie: string): JWT | string {
     if (!this.isReady)
       throw `Error ValidateJWT_Cookie(): OAuthProvider class is not ready!`;
     const cookies = RawCookie.split(";");
+    let jwt: JWT | null = null;
+    let refresh_token: string | null = null;
     for (let i = 0; i < cookies.length; i++) {
       const cookie_part = cookies[i].split("=");
-      if (cookie_part[0] !== "jwt") continue;
-      if (cookie_part.length !== 2)
-        throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
-      return this.ValidateJWT_Token(cookie_part[1]);
+      if (cookie_part[0] === "jwt") {
+        if (cookie_part.length !== 2)
+          throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
+        jwt = this.ValidateJWT_Token(cookie_part[1]);
+      }
+      if (cookie_part[0] === "refresh_token") {
+        if (cookie_part.length !== 2)
+          throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
+        refresh_token = cookie_part[1];
+      }
     }
-    throw `Error ValidateJWT_Cookie(): bad cookies!`;
+    if (!jwt)
+      throw `Error ValidateJWT_Cookie(): bad cookies!`;
+    if (jwt.exp <= Date.now() / 1000)
+      if (!refresh_token)
+        throw `Error ValidateJWT_Cookie(): expired JWT and no refresh_token provided!`;
+      else
+        return refresh_token;
+    return jwt;
   }
   public ValidateJWT_AuthHeader(header: string): JWT {
     if (!this.isReady)
@@ -98,15 +132,13 @@ class OAuthProvider {
       throw `Error ValidateJWT_Token(): invalid JWT issuer`;
     if (jwt.aud !== process.env.GOOGLE_CLIENT_ID)
       throw `Error ValidateJWT_Token(): invalid JWT audience`;
-    if (jwt.exp <= Date.now() / 1000)
-      throw `Error ValidateJWT_Token(): expired JWT token`;
     return jwt;
   }
 }
 
 const AuthProvider = new OAuthProvider(
   process.env.GOOGLE_DISCOVERY_DOCUMENT_URL ||
-    "https://accounts.google.com/.well-known/openid-configuration"
+  "https://accounts.google.com/.well-known/openid-configuration"
 );
 
 export default AuthProvider;

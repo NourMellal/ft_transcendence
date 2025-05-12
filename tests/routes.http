@@ -115,18 +115,6 @@ send 6 digits totp code to get jwt
 
 ###### START REFRESH TOKEN TESTs ######
 
-# exchange refresh token for jwt token: (No authorization required)
-POST https://transcendence.fr/api/jwt/refresh
-Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
-
---boundary13132121321H_4zdzdz90dlzkn
-Content-Disposition: form-data; name="refresh_token"
-
-send refresh token here
---boundary13132121321H_4zdzdz90dlzkn--
-
-###
-
 # List active connections: (Authorization required)
 GET https://transcendence.fr/api/jwt/list
 #Cookie: jwt={{jwt_token}}
@@ -307,6 +295,65 @@ Sec-WebSocket-Protocol: {{jwt_token}}
 
 ###### END NOTIFICATION TESTs ######
 
+
+
+###### START LEADERBOARD TESTs (Authorization required) ######
+
+# Get leaderboard rank for all users:
+GET https://transcendence.fr/api/leaderboard/list
+#Cookie: jwt={{jwt_token}}
+
+
+###
+
+# Get leaderboard rank for current user:
+GET https://transcendence.fr/api/leaderboard/myrank
+#Cookie: jwt={{jwt_token}}
+
+###### END LEADERBOARD TESTs ######
+
+###### START MATCH MANAGER TESTs (Authorization required) ######
+
+# Get match history for a specific user:
+GET https://transcendence.fr/api/match/history?uid=
+#Cookie: jwt={{jwt_token}}
+
+
+###
+# Get match history for a current user:
+GET https://transcendence.fr/api/match/history
+#Cookie: jwt={{jwt_token}}
+
+###
+# Create a new match with type (see MatchTypeEnum for available match types):
+POST https://transcendence.fr/api/match/create?match_type=
+#Cookie: jwt={{jwt_token}}
+
+###
+# Win a match by uid:
+POST https://transcendence.fr/api/match/win
+#Cookie: jwt={{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="match_uid"
+
+put_match_uid_here
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+# Lose a match by uid:
+POST https://transcendence.fr/api/match/lose
+#Cookie: jwt={{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="match_uid"
+
+put_match_uid_here
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###### END MATCH MANAGER TESTs ######
 
 
 @jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token

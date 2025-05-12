@@ -1,32 +1,16 @@
-import { navigateTo } from "~/components/app-router";
+import { userState } from '~/app-state';
+import { navigateTo } from '~/components/app-router';
 
-async function refreshToken() {
-  return await fetch("/api/auth/refresh", {
-    method: "POST",
-    credentials: "include",
-  });
-}
-
-export const fetchWithAuth = async (
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> => {
+export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const response = await fetch(url, {
     ...options,
-    credentials: "include",
+    credentials: 'include',
+    cache: 'no-store',
   });
 
   if (response.status === 401) {
-    const refreshRes = await refreshToken();
-    if (refreshRes.status === 401) {
-      navigateTo("/signin");
-      return refreshRes;
-    }
-
-    return fetch(url, {
-      ...options,
-      credentials: "include",
-    });
+    userState.set(null);
+    navigateTo('/signin');
   }
 
   return response;

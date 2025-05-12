@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
   refresh_token_table_name,
-  RefreshTokenModel,
   state_expiree_sec,
   UserModel,
   users_table_name,
@@ -18,7 +17,6 @@ import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
 import {
   CreateRefreshToken,
-  escapeHtml,
   GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
 } from "./Common";
@@ -34,7 +32,7 @@ export const IsDisplayNameAvailable = async (
     const query = db.persistent.prepare(
       `SELECT username FROM '${users_table_name}' where username = ? ;`
     );
-    const res = query.get(escapeHtml(username));
+    const res = query.get(username);
     if (res === undefined) return reply.code(200).send();
     return reply.code(406).send();
   } catch (error) {
@@ -141,7 +139,7 @@ export const SignInStandardUser = async (
       `SELECT * from '${users_table_name}' WHERE username = ? AND password_hash = ? ;`
     );
     const res = query.get(
-      escapeHtml(username.field_value),
+      username.field_value,
       hasher.digest().toString()
     ) as UserModel;
     if (res) {
@@ -187,19 +185,19 @@ export const Verify2FACode = async (
 ) => {
   if (!request.is_valid_multipart) return reply.code(400).send("bad request");
   const state = Totp.states.get(request.query.state);
-  if (!state) return reply.code(401).send("request unauthorized");
+  if (!state) return reply.code(400).send("request unauthorized");
   if (Date.now() / 1000 - state.created > state_expiree_sec) {
     Totp.states.delete(request.query.state);
-    return reply.code(401).send("request expired");
+    return reply.code(400).send("request expired");
   }
   const requestCode: multipart_fields | undefined = request.fields.find(
     (field: multipart_fields, i) => field.field_name === "code"
   );
   if (!requestCode || requestCode.field_value.length !== 6)
-    return reply.code(401).send("invalid totp_code");
+    return reply.code(400).send("invalid totp_code");
   const code = Totp.generateTOTP(state.totp_key);
   if (code !== requestCode.field_value)
-    return reply.code(401).send("invalid totp_code");
+    return reply.code(400).send("invalid totp_code");
   try {
     const refresh_token = CreateRefreshToken(state.UID, request.ip);
     Totp.states.delete(request.query.state);
@@ -221,31 +219,6 @@ export const Verify2FACode = async (
     console.log(error);
     return reply.code(500).redirect("internal server error");
   }
-};
-
-export const RefreshToken = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
-  if (!request.is_valid_multipart) return reply.code(400).send("bad request");
-  const refresh_token: multipart_fields | undefined = request.fields.find(
-    (field: multipart_fields, i) => field.field_name === "refresh_token"
-  );
-  if (!refresh_token) return reply.code(400).send("bad request");
-  const query = db.persistent.prepare(
-    `SELECT * FROM '${refresh_token_table_name}' WHERE token = ? ;`
-  );
-  const res = query.get(refresh_token.field_value) as
-    | RefreshTokenModel
-    | undefined;
-  if (!res) return reply.code(401).send("request unauthorized");
-  const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, "", "");
-  const token = AuthProvider.jwtFactory.SignJWT(jwt);
-  const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-  reply.headers({
-    "set-cookie": `jwt=${token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`,
-  });
-  return reply.code(200).send();
 };
 
 export const ListActiveConnection = async (
@@ -294,7 +267,8 @@ export const LogOutCurrentUser = async (
       `DELETE FROM ${refresh_token_table_name} WHERE UID = ? AND token = ?`
     );
     const res = query.run(request.jwt.sub, refresh_token);
-    if (res.changes !== 1) return reply.code(400).send("bad request");
+    // This check is unneccessary in case a user revoked all active session
+    // if (res.changes !== 1) return reply.code(400).send("bad request");
   }
   reply.raw.appendHeader("set-cookie", `jwt=; Path=/; Secure; HttpOnly`);
   reply.raw.appendHeader(

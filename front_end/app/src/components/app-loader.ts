@@ -1,39 +1,33 @@
-import LoadingIcon from "~/icons/loading.svg?raw";
+import { LoadingIcon } from '~/icons';
+import { html } from '~/lib/html';
 
 class AppLoader extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   render() {
-    this.innerHTML = /*html*/ `
+    this.replaceChildren(html`
       <div class="z-50 fixed inset-0 bg-background flex items-center justify-center">
-        <div class='flex flex-col gap-2'>
+        <div class="flex flex-col gap-2">
           ${LoadingIcon}
           <p>Loading...</p>
         </div>
       </div>
-    `;
+    `);
+    this.firstElementChild?.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 300,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
   }
 
   connectedCallback() {
     this.render();
-    this.firstElementChild?.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 300,
-      easing: "ease-in-out",
-      fill: "forwards",
-    });
   }
 
   remove() {
-    const animation = this.firstElementChild?.animate(
-      [{ opacity: 1 }, { opacity: 0 }],
-      {
-        duration: 300,
-        easing: "ease-in-out",
-        fill: "forwards",
-      }
-    );
+    const animation = this.firstElementChild?.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 300,
+      easing: 'ease-in-out',
+      fill: 'forwards',
+    });
 
     if (animation) {
       animation.onfinish = () => {
@@ -43,4 +37,4 @@ class AppLoader extends HTMLElement {
   }
 }
 
-customElements.define("app-loader", AppLoader);
+customElements.define('app-loader', AppLoader);

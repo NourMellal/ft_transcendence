@@ -5,6 +5,8 @@ export enum RabbitMQMicroServices {
   USER_MANAGER,
   FRIENDS_MANAGER,
   NOTIFICATIONS,
+  Leaderboard,
+  match_manager
 }
 
 export enum RabbitMQNotificationsOp {
@@ -18,6 +20,7 @@ export enum RabbitMQNotificationsOp {
 
 export enum NotificationType {
   NewFriendRequest = 1,
+  FriendRemove,
   FriendRequestAccepted,
   FriendRequestDenied,
   GameInvite,
@@ -26,7 +29,13 @@ export enum NotificationType {
 
 export type NotificationBody = {
   type: NotificationType,
-  from_uid: string
+  from_uid: string,
+  to_uid: string
+}
+
+export type NotificationPing = {
+  UserUID: string,
+  type: number
 }
 
 export type RabbitMQRequest = {
