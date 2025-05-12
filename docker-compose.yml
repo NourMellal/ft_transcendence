@@ -9,6 +9,14 @@ services:
     networks:
       - ft_transcendence
     restart: always
+  vault:
+    container_name: vault
+    build: vault
+    volumes:
+      - vault_storage:/vault_storage:rw
+    networks:
+      - ft_transcendence
+    restart: always
   rabbitmq:
     container_name: rabbitmq
     build:
@@ -159,3 +167,10 @@ volumes:
       type: "none"
       o: "bind"
       device: "${HOME}/docker_volumes/rabbit_mq_log_volume"
+  vault_storage:
+    name: vault_storage
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/vault_storage"

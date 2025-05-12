@@ -29,11 +29,13 @@ create_volumes_dir:
 	@mkdir -p /home/${VOL_USER}/docker_volumes/match_manager_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/static_data_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/rabbit_mq_log_volume
+	@mkdir -p /home/${VOL_USER}/docker_volumes/vault_storage
 #Set host to fake route domains used to localhost
 set-host-and-permission:
-	@if ! grep -q "www.transcendence.fr" /etc/hosts; then \
+	@if ! grep -q "vault.transcendence.fr" /etc/hosts; then \
 		sudo sh -c 'echo "127.0.0.1	www.transcendence.fr" >> /etc/hosts'; \
 		sudo sh -c 'echo "127.0.0.1 transcendence.fr" >> /etc/hosts'; \
+		sudo sh -c 'echo "127.0.0.1 vault.transcendence.fr" >> /etc/hosts'; \
 	fi
 #View running services
 ps:
