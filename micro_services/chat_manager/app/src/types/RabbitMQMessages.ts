@@ -10,29 +10,36 @@ export enum RabbitMQMicroServices {
   chat_manager,
 }
 
-export enum RabbitMQLeaderboardOp {
-  ADD_WIN = 1,
-  ADD_LOSS,
-  LIST_ALL_RANK,
-  LIST_USER_RANK,
+export enum RabbitMQChatManagerOp {
+  SEND_MESSAGE = 1,
+  CREATE_CONVERSATION,
+  READ_CONVERSATION,
+  LIST_CONVERSATIONS,
+  BLOCK_LIST,
+  BLOCK,
+  UNBLOCK,
 }
 
-export enum RabbitMQMatchManagerOp {
-  CREATE_MATCH = 1,
-  LIST_MATCHS,
-  WIN_MATCH,
-  LOSE_MATCH,
+export type ChatMessage = {
+  uid : string;
+  name? : string;
+  message : string;
+}
+
+export type ConversationReadRequest = {
+  uid : string;
+  page : number;
 }
 
 export type RabbitMQRequest = {
-  op: RabbitMQMatchManagerOp;
+  op: RabbitMQChatManagerOp;
   message?: string;
   id: string;
   JWT: JWT;
 };
 
 export type RabbitMQResponse = {
-  op: RabbitMQMatchManagerOp;
+  op: RabbitMQChatManagerOp;
   status: number;
   message?: string;
   req_id: string;

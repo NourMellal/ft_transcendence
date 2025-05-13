@@ -29,6 +29,8 @@ services:
         RABBITMQ_LEADERBOARD_PASSWORD: ${RABBITMQ_LEADERBOARD_PASSWORD}
         RABBITMQ_MATCH_MANAGER_USER: ${RABBITMQ_MATCH_MANAGER_USER}
         RABBITMQ_MATCH_MANAGER_PASSWORD: ${RABBITMQ_MATCH_MANAGER_PASSWORD}
+        RABBITMQ_CHAT_MANAGER_USER: ${RABBITMQ_CHAT_MANAGER_USER}
+        RABBITMQ_CHAT_MANAGER_PASSWORD: ${RABBITMQ_CHAT_MANAGER_PASSWORD}
     volumes:
       - rabbit_mq_log_volume:/var/log/rabbitmq:rw
     networks:
@@ -83,6 +85,14 @@ services:
     build: ./micro_services/match_manager
     volumes:
       - match_manager_db_volume:/database:rw
+    networks:
+      - ft_transcendence
+    restart: always
+  chat_manager:
+    container_name: chat_manager
+    build: ./micro_services/chat_manager
+    volumes:
+      - chat_manager_db_volume:/database:rw
     networks:
       - ft_transcendence
     restart: always
@@ -145,6 +155,13 @@ volumes:
       type: "none"
       o: "bind"
       device: "${HOME}/docker_volumes/match_manager_db_volume"
+  chat_manager_db_volume:
+    name: chat_manager_db_volume
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${HOME}/docker_volumes/chat_manager_db_volume"
   static_data_volume:
     name: static_data_volume
     driver: local
