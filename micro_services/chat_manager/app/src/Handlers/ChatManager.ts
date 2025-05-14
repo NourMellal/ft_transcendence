@@ -268,35 +268,27 @@ function RenameConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {
     case RabbitMQChatManagerOp.BLOCK: {
-      console.log('Received operation: BLOCK')
       return BlockUser(RMqRequest);
     }
     case RabbitMQChatManagerOp.UNBLOCK: {
-      console.log('Received operation: UNBLOCK')
       return UnblockUser(RMqRequest);
     }
     case RabbitMQChatManagerOp.BLOCK_LIST: {
-      console.log('Received operation: BLOCK_LIST')
       return ListBlockedUsers(RMqRequest);
     }
     case RabbitMQChatManagerOp.SEND_MESSAGE: {
-      console.log('Received operation: SEND_MESSAGE')
       return SendMessageToConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.CREATE_CONVERSATION: {
-      console.log('Received operation: CREATE_CONVERSATION')
       return CreateConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.RENAME_CONVERSATION: {
-      console.log('Received operation: RENAME_CONVERSATION')
       return RenameConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.LIST_CONVERSATIONS: {
-      console.log('Received operation: LIST_CONVERSATIONS')
       return ListConversations(RMqRequest);
     }
     case RabbitMQChatManagerOp.READ_CONVERSATION: {
-      console.log('Received operation: READ_CONVERSATION')
       return ReadConversation(RMqRequest);
     }
     default: {
