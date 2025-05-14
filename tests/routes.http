@@ -436,6 +436,9 @@ GET https://transcendence.fr/api/chat/read?uid=XXX&page=2
 
 ###### END CHAT MANAGER TESTs ######
 
+# Check if a user is online 200 for active 404 inactive:
+GET https://transcendence.fr/api/user/status?uid=
+#Cookie: jwt={{jwt_token}}
 
 
 @jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token

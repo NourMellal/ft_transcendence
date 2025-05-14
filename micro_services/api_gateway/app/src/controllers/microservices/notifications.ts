@@ -165,3 +165,14 @@ export const PokeFriend = async (
     reply.raw.end(response.message);
   });
 };
+
+export const GetUserActiveStatus = async (
+  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  reply: FastifyReply
+) => {
+  const sockets = PushNotificationSocketsMap.get(request.query.uid);
+  if (sockets && sockets.length > 0) {
+    return reply.code(200).send('online');
+  }
+  return reply.code(404).send('offline');
+}

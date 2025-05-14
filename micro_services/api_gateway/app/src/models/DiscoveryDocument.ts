@@ -256,6 +256,13 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
+    GetUserActiveStatus:{
+      description: "HTTP: Get a user active status. (200 for active 404 inactive)",
+      route: "/api/user/status",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
   },
   LeaderboardRoutes: {
     ListAllRank: {
