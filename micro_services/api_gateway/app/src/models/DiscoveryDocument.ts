@@ -314,6 +314,72 @@ export const discoveryDocument = {
       method: "POST",
     },
   },
+  ChatManagerRoutes: {
+    CreateConversation: {
+      description: "HTTP: Create a new conversation.",
+      route: "/api/chat/new",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      multipart_params: [
+        { name: "name", description: "Name to give to the conversation", type: "text/plain", constraint: "1~32 chars" },
+        { name: "to_uid", description: "user uid to add to conversation", type: "text/plain" },
+        { name: "message", description: "message to send", type: "text/plain" },
+      ],
+      method: "POST",
+    },
+    RenameConversation: {
+      description: "HTTP: Create a new conversation.",
+      route: "/api/chat/rename",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      QueryParams: [{ name: "uid" }],
+      multipart_params: [
+        { name: "name", description: "New name to give to the conversation", type: "text/plain", constraint: "1~32 chars" },
+      ],
+      method: "POST",
+    },
+    SendMessageToConversation: {
+      description: "HTTP: send a message to a conversation.",
+      route: "/api/chat/send",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      QueryParams: [{ name: "uid", description: "conversation uid"}],
+      multipart_params: [
+        { name: "message", description: "message to send", type: "text/plain" },
+      ],
+      method: "POST",
+    },
+    BlockUser: {
+      description: "HTTP: Block user by uid.",
+      route: "/api/chat/block",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "POST",
+    },
+    UnBlockUser: {
+      description: "HTTP: Unblock user by uid.",
+      route: "/api/chat/unblock",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "POST",
+    },
+    ListBlocked: {
+      description: "HTTP: Get current user's block list.",
+      route: "/api/chat/blocked",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+    ListConversations: {
+      description: "HTTP: list conversations with their ids and names and both users uids involving the user.",
+      route: "/api/chat/list",
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+    ReadConversation: {
+      description: "HTTP: Get a conversation messages by uid and page.",
+      route: "/api/chat/read",
+      QueryParams: [{ name: "uid" }, { name: "page" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
+  },
 };
 
 export const discoveryDocumentSerialized = JSON.stringify(discoveryDocument);

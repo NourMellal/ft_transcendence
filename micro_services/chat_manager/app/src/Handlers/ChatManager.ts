@@ -94,15 +94,18 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
       response.message = 'bad request';
       return response;
     }
-  }
-  {
-    // Check block:
-    const query = db.persistent.prepare(`SELECT users_uid FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
-    const res = query.all(`${RMqRequest.JWT.sub}:${request.uid}`, `${request.uid}:${RMqRequest.JWT.sub}`);
-    if (res.length !== 0) {
-      response.status = 400;
-      response.message = 'bad request';
-      return response;
+    {
+      let other_uid = res.uid_1;
+      if (other_uid === RMqRequest.JWT.sub)
+        other_uid = res.uid_2;
+      // Check block:
+      const block_query = db.persistent.prepare(`SELECT users_uid FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
+      const block_res = block_query.all(`${RMqRequest.JWT.sub};${other_uid}`, `${other_uid};${RMqRequest.JWT.sub}`);
+      if (block_res.length !== 0) {
+        response.status = 400;
+        response.message = 'bad request';
+        return response;
+      }
     }
   }
   const query = db.persistent.prepare(`INSERT INTO ? (uid , user_uid, message_text, time) VALUES (?,?,?,?);`);
@@ -120,6 +123,7 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
   return response;
 }
 
+// HINT: assumes request.uid is a valid user's uid
 function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   if (!RMqRequest.message)
     throw 'Invalid request';
@@ -131,6 +135,8 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   let request: ChatMessage;
   try {
     request = JSON.parse(RMqRequest.message) as ChatMessage;
+    if (request.uid === RMqRequest.JWT.sub || !request.name || request.name.length === 0 || request.name.length > 32)
+      throw 'invalid conversation data';
   } catch (error) {
     response.status = 400;
     response.message = 'bad request';
@@ -139,7 +145,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   {
     // Check block:
     const query = db.persistent.prepare(`SELECT users_uid FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
-    const res = query.all(`${RMqRequest.JWT.sub}:${request.uid}`, `${request.uid}:${RMqRequest.JWT.sub}`);
+    const res = query.all(`${RMqRequest.JWT.sub};${request.uid}`, `${request.uid};${RMqRequest.JWT.sub}`);
     if (res.length !== 0) {
       response.status = 400;
       response.message = 'bad request';
@@ -149,7 +155,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   const conversation_uid = crypto.randomUUID();
   {
     const query = db.persistent.prepare(`INSERT INTO ${conversations_table_name} (UID , name, uid_1, uid_2, started) VALUES (?,?,?,?,?);`);
-    const res = query.run(conversation_uid, request.name as string, RMqRequest.JWT.sub, request.uid, Date.now() / 1000);
+    const res = query.run(conversation_uid, request.name, RMqRequest.JWT.sub, request.uid, Date.now() / 1000);
     if (res.changes !== 1) {
       response.status = 400;
       response.message = 'bad request';
@@ -182,7 +188,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     // Send a notification
   }
   response.status = 200;
-  response.message = 'MessageSent';
+  response.message = conversation_uid;
   return response;
 }
 
@@ -228,6 +234,33 @@ function ReadConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
 }
+
+function RenameConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  if (!RMqRequest.message)
+    throw 'Invalid request';
+  let response = {
+    req_id: RMqRequest.id,
+    op: RabbitMQChatManagerOp.RENAME_CONVERSATION,
+    service: RabbitMQMicroServices.chat_manager,
+  } as RabbitMQResponse;
+  try {
+    let request = JSON.parse(RMqRequest.message) as ChatMessage;
+    if (!request.name || request.name.length === 0 || request.name.length > 32)
+      throw 'invalid new conversation name';
+    const query = db.persistent.prepare(`UPDATE ${conversations_table_name} SET name = ? WHERE UID = ? AND ( uid_1 = ? OR uid_2 = ?)`);
+    const res = query.run(request.name, request.uid, RMqRequest.JWT.sub, RMqRequest.JWT.sub);
+    if (res.changes !== 1)
+      throw 'invalid permission or conversation uid';
+    response.status = 200;
+    response.message = 'conversation renamed';
+    return response;
+  } catch (error) {
+    response.status = 400;
+    response.message = 'bad request';
+    return response;
+  }
+}
+
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {
     case RabbitMQChatManagerOp.BLOCK: {
@@ -244,6 +277,9 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     }
     case RabbitMQChatManagerOp.CREATE_CONVERSATION: {
       return CreateConversation(RMqRequest);
+    }
+    case RabbitMQChatManagerOp.RENAME_CONVERSATION: {
+      return RenameConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.LIST_CONVERSATIONS: {
       return ListConversations(RMqRequest);
