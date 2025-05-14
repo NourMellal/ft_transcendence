@@ -16,6 +16,7 @@ import {
 import ParseMultipart from "./controllers/multipart";
 import LeaderboardRoutes from "./routes/microservices/leaderboard";
 import MatchManagerRoutes from "./routes/microservices/match_manager";
+import ChatManagerRoutes from "./routes/microservices/chat_manager";
 
 db.init();
 AuthProvider.init();
@@ -38,6 +39,7 @@ app.register(FriendsManagerRoutes);
 app.register(NotificationRoutes);
 app.register(LeaderboardRoutes);
 app.register(MatchManagerRoutes);
+app.register(ChatManagerRoutes);
 
 app.listen({ port: port, host: "0.0.0.0" }, (err, addr) => {
   if (err) {

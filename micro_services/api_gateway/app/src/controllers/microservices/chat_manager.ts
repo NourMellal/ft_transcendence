@@ -16,6 +16,7 @@ export const ListConversations = async (
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
         reply.raw.statusCode = response.status;
+        reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);
     })
 }
@@ -24,7 +25,7 @@ export const ReadConversation = async (
     request: FastifyRequest<{ Querystring: { uid: string, page: number } }>,
     reply: FastifyReply
 ) => {
-    if (!request.query.uid || !request.query.page || request.query.uid.length === 0)
+    if (!request.query.uid || request.query.uid.length === 0)
         return reply.code(400).send('bad request');
     reply.hijack();
     const ReadRequest: ConversationReadRequest = {
@@ -38,6 +39,7 @@ export const ReadConversation = async (
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
         reply.raw.statusCode = response.status;
+        reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);
     })
 }
@@ -53,6 +55,7 @@ export const ListBlocked = async (
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
         reply.raw.statusCode = response.status;
+        reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);
     })
 }
@@ -79,7 +82,7 @@ export const CreateConversation = async (
     if (!message || !message.field_value)
         return reply.code(400).send('bad request');
     const query = db.persistent.prepare(`SELECT UID FROM ${users_table_name} WHERE UID = ? ;`);
-    const res = query.all(to_uid);
+    const res = query.all(to_uid.field_value);
     if (res.length === 0)
         return reply.code(400).send('bad request');
     reply.hijack();
@@ -185,7 +188,7 @@ export const UnBlockUser = async (
     reply.hijack();
     const RMQrequest: RabbitMQRequest = {
         JWT: request.jwt,
-        op: RabbitMQChatManagerOp.BLOCK,
+        op: RabbitMQChatManagerOp.UNBLOCK,
         message: request.query.uid
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {

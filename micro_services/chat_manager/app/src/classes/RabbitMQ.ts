@@ -18,7 +18,7 @@ class RabbitMQ {
   connection: amqp.ChannelModel;
   channel: amqp.Channel;
   api_gateway_queue = process.env.RABBITMQ_API_GATEWAY_QUEUE_NAME as string;
-  chat_manager = process.env.RABBITMQ_CHAT_MANAGER_NAME as string;
+  chat_manager = process.env.RABBITMQ_CHAT_MANAGER_QUEUE_NAME as string;
   constructor() {
     this.connection = {} as amqp.ChannelModel;
     this.channel = {} as amqp.Channel;
@@ -68,7 +68,7 @@ class RabbitMQ {
     }
     try {
       const RMqResponse = HandleMessage(RMqRequest);
-      if (!RMqRequest.id || RMqRequest.id === "")
+      if (RMqRequest.id && RMqRequest.id !== "")
         rabbitmq.sendToAPIGatewayQueue(RMqResponse);
     } catch (error) {
       console.log(

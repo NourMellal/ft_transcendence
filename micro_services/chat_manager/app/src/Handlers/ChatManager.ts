@@ -24,16 +24,19 @@ function BlockUser(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     response.message = 'invalid request';
     return response;
   }
-  const query = db.persistent.prepare(`INSERT INTO ${block_table_name} ( UID , user_uid , blocked_uid ) VALUES ( ? , ? );`);
-  const res = query.run(`${RMqRequest.JWT.sub};${RMqRequest.message}`, RMqRequest.JWT.sub, RMqRequest.message);
-  if (res.changes !== 1) {
+  try {
+    const query = db.persistent.prepare(`INSERT INTO '${block_table_name}' ( UID , user_uid , blocked_uid ) VALUES ( ? , ? , ? );`);
+    const res = query.run(`${RMqRequest.JWT.sub};${RMqRequest.message}`, RMqRequest.JWT.sub, RMqRequest.message);
+    if (res.changes !== 1)
+      throw 'db error';
+    response.status = 200;
+    response.message = `user ${RMqRequest.message} blocked`;
+    return response;
+  } catch (error) {
     response.status = 400;
     response.message = 'user already blocked';
     return response;
   }
-  response.status = 200;
-  response.message = `user ${RMqRequest.message} blocked`;
-  return response;
 }
 
 function ListBlockedUsers(RMqRequest: RabbitMQRequest): RabbitMQResponse {
@@ -99,7 +102,7 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
       if (other_uid === RMqRequest.JWT.sub)
         other_uid = res.uid_2;
       // Check block:
-      const block_query = db.persistent.prepare(`SELECT users_uid FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
+      const block_query = db.persistent.prepare(`SELECT UID FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
       const block_res = block_query.all(`${RMqRequest.JWT.sub};${other_uid}`, `${other_uid};${RMqRequest.JWT.sub}`);
       if (block_res.length !== 0) {
         response.status = 400;
@@ -108,8 +111,8 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
       }
     }
   }
-  const query = db.persistent.prepare(`INSERT INTO ? (uid , user_uid, message_text, time) VALUES (?,?,?,?);`);
-  const res = query.run(request.uid, crypto.randomUUID(), RMqRequest.JWT.sub, request.message, Date.now() / 1000);
+  const query = db.persistent.prepare(`INSERT INTO '${request.uid}' (message_uid , user_uid, message_text, time) VALUES (?,?,?,?);`);
+  const res = query.run(crypto.randomUUID(), RMqRequest.JWT.sub, request.message, Date.now() / 1000);
   if (res.changes !== 1) {
     response.status = 400;
     response.message = 'bad request';
@@ -144,7 +147,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   {
     // Check block:
-    const query = db.persistent.prepare(`SELECT users_uid FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
+    const query = db.persistent.prepare(`SELECT UID FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
     const res = query.all(`${RMqRequest.JWT.sub};${request.uid}`, `${request.uid};${RMqRequest.JWT.sub}`);
     if (res.length !== 0) {
       response.status = 400;
@@ -154,7 +157,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   const conversation_uid = crypto.randomUUID();
   {
-    const query = db.persistent.prepare(`INSERT INTO ${conversations_table_name} (UID , name, uid_1, uid_2, started) VALUES (?,?,?,?,?);`);
+    const query = db.persistent.prepare(`INSERT INTO '${conversations_table_name}' (UID , name, uid_1, uid_2, started) VALUES (?,?,?,?,?);`);
     const res = query.run(conversation_uid, request.name, RMqRequest.JWT.sub, request.uid, Date.now() / 1000);
     if (res.changes !== 1) {
       response.status = 400;
@@ -164,9 +167,9 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   {
     const query = db.persistent.prepare(
-      `create table IF NOT EXISTS '?' ('message_uid' TEXT NOT NULL, 'user_uid' TEXT NOT NULL, 'message_text' TEXT NOT NULL, 'time' INT NOT NULL PRIMARY KEY);`
+      `create table IF NOT EXISTS '${conversation_uid}' ('message_uid' TEXT NOT NULL, 'user_uid' TEXT NOT NULL, 'message_text' TEXT NOT NULL, 'time' INT NOT NULL PRIMARY KEY);`
     );
-    const res = query.run(conversation_uid);
+    const res = query.run();
     if (res.changes !== 1) {
       {
         const query = db.persistent.prepare(`DELETE FROM ${conversations_table_name} WHERE UID = ?;`);
@@ -177,8 +180,8 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       return response;
     }
   }
-  const query = db.persistent.prepare(`INSERT INTO ? (uid , user_uid, message_text, time) VALUES (?,?,?,?);`);
-  const res = query.run(conversation_uid, crypto.randomUUID(), RMqRequest.JWT.sub, request.message, Date.now() / 1000);
+  const query = db.persistent.prepare(`INSERT INTO '${conversation_uid}' (message_uid , user_uid, message_text, time) VALUES (?,?,?,?);`);
+  const res = query.run(crypto.randomUUID(), RMqRequest.JWT.sub, request.message, Date.now() / 1000);
   if (res.changes !== 1) {
     response.status = 400;
     response.message = 'bad request';
@@ -223,12 +226,13 @@ function ReadConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       if (!res || (res.uid_1 !== RMqRequest.JWT.sub && res.uid_2 !== RMqRequest.JWT.sub))
         throw 'not permission';
     }
-    const query = db.persistent.prepare(`SELECT * FROM ? LIMIT 10 OFFSET (10 * ?);`);
-    const res = query.all(request.uid, request.page);
+    const query = db.persistent.prepare(`SELECT * FROM '${request.uid}' ORDER BY time DESC LIMIT 10 OFFSET (10 * ?);`);
+    const res = query.all(request.page);
     response.status = 200;
     response.message = JSON.stringify(res);
     return response;
   } catch (error) {
+    console.log(`ReadConversation(): ${error}`)
     response.status = 400;
     response.message = 'bad request';
     return response;
@@ -264,27 +268,35 @@ function RenameConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {
     case RabbitMQChatManagerOp.BLOCK: {
+      console.log('Received operation: BLOCK')
       return BlockUser(RMqRequest);
     }
     case RabbitMQChatManagerOp.UNBLOCK: {
+      console.log('Received operation: UNBLOCK')
       return UnblockUser(RMqRequest);
     }
     case RabbitMQChatManagerOp.BLOCK_LIST: {
+      console.log('Received operation: BLOCK_LIST')
       return ListBlockedUsers(RMqRequest);
     }
     case RabbitMQChatManagerOp.SEND_MESSAGE: {
+      console.log('Received operation: SEND_MESSAGE')
       return SendMessageToConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.CREATE_CONVERSATION: {
+      console.log('Received operation: CREATE_CONVERSATION')
       return CreateConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.RENAME_CONVERSATION: {
+      console.log('Received operation: RENAME_CONVERSATION')
       return RenameConversation(RMqRequest);
     }
     case RabbitMQChatManagerOp.LIST_CONVERSATIONS: {
+      console.log('Received operation: LIST_CONVERSATIONS')
       return ListConversations(RMqRequest);
     }
     case RabbitMQChatManagerOp.READ_CONVERSATION: {
+      console.log('Received operation: READ_CONVERSATION')
       return ReadConversation(RMqRequest);
     }
     default: {
