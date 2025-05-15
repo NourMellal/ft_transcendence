@@ -81,7 +81,7 @@ export enum NotificationType {
   FriendRequestDenied,
   GameInvite,
   Poke,
-  NewMessage
+  NewMessage,
 }
 
 export type NotificationBody = {

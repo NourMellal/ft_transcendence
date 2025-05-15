@@ -1,4 +1,6 @@
 import db from "../classes/Databases";
+import rabbitmq from "../classes/RabbitMQ";
+import { JWT } from "../types/common";
 import { block_table_name, conversations_table_name, ConversationsUIDsModel } from "../types/DbTables";
 import {
   RabbitMQMicroServices,
@@ -7,6 +9,9 @@ import {
   RabbitMQResponse,
   ChatMessage,
   ConversationReadRequest,
+  NotificationBody,
+  NotificationType,
+  RabbitMQNotificationsOp,
 } from "../types/RabbitMQMessages";
 
 
@@ -88,6 +93,7 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
     response.message = 'bad request';
     return response;
   }
+  let receiver_uid;
   {
     // Check permissions:
     const query = db.persistent.prepare(`SELECT uid_1,uid_2 FROM ${conversations_table_name} WHERE UID = ?;`);
@@ -98,12 +104,12 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
       return response;
     }
     {
-      let other_uid = res.uid_1;
-      if (other_uid === RMqRequest.JWT.sub)
-        other_uid = res.uid_2;
+      receiver_uid = res.uid_1;
+      if (receiver_uid === RMqRequest.JWT.sub)
+        receiver_uid = res.uid_2;
       // Check block:
       const block_query = db.persistent.prepare(`SELECT UID FROM ${block_table_name} WHERE UID = ? OR UID = ?;`);
-      const block_res = block_query.all(`${RMqRequest.JWT.sub};${other_uid}`, `${other_uid};${RMqRequest.JWT.sub}`);
+      const block_res = block_query.all(`${RMqRequest.JWT.sub};${receiver_uid}`, `${receiver_uid};${RMqRequest.JWT.sub}`);
       if (block_res.length !== 0) {
         response.status = 400;
         response.message = 'bad request';
@@ -120,6 +126,18 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
   }
   {
     // Send a notification
+    const Notification: NotificationBody = {
+      type: NotificationType.NewMessage,
+      from_uid: request.uid,
+      to_uid: receiver_uid
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: {} as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   response.status = 200;
   response.message = 'MessageSent';
@@ -189,6 +207,18 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   {
     // Send a notification
+    const Notification: NotificationBody = {
+      type: NotificationType.NewMessage,
+      from_uid: conversation_uid,
+      to_uid: request.uid
+    }
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: {} as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   response.status = 200;
   response.message = conversation_uid;

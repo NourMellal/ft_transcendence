@@ -204,7 +204,8 @@ export const discoveryDocument = {
         { FriendRequestAccepted: 3 },
         { FriendRequestDenied: 4 },
         { GameInvite: 5 },
-        { Poke: 6 }
+        { Poke: 6 },
+        { NewMessage: 7, note: 'from_uid in the response body represents the conversation uid where the user has the new message.' }
       ]
     },
     GetPushNotificationTicket: {

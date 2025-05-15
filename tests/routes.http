@@ -4,6 +4,10 @@
 
 # GET the discovery document of the server: (No authorization required)
 # READ THIS DOCUMENT FOR A DETAILED DESCRIPTION OF EACH ROUTE
+
+@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token
+
+
 GET https://transcendence.fr/api/.well-known/discovery
 
 
@@ -440,5 +444,4 @@ GET https://transcendence.fr/api/chat/read?uid=XXX&page=2
 GET https://transcendence.fr/api/user/status?uid=
 #Cookie: jwt={{jwt_token}}
 
-
-@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token
+###
