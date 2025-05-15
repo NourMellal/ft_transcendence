@@ -269,6 +269,7 @@ export const discoveryDocument = {
     ListAllRank: {
       description: "HTTP: get leaderboard rankes for all users.",
       route: "/api/leaderboard/list",
+      QueryParams: [{ name: "page" }],
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },

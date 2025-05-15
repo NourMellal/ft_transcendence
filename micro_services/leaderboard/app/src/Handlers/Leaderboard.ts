@@ -33,8 +33,10 @@ const AddLoss = function (RMqRequest: RabbitMQRequest): null {
 }
 
 const ListAllRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  const query = db.persistent.prepare(`SELECT *, RANK() OVER(ORDER BY losses ASC, wins DESC) AS rank FROM ${leaderboard_table_name};`);
-  const res = query.all();
+  if (!RMqRequest.message)
+    throw 'invalid request'
+  const query = db.persistent.prepare(`SELECT *, RANK() OVER(ORDER BY losses ASC, wins DESC) AS rank FROM ${leaderboard_table_name} LIMIT 15 OFFSET (15 * ?) ;`);
+  const res = query.all(RMqRequest.message);
   const response: RabbitMQResponse = {
     service: RabbitMQMicroServices.Leaderboard,
     op: RabbitMQLeaderboardOp.LIST_ALL_RANK,

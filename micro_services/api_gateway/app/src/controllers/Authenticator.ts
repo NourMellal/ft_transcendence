@@ -30,11 +30,11 @@ export const IsDisplayNameAvailable = async (
     const { username } = request.query;
     if (username.length < 3) return reply.code(400).send();
     const query = db.persistent.prepare(
-      `SELECT username FROM '${users_table_name}' where username = ? ;`
+      `SELECT UID FROM '${users_table_name}' where username = ? ;`
     );
-    const res = query.get(username);
+    const res = query.get(username) as UserModel;
     if (res === undefined) return reply.code(200).send();
-    return reply.code(406).send();
+    return reply.code(406).send(res.UID);
   } catch (error) {
     console.log(`ERROR: IsDisplayNameAvailable(): ${error}`);
     return reply.code(500).send("ERROR: internal error, try again later.");

@@ -94,9 +94,10 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
     return response;
   }
   let receiver_uid;
+  let conversation_name;
   {
     // Check permissions:
-    const query = db.persistent.prepare(`SELECT uid_1,uid_2 FROM ${conversations_table_name} WHERE UID = ?;`);
+    const query = db.persistent.prepare(`SELECT name,uid_1,uid_2 FROM ${conversations_table_name} WHERE UID = ?;`);
     const res = query.get(request.uid) as ConversationsUIDsModel;
     if (!res || (res.uid_1 !== RMqRequest.JWT.sub && res.uid_2 !== RMqRequest.JWT.sub)) {
       response.status = 400;
@@ -104,6 +105,7 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
       return response;
     }
     {
+      conversation_name = res.name;
       receiver_uid = res.uid_1;
       if (receiver_uid === RMqRequest.JWT.sub)
         receiver_uid = res.uid_2;
@@ -126,11 +128,13 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
   }
   {
     // Send a notification
-    const Notification: NotificationBody = {
+    const Notification = {
       type: NotificationType.NewMessage,
-      from_uid: request.uid,
+      conversation_name: conversation_name,
+      conversation_uid: request.uid,
+      from_uid: RMqRequest.JWT.sub,
       to_uid: receiver_uid
-    }
+    };
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
@@ -207,11 +211,13 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   {
     // Send a notification
-    const Notification: NotificationBody = {
+    const Notification = {
       type: NotificationType.NewMessage,
-      from_uid: conversation_uid,
+      conversation_name: request.name,
+      conversation_uid: conversation_uid,
+      from_uid: RMqRequest.JWT.sub,
       to_uid: request.uid
-    }
+    };
     const notificationRequest: RabbitMQRequest = {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
