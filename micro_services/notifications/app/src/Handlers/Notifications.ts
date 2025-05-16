@@ -121,7 +121,7 @@ const MarkNotificationAsRead = function (RMqRequest: RabbitMQRequest): RabbitMQR
   for (let i = 0; i < uids.length; i++) {
     queryString += 'UID = ? ';
     if (i < uids.length - 1)
-      queryString += '|| ';
+      queryString += 'OR ';
   }
   queryString += ' );';
   const query = db.persistent.prepare(queryString);

@@ -12,7 +12,7 @@ import {
 import rabbitmq from "../../classes/RabbitMQ";
 import db from "../../classes/Databases";
 
-const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
+export const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
 const PushNotificationStates = new Map<string, string>();
 
 const decorateNotificationBody = function (notification: NotificationBody[] | string) {

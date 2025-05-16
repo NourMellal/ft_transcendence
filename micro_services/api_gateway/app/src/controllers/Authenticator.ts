@@ -70,18 +70,20 @@ export const SignUpNewStandardUser = async (
   try {
     const hasher = crypto.createHash("sha256");
     hasher.update(Buffer.from(psswd.field_value));
+    db.persistent.exec('BEGIN TRANSACTION;')
     NewUser = db.CreateNewStandardUser(
       username.field_value,
       hasher.digest().toString()
     );
+    var picture_url = process.env.DEFAULT_PROFILE_PATH as string;
+    if (image) {
+      picture_url = `/static/profile/${NewUser.UID}.jpg`;
+      fs.writeFileSync(picture_url, image.field_file.read());
+    }
   } catch (error) {
+    db.persistent.exec('ROLLBACK;')
     console.log(`ERROR: SignUpNewStandardUser(): ${error}`);
     return reply.code(400).send("username already taken try another one.");
-  }
-  var picture_url = process.env.DEFAULT_PROFILE_PATH as string;
-  if (image) {
-    picture_url = `/static/profile/${NewUser.UID}.jpg`;
-    fs.writeFileSync(picture_url, image.field_file.read());
   }
   try {
     reply.hijack();
@@ -97,15 +99,20 @@ export const SignUpNewStandardUser = async (
       JWT: jwt,
     };
     rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+      if (response.status !== 200) {
+        db.persistent.exec('ROLLBACK;')
+        reply.raw.statusCode = response.status;
+        reply.raw.end(response.message);
+        return;
+      }
       ProcessSignUpResponse(reply, response, jwt, jwt_token, request.ip);
+      db.persistent.exec('COMMIT;')
     });
     return Promise.resolve();
   } catch (error) {
-    const query = db.persistent.prepare(
-      `DELETE FROM '${users_table_name}' WHERE UID = ? ;`
-    );
-    query.run(NewUser.UID);
-    if (image && fs.existsSync(picture_url)) fs.unlinkSync(picture_url);
+    db.persistent.exec('ROLLBACK;')
+    if (image && fs.existsSync(picture_url))
+      fs.unlinkSync(picture_url);
     console.log(`ERROR: SignUpNewStandardUser(): ${error}`);
     reply.raw.statusCode = 500;
     return reply.raw.end("ERROR: internal error, try again later.");

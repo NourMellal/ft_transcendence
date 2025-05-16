@@ -4,9 +4,7 @@ import { JWT } from "../types/AuthProvider";
 import db from "../classes/Databases";
 import {
   refresh_token_table_name,
-  RefreshTokenModel,
   state_expiree_sec,
-  users_table_name,
 } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoveryDocument } from "../models/DiscoveryDocument";
@@ -41,22 +39,8 @@ export const ProcessSignUpResponse = function (
   jwt_token: string,
   ip: string
 ) {
-  reply.raw.statusCode = response.status;
-  if (response.status !== 200) {
-    reply.raw.end(response.message);
-    const query = db.persistent.prepare(
-      `DELETE FROM '${users_table_name}' WHERE UID = ? ;`
-    );
-    const res = query.run(jwt.sub);
-    if (res.changes !== 1)
-      console.log(
-        `ProcessSignUpResponse(): WARNING: user uid=${jwt.sub} is not deleted from db!`
-      );
-    else
-      console.log(`ProcessSignUpResponse(): user uid=${jwt.sub} is deleted!`);
-    return;
-  }
   try {
+    reply.raw.statusCode = response.status;
     const refresh_token = CreateRefreshToken(jwt.sub, ip);
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
     reply.raw.appendHeader(
@@ -127,14 +111,4 @@ export const GetTOTPRedirectionUrl = function (
   });
   setTimeout(() => Totp.states.delete(state), state_expiree_sec * 1000);
   return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
-};
-
-export const escapeHtml = function (unsafe: string | null): string | null {
-  if (!unsafe) return null;
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 };
