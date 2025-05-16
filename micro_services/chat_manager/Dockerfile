@@ -14,14 +14,9 @@ RUN ./install.sh
 
 RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
-RUN mkdir app
-
 WORKDIR /app
 
-COPY ./app/package.json .
+ARG NPM_MICROSERVICE_SCRIPT
+ENV NPM_MICROSERVICE_SCRIPT=${NPM_MICROSERVICE_SCRIPT}
 
-RUN source "$HOME/.nvm/nvm.sh" && npm install
-
-COPY ./app /app
-
-ENTRYPOINT source "$HOME/.nvm/nvm.sh" && npm start
+ENTRYPOINT source "$HOME/.nvm/nvm.sh" && npm run $NPM_MICROSERVICE_SCRIPT

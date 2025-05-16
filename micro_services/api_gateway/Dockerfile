@@ -16,16 +16,11 @@ RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
 RUN openssl req -x509 -newkey rsa:4096 -keyout /private.key -out /cert.pem -sha256 -days 3650 -noenc -subj "/C=MA/ST=BENGURIR/L=BENGURIR/SN=msitni"
 
-RUN mkdir app
-
 WORKDIR /app
-
-COPY ./app/package.json .
-
-RUN source "$HOME/.nvm/nvm.sh" && npm install
-
-COPY ./app /app
 
 EXPOSE 5566
 
-ENTRYPOINT source "$HOME/.nvm/nvm.sh" && npm start
+ARG NPM_MICROSERVICE_SCRIPT
+ENV NPM_MICROSERVICE_SCRIPT=${NPM_MICROSERVICE_SCRIPT}
+
+ENTRYPOINT source "$HOME/.nvm/nvm.sh" && npm run $NPM_MICROSERVICE_SCRIPT

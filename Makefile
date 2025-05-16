@@ -8,16 +8,26 @@ MICRO_SERVICES=$(shell find micro_services -mindepth 1 -maxdepth 1 -type d)
 
 ENV_FILES=$(addsuffix /app/.env, ${MICRO_SERVICES})
 
+NODE_MODULES=$(addsuffix /app/node_modules, ${MICRO_SERVICES}) front_end/app/node_modules
+
+DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES})
+
 %.env:
 	ln .env $@
-
-all: ${ENV_FILES} create_volumes_dir set-host-and-permission
+%/node_modules:
+	cd ./$@/.. && npm install
+%/dist:
+	cd ./$@/.. && tsc
+all: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
-build: ${ENV_FILES} create_volumes_dir set-host-and-permission
+build: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up --build ${detach}
 clean:
 	docker compose -f ${COMPOSE_FILE} down
-re: clean all
+fclean: clean
+	@echo "\033[0;31m==> Removing build files:\033[0m"
+	sudo rm -rf ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES}
+re: fclean all
 
 #Create docker persistent volumes
 create_volumes_dir:

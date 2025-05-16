@@ -8,6 +8,7 @@ services:
       - "443:443"
     networks:
       - ft_transcendence
+    init: true
     restart: always
   rabbitmq:
     container_name: rabbitmq
@@ -40,61 +41,96 @@ services:
     restart: always
   api_gateway:
     container_name: api_gateway
-    build: ./micro_services/api_gateway
+    build:
+      context: ./micro_services/api_gateway
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/api_gateway/app:/app:rw
       - api_gateway_db_volume:/database:rw
       - static_data_volume:/static:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   user_manager:
     container_name: user_manager
-    build: ./micro_services/user_manager
+    build:
+      context: ./micro_services/user_manager
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/user_manager/app:/app:rw
       - user_manager_db_volume:/database:rw
       - static_data_volume:/static:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   friends_manager:
     container_name: friends_manager
-    build: ./micro_services/friends_manager
+    build:
+      context: ./micro_services/friends_manager
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/friends_manager/app:/app:rw
       - friends_manager_db_volume:/database:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   notifications:
     container_name: notifications
-    build: ./micro_services/notifications
+    build:
+      context: ./micro_services/notifications
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/notifications/app:/app:rw
       - notifications_db_volume:/database:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   leaderboard:
     container_name: leaderboard
-    build: ./micro_services/leaderboard
+    build:
+      context: ./micro_services/leaderboard
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/leaderboard/app:/app:rw
       - leaderboard_db_volume:/database:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   match_manager:
     container_name: match_manager
-    build: ./micro_services/match_manager
+    build:
+      context: ./micro_services/match_manager
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/match_manager/app:/app:rw
       - match_manager_db_volume:/database:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   chat_manager:
     container_name: chat_manager
-    build: ./micro_services/chat_manager
+    build:
+      context: ./micro_services/chat_manager
+      args:
+        NPM_MICROSERVICE_SCRIPT: ${NPM_MICROSERVICE_SCRIPT}
     volumes:
+      - ./micro_services/chat_manager/app:/app:rw
       - chat_manager_db_volume:/database:rw
     networks:
       - ft_transcendence
+    init: true
     restart: always
   frontend:
     container_name: frontend
