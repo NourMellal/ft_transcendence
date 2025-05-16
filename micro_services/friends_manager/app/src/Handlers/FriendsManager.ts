@@ -28,8 +28,8 @@ function ListFriends(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   );
   const res = query.get(RMqRequest.JWT.sub) as FriendsModel;
   if (res && res.friends)
-    RMqResponse.message = JSON.stringify(res.friends.split(";"));
-  else RMqResponse.message = "[]";
+    RMqResponse.message = res.friends;
+  else RMqResponse.message = "";
   return RMqResponse;
 }
 
@@ -170,50 +170,34 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       return RMqResponse;
     }
   }
+  // Add friend to both users
+  {
+    db.persistent.exec('BEGIN TRANSACTION;');
+    const query = db.persistent.prepare(
+      `INSERT INTO '${friends_table_name}' ( UID , friends ) VALUES ( ? , ? ) ON CONFLICT(UID) DO UPDATE SET friends = friends || ';' || ? ;`
+    );
+    let res = query.run(RMqRequest.JWT.sub, request.from_uid, request.from_uid);
+    if (res.changes !== 1) {
+      db.persistent.exec('ROLLBACK;');
+      throw `AcceptRequest(): database error`;
+    }
+    res = query.run(request.from_uid, RMqRequest.JWT.sub, request.from_uid);
+    if (res.changes !== 1) {
+      db.persistent.exec('ROLLBACK;');
+      throw `AcceptRequest(): database error`;
+    }
+  }
   // Remove request from db
   {
     const query = db.persistent.prepare(
       `DELETE FROM '${requests_table_name}' WHERE REQ_ID = ? ;`
     );
     const result = query.run(request.REQ_ID);
-    if (result.changes !== 1) throw `AcceptRequest(): database error`;
-  }
-  // Add friend to both users, HINT: assumes that no request can be made when users already friends.
-  {
-    const get_query = db.persistent.prepare(
-      `SELECT friends FROM '${friends_table_name}' WHERE UID = ? ;`
-    );
-    const insert_query = db.persistent.prepare(
-      `INSERT INTO '${friends_table_name}' ( UID , friends ) VALUES( ? , ? );`
-    );
-    const update_query = db.persistent.prepare(
-      `UPDATE '${friends_table_name}' SET friends = ? WHERE UID = ? ;`
-    );
-
-    const first_friends = get_query.get(RMqRequest.JWT.sub) as FriendsModel;
-    if (!first_friends) {
-      const res = insert_query.run(RMqRequest.JWT.sub, request.from_uid);
-      if (res.changes !== 1)
-        throw `AcceptRequest(): database error while adding first friend`;
-    } else {
-      const updated_friends =
-        (first_friends.friends as string) + ";" + request.from_uid;
-      const res = update_query.run(updated_friends, RMqRequest.JWT.sub);
-      if (res.changes !== 1)
-        throw `AcceptRequest(): database error while adding first friend`;
+    if (result.changes !== 1) {
+      db.persistent.exec('ROLLBACK;');
+      throw `AcceptRequest(): database error`;
     }
-    const second_friends = get_query.get(request.from_uid) as FriendsModel;
-    if (!second_friends) {
-      const res = insert_query.run(request.from_uid, request.to_uid);
-      if (res.changes !== 1)
-        throw `AcceptRequest(): database error while adding second friend`;
-    } else {
-      const updated_friends =
-        (second_friends.friends as string) + ";" + request.to_uid;
-      const res = update_query.run(updated_friends, request.from_uid);
-      if (res.changes !== 1)
-        throw `AcceptRequest(): database error while adding second friend`;
-    }
+    db.persistent.exec('COMMIT;');
   }
   // Send a message to notification service
   {
@@ -323,6 +307,7 @@ function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       RMqResponse.status = 400;
       return RMqResponse;
     }
+    db.persistent.exec('BEGIN TRANSACTION;');
     friendsArray.splice(friendIndex, 1);
     const updatedFriends = friendsArray.join(";");
     const updateQuery = db.persistent.prepare(
@@ -347,10 +332,14 @@ function RemoveFriend(RMqRequest: RabbitMQRequest): RabbitMQResponse {
           `UPDATE '${friends_table_name}' SET friends = ? WHERE UID = ? ;`
         );
         const result = updateQuery.run(updatedFriends, RMqRequest.message);
-        if (result.changes !== 1) throw "Database error";
+        if (result.changes !== 1) {
+          db.persistent.exec('ROLLBACK;');
+          throw "Database error";
+        }
       }
     }
   }
+  db.persistent.exec('COMMIT;');
   {
     const Notification: NotificationBody = {
       type: NotificationType.FriendRemove,

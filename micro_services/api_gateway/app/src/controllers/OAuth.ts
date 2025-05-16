@@ -50,6 +50,7 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
 function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply, ip: string) {
   var NewUser: UserModel;
   try {
+    db.persistent.exec('BEGIN TRANSACTION;')
     NewUser = db.CreateNewGoogleUser(OAuthRes);
   } catch (error) {
     reply.raw.statusCode = 500;
@@ -63,6 +64,12 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply, ip: s
       JWT: OAuthRes.jwt,
     };
     rabbitmq.sendToUserManagerQueue(msg, (response) => {
+      if (response.status !== 200) {
+        db.persistent.exec('ROLLBACK;')
+        reply.raw.statusCode = response.status;
+        reply.raw.end(response.message);
+        return;
+      }
       ProcessSignUpResponse(
         reply,
         response,
@@ -70,12 +77,10 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply, ip: s
         OAuthRes.response.id_token,
         ip
       );
+      db.persistent.exec('COMMIT;')
     });
   } catch (error) {
-    const query = db.persistent.prepare(
-      `DELETE FROM '${users_table_name}' WHERE UID = ? ;`
-    );
-    query.run(NewUser.UID);
+    db.persistent.exec('ROLLBACK;')
     console.log(`ERROR: SignUpNewGoogleUser(): ${error}`);
     reply.raw.statusCode = 500;
     reply.raw.end("ERROR: internal error, try again later.");

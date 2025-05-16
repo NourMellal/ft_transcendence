@@ -73,6 +73,24 @@ function CreateNewStandardUser(jwt: JWT): UserModel {
   return user;
 }
 
+function FetchMultipleUsersList(UIDs: string): string {
+  let querystring = `SELECT * FROM '${users_table_name}' WHERE `;
+  const uids = UIDs.split(';');
+  for (let i = 0; i < uids.length; i++) {
+    const element = uids[i];
+    querystring += 'UID = ? ';
+    if (i < uids.length - 1)
+      querystring += 'OR ';
+  }
+  if (uids.length > 0) {
+    querystring += ';';
+    const getQuery = db.persistent.prepare(querystring);
+    const res = getQuery.all(...uids);
+    return JSON.stringify(res);
+  }
+  return '[]';
+}
+
 function FetchUser(UID: string): UserModel | string {
   const getQuery = db.persistent.prepare(
     `SELECT * FROM '${users_table_name}' WHERE UID = ?;`,
@@ -104,17 +122,19 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     req_id: RMqRequest.id,
   } as RabbitMQResponse;
   switch (RMqRequest.op) {
-    case RabbitMQUserManagerOp.CREATE_GOOGLE:
+    case RabbitMQUserManagerOp.CREATE_GOOGLE: {
       RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));
       RMqResponse.status = 200;
       break;
-    case RabbitMQUserManagerOp.CREATE_STANDARD:
+    }
+    case RabbitMQUserManagerOp.CREATE_STANDARD: {
       RMqResponse.message = JSON.stringify(
         CreateNewStandardUser(RMqRequest.JWT),
       );
       RMqResponse.status = 200;
       break;
-    case RabbitMQUserManagerOp.FETCH:
+    }
+    case RabbitMQUserManagerOp.FETCH: {
       if (!RMqRequest.message)
         throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.FETCH]";
       const record = FetchUser(RMqRequest.message as string);
@@ -126,13 +146,22 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
         RMqResponse.message = JSON.stringify(record);
       }
       break;
-    case RabbitMQUserManagerOp.UPDATE:
+    }
+    case RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL: {
+      if (!RMqRequest.message)
+        throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL]";
+      RMqResponse.status = 200;
+      RMqResponse.message = FetchMultipleUsersList(RMqRequest.message);
+      break;
+    }
+    case RabbitMQUserManagerOp.UPDATE: {
       if (!RMqRequest.message)
         throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.UPDATE]";
       const info = JSON.parse(RMqRequest.message) as UpdateUser;
       RMqResponse.message = UpdateUserInfo(RMqRequest.JWT, info);
       RMqResponse.status = 200;
       break;
+    }
     default:
       console.log(
         "WARNING: rabbitmq HandleMessage(): operation not implemented.",

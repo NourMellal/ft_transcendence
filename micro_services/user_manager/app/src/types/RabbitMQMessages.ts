@@ -6,7 +6,8 @@ export enum RabbitMQMicroServices {
   FRIENDS_MANAGER,
   NOTIFICATIONS,
   Leaderboard,
-  match_manager
+  match_manager,
+  chat_manager,
 }
 
 export enum RabbitMQUserManagerOp {
@@ -15,6 +16,7 @@ export enum RabbitMQUserManagerOp {
   UPDATE,
   DELETE,
   FETCH,
+  FETCH_MULTIPLE_INTERNAL,
 }
 
 export type UpdateUser = {

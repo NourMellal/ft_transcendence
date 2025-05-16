@@ -6,7 +6,8 @@ export enum RabbitMQMicroServices {
   FRIENDS_MANAGER,
   NOTIFICATIONS,
   Leaderboard,
-  match_manager
+  match_manager,
+  chat_manager
 }
 
 export enum RabbitMQUserManagerOp {
@@ -15,6 +16,7 @@ export enum RabbitMQUserManagerOp {
   UPDATE,
   DELETE,
   FETCH,
+  FETCH_MULTIPLE_INTERNAL,
 }
 
 export enum RabbitMQFriendsManagerOp {
@@ -42,6 +44,28 @@ export enum RabbitMQMatchManagerOp {
   LOSE_MATCH,
 }
 
+export enum RabbitMQChatManagerOp {
+  SEND_MESSAGE = 1,
+  CREATE_CONVERSATION,
+  READ_CONVERSATION,
+  RENAME_CONVERSATION,
+  LIST_CONVERSATIONS,
+  BLOCK_LIST,
+  BLOCK,
+  UNBLOCK,
+}
+
+export type ChatMessage = {
+  uid : string;
+  name? : string;
+  message : string;
+}
+
+export type ConversationReadRequest = {
+  uid : string;
+  page : number;
+}
+
 export enum RabbitMQNotificationsOp {
   SAVE_NOTIFICATION = 1,
   MARK_READ,
@@ -58,6 +82,7 @@ export enum NotificationType {
   FriendRequestDenied,
   GameInvite,
   Poke,
+  NewMessage,
 }
 
 export type NotificationBody = {

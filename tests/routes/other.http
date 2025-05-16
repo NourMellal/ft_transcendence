@@ -1,0 +1,20 @@
+# install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+# Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
+
+
+# GET the discovery document of the server: (No authorization required)
+# READ THIS DOCUMENT FOR A DETAILED DESCRIPTION OF EACH ROUTE
+
+@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token
+
+
+
+GET https://transcendence.fr/api/.well-known/discovery
+
+###
+
+# Check if a user is online 200 for active 404 inactive:
+GET https://transcendence.fr/api/user/status?uid=
+#Cookie: jwt={{jwt_token}}
+
+###

@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { WebSocketServer } from "ws";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
-import { DeleteNotification, GetAllNotification, GetPushNotificationTicket, GetUnreadNotification, MarkNotificationAsRead, PokeFriend, PushNotificationHandler } from "../../controllers/microservices/notifications";
+import { DeleteNotification, GetAllNotification, GetPushNotificationTicket, GetUnreadNotification, GetUserActiveStatus, MarkNotificationAsRead, PokeFriend, PushNotificationHandler } from "../../controllers/microservices/notifications";
 import { AuthHeaderValidation } from "../../types/AuthProvider";
 
 const EditNotificationOps = {
@@ -34,5 +34,6 @@ export async function NotificationRoutes(fastify: FastifyInstance) {
   fastify.post(discoveryDocument.Notifications.MarkAsRead.route, EditNotificationOps, MarkNotificationAsRead);
   fastify.post(discoveryDocument.Notifications.Delete.route, EditNotificationOps, DeleteNotification);
   fastify.post(discoveryDocument.Notifications.PokeFriend.route, EditNotificationOps, PokeFriend);
+  fastify.get(discoveryDocument.Notifications.GetUserActiveStatus.route, EditNotificationOps, GetUserActiveStatus);
 }
 
