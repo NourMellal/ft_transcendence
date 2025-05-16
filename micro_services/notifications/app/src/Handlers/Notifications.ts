@@ -8,6 +8,19 @@ import {
   RabbitMQResponse,
 } from "../types/RabbitMQMessages";
 
+const GetResponseMessage = function (result: any[]): string {
+  for (let i = 0; i < result.length; i++) {
+    const element = result[i];
+    try {
+      element.DATA = JSON.parse(element.messageJson);
+      element.DATA.notification_uid = element.UID;
+      element.DATA.read = element.is_read;
+    } catch (error) {
+    }
+  }
+  return JSON.stringify(result, (key, value) => key === "UID" || key === "is_read" || key === "messageJson" ? undefined : value);
+}
+
 const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
   let RMqResponse: RabbitMQResponse = {
     req_id: RMqRequest.id,
@@ -16,9 +29,9 @@ const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQRes
     status: 200
   } as RabbitMQResponse;
   const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? ;`);
-  const res = query.all(RMqRequest.JWT.sub);
+  const res = query.all(RMqRequest.JWT.sub) as any[];
   if (res.length > 0)
-    RMqResponse.message = JSON.stringify(res);
+    RMqResponse.message = GetResponseMessage(res);
   else
     RMqResponse.message = '[]';
   return RMqResponse;
@@ -34,7 +47,7 @@ const ListUnreadNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQ
   const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? AND is_read = 0 ;`);
   const res = query.all(RMqRequest.JWT.sub);
   if (res.length > 0)
-    RMqResponse.message = JSON.stringify(res);
+    RMqResponse.message = GetResponseMessage(res);
   else
     RMqResponse.message = '[]';
   return RMqResponse;
@@ -69,7 +82,12 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
     throw 'DeleteNotification(): Error no notification message';
   const notificationBody = JSON.parse(RMqRequest.message) as NotificationBody;
   const query = db.persistent.prepare(`INSERT INTO ${notifications_table_name} (UID, user_uid, messageJson,is_read) VALUES ( ? , ? , ? , ? );`);
-  const res = query.run(crypto.randomUUID(), notificationBody.to_uid, RMqRequest.message, 0);
+  const notif = {
+    UID: crypto.randomUUID(),
+    messageJson: RMqRequest.message,
+    is_read: 0
+  };
+  const res = query.run(notif.UID, notificationBody.to_uid, notif.messageJson, 0);
   if (res.changes !== 1)
     throw 'database error';
   const RMqResponse: RabbitMQResponse = {
@@ -77,7 +95,7 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
     service: RabbitMQMicroServices.NOTIFICATIONS,
     op: RabbitMQNotificationsOp.PING_USER,
     status: 200,
-    message: RMqRequest.message
+    message: GetResponseMessage([notif])
   }
   return RMqResponse;
 }
@@ -103,7 +121,7 @@ const MarkNotificationAsRead = function (RMqRequest: RabbitMQRequest): RabbitMQR
   for (let i = 0; i < uids.length; i++) {
     queryString += 'UID = ? ';
     if (i < uids.length - 1)
-      queryString += '|| ';
+      queryString += 'OR ';
   }
   queryString += ' );';
   const query = db.persistent.prepare(queryString);

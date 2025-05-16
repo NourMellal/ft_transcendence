@@ -1,0 +1,127 @@
+# install REST Client vscode extension. https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+# Here will be tests for all upcoming routes use this as a guide to better understand the api behaviour
+
+
+# GET the discovery document of the server: (No authorization required)
+# READ THIS DOCUMENT FOR A DETAILED DESCRIPTION OF EACH ROUTE
+
+
+@jwt_token = put_token_here_and_uncomment_cookie_header_and_disable_cookie_feature_from_settings_to_manually_pass_the_token
+
+
+
+###### START GOOGLE OAUTH TESTs (No authorization required) ######
+
+# GET a random state_code for OAuth flow:
+GET https://transcendence.fr/api/OAuth/state
+
+
+###### END GOOGLE OAUTH TESTs ######
+
+
+###### START USER/PWD TESTs (No authorization required) ######
+
+# Signup standard user:
+POST https://transcendence.fr/api/user/signup
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="username"
+
+msitni
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="password"
+
+very_hard_password
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+
+# Signin standard user:
+POST https://transcendence.fr/api/user/signin
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="username"
+
+msitni
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="password"
+
+very_hard_password
+--boundary13132121321H_4zdzdz90dlzkn--
+
+###
+
+# LogOut Current user:
+POST https://transcendence.fr/api/logout
+#Cookie: jwt={{jwt_token}}
+
+
+
+###### END USER/PWD TESTs ######
+
+
+
+
+###### START TOTP 2FA TESTs ######
+
+# Get 2fa string: (Authorization required)
+GET https://transcendence.fr/api/2FA/geturi
+#Cookie: jwt={{jwt_token}}
+
+###
+
+# Enable 2fa: (Authorization required)
+POST https://transcendence.fr/api/2FA/enable
+#Cookie: jwt={{jwt_token}}
+
+###
+
+# Disable 2fa: (Authorization required)
+POST https://transcendence.fr/api/2FA/disable
+#Cookie: jwt={{jwt_token}}
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="code"
+
+send 6 digits totp code to disable
+--boundary13132121321H_4zdzdz90dlzkn--
+
+
+###
+
+# Verify totp code and obtain jwt (No authorization required):
+POST https://transcendence.fr/api/2FA/verify?state=StateObtainedFromSignIn
+Content-Type: multipart/form-data; boundary=boundary13132121321H_4zdzdz90dlzkn
+
+--boundary13132121321H_4zdzdz90dlzkn
+Content-Disposition: form-data; name="code"
+
+send 6 digits totp code to get jwt
+--boundary13132121321H_4zdzdz90dlzkn--
+
+
+###### END TOTP 2FA TESTs ######
+
+
+
+
+
+###### START REFRESH TOKEN TESTs ######
+
+# List active connections: (Authorization required)
+GET https://transcendence.fr/api/jwt/list
+#Cookie: jwt={{jwt_token}}
+
+###
+
+# Revoke refresh token: (Authorization required)
+POST https://transcendence.fr/api/jwt/revoke?token_id=
+#Cookie: jwt={{jwt_token}}
+
+
+###### END REFRESH TOKEN TESTs ######
+
+

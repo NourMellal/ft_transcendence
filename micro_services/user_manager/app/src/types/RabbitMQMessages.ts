@@ -16,6 +16,7 @@ export enum RabbitMQUserManagerOp {
   UPDATE,
   DELETE,
   FETCH,
+  FETCH_MULTIPLE_INTERNAL,
 }
 
 export type UpdateUser = {

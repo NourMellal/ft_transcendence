@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
 import { GetRandomString } from "../Common";
-import { state_expiree_sec } from "../../types/DbTables";
+import { state_expiree_sec, UserModel, users_table_name } from "../../types/DbTables";
 import {
   NotificationBody,
   RabbitMQFriendsManagerOp,
@@ -10,9 +10,27 @@ import {
   RabbitMQRequest,
 } from "../../types/RabbitMQMessages";
 import rabbitmq from "../../classes/RabbitMQ";
+import db from "../../classes/Databases";
 
-const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
+export const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
 const PushNotificationStates = new Map<string, string>();
+
+const decorateNotificationBody = function (notification: NotificationBody[] | string) {
+  if (typeof notification === 'string') {
+    notification = JSON.parse(notification) as any[];
+  }
+  for (let i = 0; i < notification.length; i++) {
+    const notif: any = notification[i];
+    const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
+    {
+      const res = query.all(notif.DATA.from_uid) as UserModel[];
+      if (res.length > 0) {
+        notif.DATA.from_username = res[0].username;
+      }
+    }
+  }
+  return JSON.stringify(notification);
+}
 
 const removeSocket = function (socket: WebSocket, uid: string) {
   const sockets = PushNotificationSocketsMap.get(uid);
@@ -32,9 +50,10 @@ export const pingUser = function (notificationRaw: string) {
   console.log(`Ping Request for uid=${notification.to_uid}:`);
   const sockets = PushNotificationSocketsMap.get(notification.to_uid);
   if (sockets) {
+    const payload = JSON.stringify(decorateNotificationBody([notification]));
     for (let i = 0; i < sockets.length; i++) {
       try {
-        sockets[i].send(notificationRaw);
+        sockets[i].send(payload);
         console.log(
           `pinging uid=${notification.to_uid} on registred web socket.`
         );
@@ -94,7 +113,11 @@ export const GetUnreadNotification = async (
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
-    reply.raw.end(response.message);
+    reply.raw.setHeader("Content-Type", "application/json");
+    if (response.message)
+      reply.raw.end(decorateNotificationBody(response.message));
+    else
+      reply.raw.end();
   });
 };
 
@@ -111,7 +134,11 @@ export const GetAllNotification = async (
   };
   rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
-    reply.raw.end(response.message);
+    reply.raw.setHeader("Content-Type", "application/json");
+    if (response.message)
+      reply.raw.end(decorateNotificationBody(response.message));
+    else
+      reply.raw.end();
   });
 };
 
