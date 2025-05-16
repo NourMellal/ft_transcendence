@@ -13,11 +13,22 @@ export type ChatMessage = {
   time: number;
 };
 
+type ResponseFormat<T> = Promise<
+  | {
+      success: true;
+      data: T;
+    }
+  | {
+      success: false;
+      message: string;
+    }
+>;
+
 /**
  * Fetches the list of chats for the current user.
  * @returns - An array of chat objects or null if the request failed
  */
-export const fetchUserChats = async () => {
+export const fetchUserChats = async (): ResponseFormat<Chat[]> => {
   const response = await fetch('/api/chat/list');
 
   if (response.ok) {
@@ -39,7 +50,7 @@ export const fetchUserChats = async () => {
  * @param page - The page number to fetch (default is 0)
  * @returns - An array of chat messages or null if the request failed
  */
-export const fetchChatMessages = async (uid: string, page = 0) => {
+export const fetchChatMessages = async (uid: string, page = 0): ResponseFormat<ChatMessage[]> => {
   const response = await fetch(`/api/chat/read?uid=${uid}&page=${page}`);
 
   if (response.ok) {
@@ -82,7 +93,7 @@ export const sendChatMessage = async (chat_uid: string, formData: FormData) => {
  * @param formData.message - The initial message text
  * @returns - An object containing the success status and chat data or error message
  */
-export const createNewChat = async (formData: FormData) => {
+export const createNewChat = async (formData: FormData): ResponseFormat<Chat> => {
   const response = await fetch('/api/chat/new', {
     method: 'POST',
     body: formData,
