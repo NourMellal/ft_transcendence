@@ -12,10 +12,11 @@ import { PushNotificationSocketsMap } from "./notifications";
 
 const decorateRequestsWithUsername = function (raw: string, reply: FastifyReply) {
   try {
-    const RequestsPayload = JSON.parse(raw) as {
+    let RequestsPayload = JSON.parse(raw) as {
       REQ_ID: string;
       from_uid: string;
       to_uid: string;
+      from_username?: string;
     }[];
     if (RequestsPayload.length === 0)
       return reply.raw.end('[]');
@@ -30,14 +31,9 @@ const decorateRequestsWithUsername = function (raw: string, reply: FastifyReply)
     querystring += ';';
     const query = db.persistent.prepare(querystring);
     const Users = query.all(...uids) as UserModel[];
-    const InfoMap = new Map(Users.map(item => [item.UID, item]));
-    const payload = RequestsPayload.map(request => {
-      return {
-        ...request,
-        ...(InfoMap.get(request.from_uid) || {})
-      };
-    });
-    reply.raw.end(JSON.stringify(payload));
+    const UserNameMap = new Map(Users.map(item => [item.UID, item.username]));
+    RequestsPayload.forEach(element => element.from_username = UserNameMap.get(element.from_uid));
+    reply.raw.end(JSON.stringify(RequestsPayload));
   } catch (error) {
     console.log(`decorateFriendListPayload(): ${error}`);
     reply.raw.statusCode = 400;
@@ -121,7 +117,7 @@ export const ListFriends = async (
         decorateFriendListPayload(response.message, reply);
         return Promise.resolve();
       }
-      reply.raw.end(response.message);
+      reply.raw.end('[]');
     });
   } catch (error) {
     console.log(`ERROR: RemoveUserProfile(): ${error}`);
@@ -149,7 +145,7 @@ export const ListRequests = async (
         decorateRequestsWithUsername(response.message, reply);
         return Promise.resolve();
       }
-      reply.raw.end(response.message);
+      reply.raw.end('[]');
     });
   } catch (error) {
     console.log(`ERROR: RemoveUserProfile(): ${error}`);
@@ -177,7 +173,7 @@ export const ListSentRequests = async (
         decorateRequestsWithUsername(response.message, reply);
         return Promise.resolve();
       }
-      reply.raw.end(response.message);
+      reply.raw.end('[]');
     });
   } catch (error) {
     console.log(`ERROR: RemoveUserProfile(): ${error}`);

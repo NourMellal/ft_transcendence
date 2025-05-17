@@ -181,7 +181,7 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       db.persistent.exec('ROLLBACK;');
       throw `AcceptRequest(): database error`;
     }
-    res = query.run(request.from_uid, RMqRequest.JWT.sub, request.from_uid);
+    res = query.run(request.from_uid, RMqRequest.JWT.sub, RMqRequest.JWT.sub);
     if (res.changes !== 1) {
       db.persistent.exec('ROLLBACK;');
       throw `AcceptRequest(): database error`;
