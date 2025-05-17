@@ -14,6 +14,10 @@ RUN openssl req -x509 -key /etc/vault_cert.key -out /etc/vault_cert.pem -sha256 
 COPY ./conf/vault.conf /etc/vault.conf
 COPY ./tools/configure.sh /configure.sh
 
+ARG VAULT_CLIENT_APP_NAME
+ENV $VAULT_CLIENT_APP_NAME=${VAULT_CLIENT_APP_NAME}
+ARG VAULT_OIDC_REDIRECT_URI
+ENV $VAULT_OIDC_REDIRECT_URI=${VAULT_OIDC_REDIRECT_URI}
 RUN chmod u+x /configure.sh && /configure.sh
 
 

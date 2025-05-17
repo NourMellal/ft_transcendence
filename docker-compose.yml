@@ -12,9 +12,12 @@ services:
     restart: always
   vault:
     container_name: vault
-    build: vault
-    volumes:
-      - vault_storage:/vault_storage:rw
+    build:
+      context: ./vault
+      args: 
+        VAULT_CLIENT_APP_NAME: ${VAULT_CLIENT_APP_NAME}
+        VAULT_OIDC_REDIRECT_URI: ${VAULT_OIDC_REDIRECT_URI}
+    init: true
     networks:
       - ft_transcendence
     restart: always
@@ -220,10 +223,3 @@ volumes:
       type: "none"
       o: "bind"
       device: "${HOME}/docker_volumes/rabbit_mq_log_volume"
-  vault_storage:
-    name: vault_storage
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "${HOME}/docker_volumes/vault_storage"

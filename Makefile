@@ -40,7 +40,6 @@ create_volumes_dir:
 	@mkdir -p /home/${VOL_USER}/docker_volumes/chat_manager_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/static_data_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/rabbit_mq_log_volume
-	@mkdir -p /home/${VOL_USER}/docker_volumes/vault_storage
 #Set host to fake route domains used to localhost
 set-host-and-permission:
 	@if ! grep -q "vault.transcendence.fr" /etc/hosts; then \
