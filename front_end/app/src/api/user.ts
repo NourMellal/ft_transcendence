@@ -28,12 +28,17 @@ export const setupUser = async () => {
     userState.set(await fetchUserInfo());
     if (!userState.get()) throw Error('User Not Logged-in');
 
+    const [friendRequests, notifications] = await Promise.all([
+      await fetchFriendRequests(),
+      await fetchUndreadNotifications(),
+    ]);
+
     // friend requests
-    friendRequestsState.set(await fetchFriendRequests());
+    friendRequestsState.set(friendRequests);
 
     // notifications
     await setupNotificationsSocket();
-    notificationsState.set(await fetchUndreadNotifications());
+    notificationsState.set(notifications);
   } catch {
     userState.set(null);
   }

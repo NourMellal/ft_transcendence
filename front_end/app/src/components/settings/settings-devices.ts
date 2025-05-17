@@ -1,5 +1,6 @@
 import { ActiveSession, fetchActiveSessions } from '~/api/sessions';
 import { html } from '~/lib/html';
+import { showDialog } from '../dialog';
 
 class SettingsDevices extends HTMLElement {
   private sessions: ActiveSession[] | null = null;
@@ -93,18 +94,30 @@ class SettingsDevices extends HTMLElement {
     });
 
     revokeAllButton.addEventListener('click', async () => {
-      await Promise.all(
-        Array.from(revokeButtons).map(async (button) => {
-          const tokenId = button.dataset.tokenId;
-          if (tokenId) {
-            await fetch(`/api/jwt/revoke?token_id=${tokenId}`, {
-              method: 'POST',
-              cache: 'no-store',
-            });
-          }
-        })
-      );
-      this.render();
+      showDialog({
+        content: html`<p>Are you sure? this action is irreversible.</p>`,
+        title: 'Revoke All Sessions',
+        actions: [
+          {
+            label: 'Confirm',
+            callback: async (dialog) => {
+              await Promise.all(
+                Array.from(revokeButtons).map(async (button) => {
+                  const tokenId = button.dataset.tokenId;
+                  if (tokenId) {
+                    await fetch(`/api/jwt/revoke?token_id=${tokenId}`, {
+                      method: 'POST',
+                      cache: 'no-store',
+                    });
+                  }
+                })
+              );
+              this.render();
+              dialog.close();
+            },
+          },
+        ],
+      });
     });
   }
 

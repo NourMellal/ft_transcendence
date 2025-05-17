@@ -48,7 +48,16 @@ export default class SigninPage extends HTMLElement {
                   value="${new URL(res.url).searchParams.get('state')}"
                 />
                 <label class="label" for="code">TOTP Code</label>
-                <input autocomplete="off" type="text" class="input" name="code" />
+                <input
+                  autocomplete="off"
+                  name="code"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="6"
+                  class="input w-full tracking-wider"
+                  placeholder="XXXXXX"
+                />
               </div>
             `,
             actions: [{ label: 'verify', className: 'btn-primary', submit: true }],

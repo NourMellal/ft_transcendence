@@ -75,7 +75,7 @@ class AppDialog extends HTMLElement {
     }
 
     const header = document.createElement('h2');
-    header.className = 'text-lg font-semibold text-foreground';
+    header.className = 'text-xl font-semibold text-foreground mb-6';
     header.textContent = options.title;
 
     const contentEl = document.createElement('div');
@@ -112,6 +112,8 @@ class AppDialog extends HTMLElement {
       ],
       { duration: this.transitionDuration, easing: 'ease-out' }
     );
+
+    contentEl.querySelector<HTMLInputElement>('input:not([type="hidden"])')?.focus();
   }
 
   close() {

@@ -12,7 +12,7 @@ export enum NotificationType {
   NewMessage,
 }
 
-export type NotificationData = {
+export type WebsocketNotificationData = {
   type: NotificationType;
   from_uid: string;
   to_uid: string;
@@ -42,7 +42,7 @@ export const setupNotificationsSocket = async () => {
     console.log(event);
 
     try {
-      const data = JSON.parse(event.data) as NotificationData;
+      const data = JSON.parse(event.data) as WebsocketNotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
           notificationSound.play();
@@ -81,16 +81,18 @@ export const closeNotificationSocket = () => {
 };
 
 export type Notification = {
-  UID: string;
-  messageJson: string;
-  is_read: number;
+  type: NotificationType;
+  from_uid: string;
+  to_uid: string;
+  notification_uid: string;
+  read: boolean;
+  from_username: string;
 };
 
 export const fetchUndreadNotifications = async () => {
   const response = await fetch(`/api/notifications/list_unread`);
-  const jsonResponse = (await response.json()) as Notification[];
   if (response.ok) {
-    return jsonResponse.map((json) => JSON.parse(json.messageJson) as NotificationData);
+    return (await response.json()) as Notification[];
   }
 
   return null;
@@ -98,9 +100,9 @@ export const fetchUndreadNotifications = async () => {
 
 export const fetchAllNotifications = async () => {
   const response = await fetch(`/api/notifications/list_all`);
-  const jsonResponse = (await response.json()) as Notification[];
+
   if (response.ok) {
-    return jsonResponse.map((json) => JSON.parse(json.messageJson) as NotificationData);
+    return (await response.json()) as Notification[];
   }
 
   return null;

@@ -1,4 +1,4 @@
-import { NotificationData, NotificationType } from '~/api/notifications';
+import { Notification, NotificationType } from '~/api/notifications';
 import { fetchUserInfo } from '~/api/user';
 import { notificationsState } from '~/app-state';
 import { BellIcon } from '~/icons';
@@ -31,7 +31,7 @@ class NotificationNavMenu extends HTMLElement {
     }
   }
 
-  async getNotificationMessage(data: NotificationData) {
+  async getNotificationMessage(data: Notification) {
     const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
 
     switch (data.type) {
@@ -83,7 +83,7 @@ class NotificationNavMenu extends HTMLElement {
                     async (data) =>
                       html`
                         <button
-                          class="text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+                          class="w-full text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
                         >
                           <h4>${this.getNotificationTitle(data.type)}</h4>
                           <p class="text-sm text-muted-foreground">
