@@ -3,21 +3,7 @@ import rabbitmq from "../../classes/RabbitMQ";
 import { RabbitMQLeaderboardOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import db from "../../classes/Databases";
-
-const decorateRankPayload = function (raw: string) {
-    const payload = JSON.parse(raw) as any[];
-    for (let i = 0; i < payload.length; i++) {
-        const elem: any = payload[i];
-        const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
-        {
-            const res = query.all(elem.UID) as UserModel[];
-            if (res.length > 0) {
-                elem.username = res[0].username;
-            }
-        }
-    }
-    return JSON.stringify(payload);
-}
+import { GetUsernamesByUIDs } from "../Common";
 
 export const ListAllRank = async (
     request: FastifyRequest<{ Querystring: { page: number } }>,
@@ -31,16 +17,25 @@ export const ListAllRank = async (
         JWT: request.jwt,
     };
     rabbitmq.sendToLeaderboardQueue(RabbitMQReq, (response) => {
-        reply.raw.statusCode = response.status;
-        reply.raw.setHeader("Content-Type", "application/json");
-        if (response.message)
-            reply.raw.end(decorateRankPayload(response.message));
-        else
-            reply.raw.end();
+        try {
+            reply.raw.statusCode = response.status;
+            reply.raw.setHeader("Content-Type", "application/json");
+            if (!response.message)
+                throw 'invalid response';
+            const payload = JSON.parse(response.message) as any[];
+            if (payload.length > 0) {
+                const usernames = GetUsernamesByUIDs(payload.map(elem => elem.UID));
+                payload.forEach(elem => elem.username = usernames.get(elem.UID));
+            }
+            reply.raw.end(JSON.stringify(payload));
+        } catch (error) {
+            console.log(`ListAllRank(): ${error}`);
+            reply.raw.end('[]');
+        }
     });
 }
 
-export const ListUserRank = async (
+export const GetUserRank = async (
     request: FastifyRequest,
     reply: FastifyReply
 ) => {

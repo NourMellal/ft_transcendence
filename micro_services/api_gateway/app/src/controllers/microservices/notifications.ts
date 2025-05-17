@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
-import { GetRandomString } from "../Common";
+import { GetRandomString, GetUsernamesByUIDs } from "../Common";
 import { state_expiree_sec, UserModel, users_table_name } from "../../types/DbTables";
 import {
   NotificationBody,
@@ -19,21 +19,17 @@ const PushNotificationStates = new Map<string, string>();
 const decorateNotificationBody = function (notificationsRaw: string) {
   try {
     let payload: any[] = [];
-    let notifications;
-    if (typeof notificationsRaw === 'string')
-      notifications = JSON.parse(notificationsRaw) as NotificationsModel[];
-    else
-      notifications = [notificationsRaw];
+    let notifications = JSON.parse(notificationsRaw) as NotificationsModel[];
+    let uids: string[] = [];
     for (let i = 0; i < notifications.length; i++) {
       payload[i] = JSON.parse(notifications[i].messageJson);
       payload[i].notification_uid = notifications[i].UID;
-      const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
-      {
-        const res = query.all(payload[i].from_uid) as UserModel[];
-        if (res.length > 0) {
-          payload[i].from_username = res[0].username;
-        }
-      }
+      if (uids.indexOf(payload[i].from_uid) === -1)
+        uids.push(payload[i].from_uid);
+    }
+    if (uids.length > 0) {
+      const usernames = GetUsernamesByUIDs(uids);
+      payload.forEach(elem => elem.from_username = usernames.get(elem.from_uid));
     }
     return JSON.stringify(payload);
   } catch (error) {

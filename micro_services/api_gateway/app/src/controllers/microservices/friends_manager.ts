@@ -9,6 +9,7 @@ import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import { JWT } from "../../types/AuthProvider";
 import { PushNotificationSocketsMap } from "./notifications";
+import { GetUsernamesByUIDs } from "../Common";
 
 const decorateRequestsWithUsername = function (raw: string, reply: FastifyReply) {
   try {
@@ -20,18 +21,7 @@ const decorateRequestsWithUsername = function (raw: string, reply: FastifyReply)
     }[];
     if (RequestsPayload.length === 0)
       return reply.raw.end('[]');
-    let uids: string[] = [];
-    let querystring = `SELECT UID, username FROM ${users_table_name} WHERE `;
-    for (let i = 0; i < RequestsPayload.length; i++) {
-      uids.push(RequestsPayload[i].from_uid);
-      querystring += 'UID = ? ';
-      if (i < RequestsPayload.length - 1)
-        querystring += 'OR ';
-    }
-    querystring += ';';
-    const query = db.persistent.prepare(querystring);
-    const Users = query.all(...uids) as UserModel[];
-    const UserNameMap = new Map(Users.map(item => [item.UID, item.username]));
+    const UserNameMap = GetUsernamesByUIDs(RequestsPayload.map(elem => elem.from_uid));
     RequestsPayload.forEach(element => element.from_username = UserNameMap.get(element.from_uid));
     reply.raw.end(JSON.stringify(RequestsPayload));
   } catch (error) {
@@ -53,43 +43,25 @@ const decorateFriendListPayload = function (raw: string, reply: FastifyReply) {
   }
   rabbitmq.sendToUserManagerQueue(RmqRequest, (RawResponse) => {
     try {
-      const FriendsBioPictures = JSON.parse(RawResponse.message as string) as {
+      let FriendsInfo = JSON.parse(RawResponse.message as string) as {
         UID: string;
         picture_url: string;
         bio: string;
+        username?:string;
+        active_status?:number;
       }[];
-      if (FriendsBioPictures.length === 0)
+      if (FriendsInfo.length === 0)
         return reply.raw.end('[]');
-      let uids: string[] = [];
-      let querystring = `SELECT UID, username FROM ${users_table_name} WHERE `;
-      for (let i = 0; i < FriendsBioPictures.length; i++) {
-        uids.push(FriendsBioPictures[i].UID);
-        querystring += 'UID = ? ';
-        if (i < FriendsBioPictures.length - 1)
-          querystring += 'OR ';
-      }
-      querystring += ';';
-      const query = db.persistent.prepare(querystring);
-      const Users = query.all(...uids) as {
-        UID: string,
-        username: string,
-        active_status?: number
-      }[];
-      for (let i = 0; i < Users.length; i++) {
-        const sockets = PushNotificationSocketsMap.get(Users[i].UID);
+      const UserNames = GetUsernamesByUIDs(FriendsInfo.map(elem => elem.UID));
+      for (let i = 0; i < FriendsInfo.length; i++) {
+        FriendsInfo[i].username = UserNames.get(FriendsInfo[i].UID);
+        const sockets = PushNotificationSocketsMap.get(FriendsInfo[i].UID);
         if (sockets && sockets.length > 0)
-          Users[i].active_status = 1;
+          FriendsInfo[i].active_status = 1;
         else
-          Users[i].active_status = 0;
+          FriendsInfo[i].active_status = 0;
       }
-      const InfoMap = new Map(Users.map(item => [item.UID, item]));
-      const payload = FriendsBioPictures.map(extra_info => {
-        return {
-          ...extra_info,
-          ...(InfoMap.get(extra_info.UID) || {})
-        };
-      });
-      reply.raw.end(JSON.stringify(payload));
+      reply.raw.end(JSON.stringify(FriendsInfo));
     } catch (error) {
       console.log(`decorateFriendListPayload(): ${error}`);
       reply.raw.statusCode = 400;
@@ -97,7 +69,6 @@ const decorateFriendListPayload = function (raw: string, reply: FastifyReply) {
     }
   });
 }
-
 
 export const ListFriends = async (
   request: FastifyRequest,

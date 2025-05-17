@@ -5,6 +5,8 @@ import db from "../classes/Databases";
 import {
   refresh_token_table_name,
   state_expiree_sec,
+  UserModel,
+  users_table_name,
 } from "../types/DbTables";
 import AuthProvider from "../classes/AuthProvider";
 import { discoveryDocument } from "../models/DiscoveryDocument";
@@ -112,3 +114,16 @@ export const GetTOTPRedirectionUrl = function (
   setTimeout(() => Totp.states.delete(state), state_expiree_sec * 1000);
   return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
 };
+
+export const GetUsernamesByUIDs = function (uids: string[]): Map<string, string> {
+  let querystring = `SELECT UID, username FROM ${users_table_name} WHERE `;
+  for (let i = 0; i < uids.length; i++) {
+    querystring += 'UID = ? ';
+    if (i < uids.length - 1)
+      querystring += 'OR ';
+  }
+  querystring += ';';
+  const query = db.persistent.prepare(querystring);
+  const res = query.all(...uids) as UserModel[];
+  return new Map(res.map(elem => [elem.UID, elem.username]));
+}

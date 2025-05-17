@@ -4,6 +4,7 @@ import rabbitmq from "../../classes/RabbitMQ";
 import { multipart_fields } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { users_table_name } from "../../types/DbTables";
+import { GetUsernamesByUIDs } from "../Common";
 
 export const ListConversations = async (
     request: FastifyRequest,
@@ -54,9 +55,21 @@ export const ListBlocked = async (
         op: RabbitMQChatManagerOp.BLOCK_LIST,
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
-        reply.raw.statusCode = response.status;
-        reply.raw.setHeader("Content-Type", "application/json");
-        reply.raw.end(response.message);
+        try {
+            reply.raw.statusCode = response.status;
+            reply.raw.setHeader("Content-Type", "application/json");
+            if (!response.message)
+                throw 'ListBlocked(): Invalid response'
+            let payload = JSON.parse(response.message) as { blocked_uid: string, username?: string }[];
+            if (payload.length > 0) {
+                const usernames = GetUsernamesByUIDs(payload.map(e => e.blocked_uid));
+                payload.forEach(element => element.username = usernames.get(element.blocked_uid));
+            }
+            reply.raw.end(JSON.stringify(payload));
+        } catch (error) {
+            console.log(`ListBlocked(): ${error}`);
+            reply.raw.end('[]');
+        }
     })
 }
 
