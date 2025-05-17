@@ -15,7 +15,7 @@ RUN ./install.sh
 RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
 COPY ./san.cnf /san.cnf
-RUN openssl ecparam -name secp521r1 -genkey -out /private.key
+RUN openssl ecparam -name prime256v1 -genkey -out /private.key
 RUN openssl req -x509 -key /private.key -out /cert.pem -sha256 -days 3650 -noenc -config /san.cnf
 
 WORKDIR /app

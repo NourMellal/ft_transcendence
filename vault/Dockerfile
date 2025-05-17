@@ -7,7 +7,7 @@ RUN chmod u+x /install.sh && /install.sh
 
 
 COPY ./tools/san.cnf /san.cnf
-RUN openssl ecparam -name secp521r1 -genkey -out /etc/vault_cert.key
+RUN openssl ecparam -name prime256v1 -genkey -out /etc/vault_cert.key
 RUN openssl req -x509 -key /etc/vault_cert.key -out /etc/vault_cert.pem -sha256 -days 3650 -noenc -config /san.cnf
 
 

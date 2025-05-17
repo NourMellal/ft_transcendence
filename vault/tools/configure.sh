@@ -14,5 +14,5 @@ VAULT_UNSEAL_KEY=`cat /vault_seal.private | grep -Po '(?<=(Unseal Key 1: )).+'`
 vault operator unseal $VAULT_UNSEAL_KEY
 VAULT_UNSEAL_KEY=
 VAULT_LOGIN_TOKEN=`cat /vault_seal.private | grep -Po '(?<=(Initial Root Token: )).+'`
-vault login $VAULT_UNSEAL_KEY
+vault login $VAULT_LOGIN_TOKEN
 VAULT_LOGIN_TOKEN=
