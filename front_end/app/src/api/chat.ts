@@ -93,7 +93,7 @@ export const sendChatMessage = async (chat_uid: string, formData: FormData) => {
  * @param formData.message - The initial message text
  * @returns - An object containing the success status and chat data or error message
  */
-export const createNewChat = async (formData: FormData): ResponseFormat<Chat> => {
+export const createNewChat = async (formData: FormData): ResponseFormat<string> => {
   const response = await fetch('/api/chat/new', {
     method: 'POST',
     body: formData,
@@ -102,7 +102,7 @@ export const createNewChat = async (formData: FormData): ResponseFormat<Chat> =>
   if (response.ok) {
     return {
       success: true,
-      data: (await response.json()) as Chat,
+      data: await response.text(),
     };
   }
 

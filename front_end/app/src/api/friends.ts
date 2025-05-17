@@ -27,7 +27,21 @@ export const fetchFriendRequests = async () => {
             ...from_user,
           };
         }
-      }),
+      })
     )
   ).filter((item): item is NonNullable<typeof item> => item != null);
+};
+
+export const fetchFriends = async () => {
+  try {
+    const response = await fetchWithAuth('/api/friends');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch friends: ${response.status}`);
+    }
+    const friends = (await response.json()) as User[];
+    return friends;
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+    return null;
+  }
 };

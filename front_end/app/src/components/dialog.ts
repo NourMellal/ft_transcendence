@@ -98,7 +98,7 @@ class AppDialog extends HTMLElement {
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'btn-destructive';
-    closeBtn.textContent = 'Close';
+    closeBtn.textContent = 'Cancel';
     closeBtn.onclick = () => this.close();
     footer.append(closeBtn);
 

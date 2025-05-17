@@ -10,6 +10,8 @@ import {
 } from '~/api/chat';
 import { PlusIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
+import { showToast } from '~/components/toast';
+import { fetchFriends } from '~/api/friends';
 
 export default class ChatPage extends HTMLElement {
   private isSidebarOpen = false;
@@ -241,29 +243,57 @@ export default class ChatPage extends HTMLElement {
     });
   }
 
-  createNewChat() {
+  async createNewChat() {
+    const friends = await fetchFriends();
+
+    console.log(friends);
+
+    if (!friends) {
+      showToast({
+        type: 'error',
+        message: 'Failed to fetch friends',
+      });
+      return;
+    }
+
     showDialog({
       title: 'New Chat',
       content: html`
         <div class="space-y-4">
           <div>
             <label class="label" for="chat-name">Chat Name</label>
-            <input id="chat-name" type="text" class="input" />
+            <input id="chat-name" type="text" class="input" name="name" />
           </div>
           <div>
-            <label class="label" for="user-uid">User UID</label>
-            <input id="chat-uid" type="text" class="input" />
+            <label class="label" for="user-uid">Friend</label>
+            <select class="select" name="to_uid" id="user-uid">
+              ${friends.map(
+                (friend) => html` <option value="${friend.UID}">${friend.username}</option> `
+              )}
+            </select>
           </div>
           <div>
             <label class="label" for="chat-message">Message</label>
-            <input id="chat-message" type="text" class="input" />
+            <input id="chat-message" type="text" name="message" class="input" />
           </div>
         </div>
       `,
       asForm: true,
       actions: [{ label: 'create', submit: true }],
-      formHandler(formData, dialog) {
-        console.log(formData);
+      async formHandler(formData, dialog) {
+        const res = await createNewChat(formData);
+        if (res.success) {
+          showToast({
+            type: 'success',
+            message: 'Chat created successfully',
+          });
+          dialog.close();
+        } else {
+          showToast({
+            type: 'error',
+            message: `Failed to create chat for the following reason: ${res.message}`,
+          });
+        }
       },
     });
   }
