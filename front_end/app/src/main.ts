@@ -3,6 +3,9 @@ import { setupUser } from './api/user';
 import { friendRequestsState, notificationsState, userState } from './app-state';
 import { handleEffect } from './utils';
 
+import '~/components/toast';
+import '~/components/dialog';
+
 function initTheme() {
   let isDarkMode = true;
   if (window.localStorage.getItem('theme')) {

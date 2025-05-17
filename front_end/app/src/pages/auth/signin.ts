@@ -8,6 +8,7 @@ import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
 import { userState } from '~/app-state';
 import { LockIcon } from '~/icons';
+import { showDialog } from '~/components/dialog';
 
 export default class SigninPage extends HTMLElement {
   intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
@@ -30,6 +31,52 @@ export default class SigninPage extends HTMLElement {
         if (!res.ok) {
           form.querySelector<HTMLInputElement>('[name="password"]')!.value = '';
           showToast({ type: 'error', message: await res.text() });
+          return;
+        }
+
+        if (res.redirected) {
+          console.log(res.url);
+
+          showDialog({
+            title: '2FA verification',
+            asForm: true,
+            content: html`
+              <div>
+                <input
+                  type="hidden"
+                  name="state"
+                  value="${new URL(res.url).searchParams.get('state')}"
+                />
+                <label class="label" for="code">TOTP Code</label>
+                <input autocomplete="off" type="text" class="input" name="code" />
+              </div>
+            `,
+            actions: [{ label: 'verify', className: 'btn-primary', submit: true }],
+            formHandler: async (formData, dialog) => {
+              console.log('submitted');
+
+              const res = await fetch(`/api/2FA/verify?state=${formData.get('state')}`, {
+                method: 'POST',
+                body: formData,
+              });
+
+              if (res.ok) {
+                dialog.close();
+                await setupUser();
+                navigateTo(this.intended);
+                showToast({
+                  message: 'Welcome Back!',
+                });
+                return;
+              }
+
+              showToast({
+                message: await res.text(),
+                type: 'error',
+              });
+            },
+          });
+
           return;
         }
 
