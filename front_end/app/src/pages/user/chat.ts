@@ -14,6 +14,7 @@ import { showToast } from '~/components/toast';
 import { fetchFriends } from '~/api/friends';
 import { pushNotificationStore, userStore } from '~/app-state';
 import { NotificationType, WebsocketNotificationData } from '~/api/notifications';
+import { navigateTo } from '~/components/app-router';
 
 export default class ChatPage extends HTMLElement {
   private isSidebarOpen = false;
@@ -27,11 +28,24 @@ export default class ChatPage extends HTMLElement {
     const data = JSON.parse(ev.data) as WebsocketNotificationData;
 
     if (data.type === NotificationType.NewMessage && data.conversation_uid === this.chatUID) {
-      await this.selectChat(this.chatUID);
+      if (this.selectedChat) {
+        const res = await fetchChatMessages(this.selectedChat.UID);
+        if (res.success) {
+          const newMessage = res.data.at(0);
+          if (newMessage) {
+            this.messages = [...this.messages, newMessage];
+            this.appendMessage(newMessage);
+          }
+        }
+      }
     }
   };
 
   async connectedCallback() {
+    if (!userStore.get()) {
+      navigateTo('/signin');
+      return;
+    }
     await this.loadChats();
     if (this.chatUID) {
       await this.selectChat(this.chatUID);
@@ -111,8 +125,11 @@ export default class ChatPage extends HTMLElement {
   }
 
   scrollToBottom() {
-    const container = this.querySelector('.messages');
-    if (container) setTimeout(() => (container.scrollTop = container.scrollHeight), 50);
+    const container = this.querySelector<HTMLDivElement>('.messages');
+
+    if (container) {
+      setTimeout(() => (container.scrollTop = container.scrollHeight), 50);
+    }
   }
 
   render() {
@@ -279,28 +296,30 @@ export default class ChatPage extends HTMLElement {
     const container = this.querySelector('.messages');
     if (container) {
       const currentUID = userStore.get()?.UID;
-      const msgEl = document.createElement('div');
-      msgEl.className = `flex ${msg.user_uid === currentUID ? 'justify-end' : 'justify-start'}`;
-      msgEl.innerHTML = `
+      const msgEl = html` <div
+        class="flex ${msg.user_uid === currentUID ? 'justify-end' : 'justify-start'}"
+      >
         <div class="max-w-xs lg:max-w-md">
-          <div class="text-xs text-muted-foreground mb-1 ${
-            msg.user_uid === currentUID ? 'text-right' : 'text-left'
-          }">
-            ${msg.user_uid === currentUID ? 'You' : msg.username} · ${new Date(
-        msg.time * 1000
-      ).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}
+          <div
+            class="text-xs text-muted-foreground mb-1 ${msg.user_uid === currentUID
+              ? 'text-right'
+              : 'text-left'}"
+          >
+            ${msg.user_uid === currentUID ? 'You' : msg.username} ·
+            ${new Date(msg.time * 1000).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </div>
-          <div class="p-3 rounded-lg ${
-            msg.user_uid === currentUID
+          <div
+            class="p-3 rounded-lg ${msg.user_uid === currentUID
               ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground'
-          }">
+              : 'bg-secondary text-secondary-foreground'}"
+          >
             <p class="text-sm">${msg.message_text}</p>
           </div>
-        </div>`;
+        </div>
+      </div>`;
       container.appendChild(msgEl);
       this.scrollToBottom();
     }
