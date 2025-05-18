@@ -23,10 +23,10 @@ export default class ChatPage extends HTMLElement {
   private newMessageText = '';
   private chatUID = new URLSearchParams(window.location.search).get('chat');
 
-  handleNewMessage = async (ev: MessageEvent<WebsocketNotificationData>) => {
-    console.log(ev.data);
+  handleNewMessage = async (ev: MessageEvent) => {
+    const data = JSON.parse(ev.data) as WebsocketNotificationData;
 
-    if (ev.data.type === NotificationType.NewMessage && this.chatUID) {
+    if (data.type === NotificationType.NewMessage && data.conversation_uid === this.chatUID) {
       await this.selectChat(this.chatUID);
     }
   };
@@ -38,7 +38,6 @@ export default class ChatPage extends HTMLElement {
     } else {
       this.render();
     }
-    console.log(pushNotificationStore.get());
 
     pushNotificationStore.get()?.addEventListener('message', this.handleNewMessage);
   }
@@ -244,7 +243,7 @@ export default class ChatPage extends HTMLElement {
                 `
               : html`
                   <div class="flex-1 flex items-center justify-center">
-                    <p class="text-muted">Select a conversation to start chatting</p>
+                    <p class="text-muted-foreground">Select a conversation to start chatting</p>
                   </div>
                 `}
           </main>

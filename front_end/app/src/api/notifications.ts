@@ -22,14 +22,18 @@ export type WebsocketNewMessageNotification = {
   from_username: string;
 };
 
+type ExcludeNewMessage = Exclude<NotificationType, NotificationType.NewMessage>;
+
+type GenericWebsocketNotification<T extends ExcludeNewMessage = ExcludeNewMessage> = {
+  type: T;
+  from_uid: string;
+  to_uid: string;
+  is_read: boolean;
+};
+
 export type WebsocketNotificationData =
   | WebsocketNewMessageNotification
-  | {
-      type: NotificationType;
-      from_uid: string;
-      to_uid: string;
-      is_read: boolean;
-    };
+  | GenericWebsocketNotification;
 
 export const setupNotificationsSocket = async () => {
   if (pushNotificationStore.get()) return;
@@ -55,8 +59,6 @@ export const setupNotificationsSocket = async () => {
 
   ws.addEventListener('message', async (event) => {
     try {
-      console.log(event.data);
-
       const data = JSON.parse(event.data) as WebsocketNotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
