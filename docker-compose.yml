@@ -65,7 +65,6 @@ services:
     volumes:
       - ./micro_services/user_manager/app:/app:rw
       - user_manager_db_volume:/database:rw
-      - static_data_volume:/static:rw
     networks:
       - ft_transcendence
     init: true

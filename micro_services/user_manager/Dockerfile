@@ -14,8 +14,6 @@ RUN ./install.sh
 
 RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
-COPY ./static/profile /static/profile
-
 WORKDIR /app
 
 ARG NPM_MICROSERVICE_SCRIPT
