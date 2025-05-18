@@ -164,9 +164,9 @@ export const markNotificationAsRead = async (uid: string) => {
   }
 };
 
-export const deleteNotification = async () => {
+export const deleteNotification = async (uid: string) => {
   try {
-    const response = await fetch(`/api/notifications/delete`, {
+    const response = await fetch(`/api/notifications/delete?uid=${uid}`, {
       method: 'POST',
     });
     return {
