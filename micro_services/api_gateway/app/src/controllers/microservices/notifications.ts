@@ -2,7 +2,11 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
 import { GetRandomString, GetUsernamesByUIDs } from "../Common";
-import { state_expiree_sec, UserModel, users_table_name } from "../../types/DbTables";
+import {
+  state_expiree_sec,
+  UserModel,
+  users_table_name,
+} from "../../types/DbTables";
 import {
   NotificationBody,
   NotificationsModel,
@@ -29,14 +33,16 @@ const decorateNotificationBody = function (notificationsRaw: string) {
     }
     if (uids.length > 0) {
       const usernames = GetUsernamesByUIDs(uids);
-      payload.forEach(elem => elem.from_username = usernames.get(elem.from_uid));
+      payload.forEach(
+        (elem) => (elem.from_username = usernames.get(elem.from_uid)!)
+      );
     }
     return JSON.stringify(payload);
   } catch (error) {
     console.log(`decorateNotificationBody(): ${error}`);
-    return '[]';
+    return "[]";
   }
-}
+};
 
 const removeSocket = function (socket: WebSocket, uid: string) {
   const sockets = PushNotificationSocketsMap.get(uid);
@@ -57,10 +63,12 @@ export const pingUser = function (notificationRaw: string) {
     const sockets = PushNotificationSocketsMap.get(notification.to_uid);
     if (sockets && sockets.length > 0) {
       console.log(`Sending Ping Request for uid=${notification.to_uid}`);
-      const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
+      const query = db.persistent.prepare(
+        `SELECT username FROM ${users_table_name} WHERE UID = ? ;`
+      );
       const res = query.all(notification.from_uid) as UserModel[];
       if (res.length === 0)
-        throw `username for ${notification.from_uid} not found`
+        throw `username for ${notification.from_uid} not found`;
       notification.from_username = res[0].username;
       const payload = JSON.stringify(notification);
       for (let i = 0; i < sockets.length; i++) {
@@ -124,8 +132,7 @@ export const GetUnreadNotification = async (
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
       reply.raw.end(decorateNotificationBody(response.message));
-    else
-      reply.raw.end('[]');
+    else reply.raw.end("[]");
   });
 };
 
@@ -145,8 +152,7 @@ export const GetAllNotification = async (
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
       reply.raw.end(decorateNotificationBody(response.message));
-    else
-      reply.raw.end('[]');
+    else reply.raw.end("[]");
   });
 };
 
@@ -207,7 +213,7 @@ export const GetUserActiveStatus = async (
 ) => {
   const sockets = PushNotificationSocketsMap.get(request.query.uid);
   if (sockets && sockets.length > 0) {
-    return reply.code(200).send('online');
+    return reply.code(200).send("online");
   }
-  return reply.code(404).send('offline');
-}
+  return reply.code(404).send("offline");
+};

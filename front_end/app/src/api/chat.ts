@@ -13,33 +13,22 @@ export type ChatMessage = {
   time: number;
 };
 
-type ResponseFormat<T> = Promise<
-  | {
-      success: true;
-      data: T;
-    }
-  | {
-      success: false;
-      message: string;
-    }
->;
-
 /**
  * Fetches the list of chats for the current user.
  * @returns - An array of chat objects or null if the request failed
  */
-export const fetchUserChats = async (): ResponseFormat<Chat[]> => {
+export const fetchUserChats = async () => {
   const response = await fetch('/api/chat/list');
 
   if (response.ok) {
     return {
-      success: true,
+      success: true as const,
       data: (await response.json()) as Chat[],
     };
   }
 
   return {
-    success: false,
+    success: false as const,
     message: await response.text(),
   };
 };
@@ -50,18 +39,18 @@ export const fetchUserChats = async (): ResponseFormat<Chat[]> => {
  * @param page - The page number to fetch (default is 0)
  * @returns - An array of chat messages or null if the request failed
  */
-export const fetchChatMessages = async (uid: string, page = 0): ResponseFormat<ChatMessage[]> => {
+export const fetchChatMessages = async (uid: string, page = 0) => {
   const response = await fetch(`/api/chat/read?uid=${uid}&page=${page}`);
 
   if (response.ok) {
     return {
-      success: true,
+      success: true as const,
       data: (await response.json()) as ChatMessage[],
     };
   }
 
   return {
-    success: false,
+    success: false as const,
     message: await response.text(),
   };
 };
@@ -93,7 +82,7 @@ export const sendChatMessage = async (chat_uid: string, formData: FormData) => {
  * @param formData.message - The initial message text
  * @returns - An object containing the success status and chat data or error message
  */
-export const createNewChat = async (formData: FormData): ResponseFormat<string> => {
+export const createNewChat = async (formData: FormData) => {
   const response = await fetch('/api/chat/new', {
     method: 'POST',
     body: formData,
@@ -101,13 +90,13 @@ export const createNewChat = async (formData: FormData): ResponseFormat<string> 
 
   if (response.ok) {
     return {
-      success: true,
+      success: true as const,
       data: await response.text(),
     };
   }
 
   return {
-    success: false,
+    success: false as const,
     message: await response.text(),
   };
 };

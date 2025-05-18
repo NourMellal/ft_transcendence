@@ -1,6 +1,8 @@
-import { friendRequestsState, notificationsState, userState } from '~/app-state';
+import { friendRequestsStore, notificationsStore, userStore } from '~/app-state';
 import { fetchFriendRequests } from './friends';
 import { fetchUndreadNotifications, setupNotificationsSocket } from './notifications';
+import { showToast } from '~/components/toast';
+import { fetchWithAuth } from './auth';
 
 export type User = {
   UID: string;
@@ -25,8 +27,8 @@ export const fetchUserInfo = async (uid?: string) => {
 export const setupUser = async () => {
   try {
     // user info
-    userState.set(await fetchUserInfo());
-    if (!userState.get()) throw Error('User Not Logged-in');
+    userStore.set(await fetchUserInfo());
+    if (!userStore.get()) throw Error('User Not Logged-in');
 
     const [friendRequests, notifications] = await Promise.all([
       await fetchFriendRequests(),
@@ -34,12 +36,56 @@ export const setupUser = async () => {
     ]);
 
     // friend requests
-    friendRequestsState.set(friendRequests);
+    friendRequestsStore.set(friendRequests);
 
     // notifications
     await setupNotificationsSocket();
-    notificationsState.set(notifications);
+    if (notifications.success) {
+      notificationsStore.set(notifications.data);
+    } else {
+      showToast({
+        type: 'error',
+        message: notifications.message,
+      });
+    }
   } catch {
-    userState.set(null);
+    userStore.set(null);
   }
+};
+
+export enum MatchStatus {
+  LOSS = -1,
+  PENDING = 0,
+  WIN = 1,
+}
+
+export enum MatchType {
+  Single1V1 = 1,
+  Single2V2 = 2,
+  Tournament = 3,
+  AI = 4,
+}
+
+export type MatchHistoryEntry = {
+  match_UID: string;
+  UID: string; // user uid
+  match_type: MatchType;
+  started: number;
+  state: MatchStatus;
+};
+
+export const fetchMatchHistory = async (uid: string) => {
+  const response = await fetchWithAuth(`/api/match/history?uid=${uid}`);
+
+  if (response.ok) {
+    return {
+      success: true as const,
+      data: (await response.json()) as MatchHistoryEntry[],
+    };
+  }
+
+  return {
+    success: false as const,
+    message: await response.text(),
+  };
 };

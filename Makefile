@@ -17,7 +17,7 @@ DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES})
 %/node_modules:
 	cd ./$@/.. && npm install
 %/dist:
-	cd ./$@/.. && tsc
+	cd ./$@/.. && npx tsc
 all: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
 build: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission

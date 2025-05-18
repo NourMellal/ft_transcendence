@@ -9,7 +9,7 @@ export const fetchActiveSessions = async (): Promise<ActiveSession[] | null> => 
     cache: 'no-store',
   });
   if (res.ok) {
-    return (await res.json()) || [];
+    return (await res.json()) as ActiveSession[];
   }
 
   return null;

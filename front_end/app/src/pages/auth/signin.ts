@@ -6,7 +6,7 @@ import { handleEffect } from '~/utils';
 import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 import { LockIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
 
@@ -101,7 +101,7 @@ export default class SigninPage extends HTMLElement {
   };
 
   async render() {
-    if (userState.get()) return navigateTo('/profile');
+    if (userStore.get()) return navigateTo('/profile');
 
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>

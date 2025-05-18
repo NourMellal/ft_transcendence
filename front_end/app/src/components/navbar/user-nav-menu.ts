@@ -1,12 +1,12 @@
 import { navigateTo } from '../app-router';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 import { UserIcon, CogIcon, LogoutIcon } from '~/icons';
 
 class UserNavMenu extends HTMLElement {
   render() {
-    const currentUser = userState.get();
+    const currentUser = userStore.get();
 
     if (!currentUser) return;
     this.replaceChildren(html`
@@ -62,7 +62,7 @@ class UserNavMenu extends HTMLElement {
         throw new Error('Logout failed');
       }
 
-      userState.set(null);
+      userStore.set(null);
 
       navigateTo('/signin');
     } catch (error) {

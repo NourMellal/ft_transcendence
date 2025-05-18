@@ -1,4 +1,4 @@
-import { friendRequestsState, pushNotificationState } from '~/app-state';
+import { friendRequestsStore, notificationsStore, pushNotificationStore } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 
@@ -20,7 +20,7 @@ export type WebsocketNotificationData = {
 };
 
 export const setupNotificationsSocket = async () => {
-  if (pushNotificationState.get()) return;
+  if (pushNotificationStore.get()) return;
 
   const notificationSound = new Audio('/notification.mp3');
   let pingInterval: NodeJS.Timeout;
@@ -39,7 +39,7 @@ export const setupNotificationsSocket = async () => {
   };
 
   ws.onmessage = async (event) => {
-    console.log(event);
+    console.log(event.data);
 
     try {
       const data = JSON.parse(event.data) as WebsocketNotificationData;
@@ -49,16 +49,17 @@ export const setupNotificationsSocket = async () => {
         } catch {}
       }
 
+      console.log(data);
+
       switch (data.type) {
         case NotificationType.NewFriendRequest:
         case NotificationType.FriendRequestDenied:
         case NotificationType.FriendRequestAccepted:
         case NotificationType.FriendRemove:
-          friendRequestsState.set(await fetchFriendRequests());
+          friendRequestsStore.set(await fetchFriendRequests());
           break;
-        case NotificationType.Poke:
-          console.log(data);
-
+        default:
+          notificationsStore.set((await fetchUndreadNotifications()).data || null);
           break;
       }
     } catch {
@@ -69,14 +70,14 @@ export const setupNotificationsSocket = async () => {
   ws.onclose = () => {
     clearInterval(pingInterval);
   };
-  pushNotificationState.set(ws);
+  pushNotificationStore.set(ws);
 };
 
 export const closeNotificationSocket = () => {
-  const socket = pushNotificationState.get();
+  const socket = pushNotificationStore.get();
   if (socket) {
     socket.close();
-    pushNotificationState.set(null);
+    pushNotificationStore.set(null);
   }
 };
 
@@ -90,54 +91,98 @@ export type Notification = {
 };
 
 export const fetchUndreadNotifications = async () => {
-  const response = await fetch(`/api/notifications/list_unread`);
-  if (response.ok) {
-    return (await response.json()) as Notification[];
-  }
+  try {
+    const response = await fetch(`/api/notifications/list_unread`);
+    if (response.ok) {
+      return {
+        success: true as const,
+        data: (await response.json()) as Notification[],
+      };
+    }
 
-  return null;
+    return {
+      success: false as const,
+      message: await response.text(),
+    };
+  } catch {
+    return {
+      success: false as const,
+      message: 'Error fetching notifications',
+    };
+  }
 };
 
 export const fetchAllNotifications = async () => {
-  const response = await fetch(`/api/notifications/list_all`);
+  try {
+    const response = await fetch(`/api/notifications/list_all`);
 
-  if (response.ok) {
-    return (await response.json()) as Notification[];
+    if (response.ok) {
+      return {
+        success: true as const,
+        data: (await response.json()) as Notification[],
+      };
+    }
+
+    return {
+      success: false as const,
+      message: await response.text(),
+    };
+  } catch {
+    return {
+      success: false as const,
+      message: 'Error fetching notifications',
+    };
   }
-
-  return null;
 };
 
-export const markNotificationAsRead = async () => {
-  const response = await fetch(`/api/notifications/mark_as_read`, {
-    method: 'POST',
-  });
-  if (response.ok) {
-    return true;
+export const markNotificationAsRead = async (uid: string) => {
+  try {
+    const response = await fetch(`/api/notifications/mark_as_read?uid=${uid}`, {
+      method: 'POST',
+    });
+    return {
+      success: response.ok,
+      message: await response.text(),
+    };
+  } catch {
+    return {
+      success: false,
+      message: 'Error marking notification as read',
+    };
   }
-
-  return false;
 };
 
 export const deleteNotification = async () => {
-  const response = await fetch(`/api/notifications/delete`, {
-    method: 'POST',
-  });
-  if (response.ok) {
-    return true;
+  try {
+    const response = await fetch(`/api/notifications/delete`, {
+      method: 'POST',
+    });
+    return {
+      success: response.ok,
+      message: await response.text(),
+    };
+  } catch {
+    return {
+      success: false,
+      message: 'Error deleting notification',
+    };
   }
-
-  return false;
 };
 
 export const pokeFriend = async (uid: string) => {
-  const response = await fetch(`/api/poke?uid=${uid}`, {
-    method: 'POST',
-  });
+  try {
+    const response = await fetch(`/api/poke?uid=${uid}`, {
+      method: 'POST',
+    });
 
-  if (response.ok) {
-    return true;
+    return {
+      success: response.ok,
+      message: await response.text(),
+    };
+  } catch {
+    return {
+      success: false,
+      message: 'Error poking friend',
+    };
   }
-
-  return false;
 };

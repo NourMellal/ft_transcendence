@@ -1,103 +1,21 @@
 import { navigateTo } from '~/components/app-router';
 import { html } from '~/lib/html';
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 
 import '~/components/navbar/navigation-bar';
 
 export default class PlayPage extends HTMLElement {
   render() {
-    if (!userState.get()) {
+    if (!userStore.get()) {
       return navigateTo('/signin');
     }
 
     this.replaceChildren(html`
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-        rel="stylesheet"
-      />
-
-      <link rel="stylesheet" href="/src/game.css" />
-      <div class="games" id="games">
-        <button class="buttonCard v1" id="v1">1 VS 1</button>
-        <button class="buttonCard tournment" id="tournment">tournment</button>
-        <button class="buttonCard V2" id="V2">2 VS 2</button>
-        <button class="buttonCard AI" id="AI"></button>
-      </div>
-      <div class="score">
-        <div class="board board1" id="board">
-          <div class="player1name" id="player1name">Player 1</div>
-          <div class="player1score" id="player1score">0</div>
-        </div>
-        <h1 class="vs">VS</h1>
-        <div class="board board2" id="board">
-          <div class="player2name" id="player2name"></div>
-          <div class="player2score" id="player2score">0</div>
-        </div>
-      </div>
-      <div id="playground" class="playground">
-        <div class="padle1" id="padle1"></div>
-        <div class="padle2" id="padle2"></div>
-        <div class="padle3" id="padle3"></div>
-        <div class="padle4" id="padle4"></div>
-        <div class="ball" id="ball"></div>
-        <div class="frame" id="frame">
-          <h1 class="startText" id="startText">press space to start</h1>
-        </div>
-      </div>
-      <div class="frame2" id="frame2">
-        <h1 class="winnerText" id="winnerText"></h1>
-        <button class="resetMatch" id="resetMatch">REMATCH</button>
-        <button class="restartTournment" id="restartTournment">RESTART TOURNMENT</button>
-        <button class="resetMatchAi" id="resetMatchAi">AI REMATCH</button>
-        <button class="reset2v2" id="reset2v2">REMATCH 2 VS 2</button>
-        <button class="quit" id="quit">QUIT</button>
-      </div>
-      <div class="userName" id="userName">
-        <h1 class="playerNumber" id="playerNumber">Player 2 name</h1>
-        <h3 class="error" id="error"></h3>
-        <input type="text" placeholder="Enter your username" class="inputName 1" id="inputName" />
-        <button class="submit" id="submit">submit</button>
-      </div>
-      <div class="tournmentNames" id="tournmentNames">
-        <h1 class="participantUsers " id="participantUsers">Participant usernames</h1>
-        <h3 class="error2" id="error2"></h3>
-        <input
-          type="text"
-          placeholder="participant 2 username"
-          class="inputName 2"
-          id="inputName2"
-        />
-        <input
-          type="text"
-          placeholder="participant 3 username"
-          class="inputName 3"
-          id="inputName3"
-        />
-        <input
-          type="text"
-          placeholder="participant 4 username"
-          class="inputName 4"
-          id="inputName4"
-        />
-        <button class="submitUsers" id="submitUsers">submit</button>
-      </div>
-      <div class="tournament-board" id="tournamentBoard">
-        <div class="final-line">
-          <div class="final" id="p7"></div>
-        </div>
-        <div class="match-line">
-          <div class="winner" id="p6"></div>
-          <div class="winner" id="p5"></div>
-        </div>
-        <div class="match-line2">
-          <div class="player" id="p1"></div>
-          <div class="player" id="p2"></div>
-          <div class="player" id="p3"></div>
-          <div class="player" id="p4"></div>
-        </div>
-      </div>
+      <iframe
+        class="w-screen h-screen"
+        src="https://transcendence.fr/api/static/game/"
+        frameborder="0"
+      ></iframe>
     `);
     this.setup();
   }

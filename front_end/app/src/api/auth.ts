@@ -1,15 +1,11 @@
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 import { navigateTo } from '~/components/app-router';
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  const response = await fetch(url, {
-    ...options,
-    credentials: 'include',
-    cache: 'no-store',
-  });
+  const response = await fetch(url, options);
 
   if (response.status === 401) {
-    userState.set(null);
+    userStore.set(null);
     navigateTo('/signin');
   }
 

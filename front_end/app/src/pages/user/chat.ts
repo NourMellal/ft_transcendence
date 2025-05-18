@@ -267,9 +267,11 @@ export default class ChatPage extends HTMLElement {
           <div>
             <label class="label" for="user-uid">Friend</label>
             <select class="select" name="to_uid" id="user-uid">
-              ${friends.map(
-                (friend) => html` <option value="${friend.UID}">${friend.username}</option> `
-              )}
+              ${friends.success
+                ? friends.data.map(
+                    (friend) => html` <option value="${friend.UID}">${friend.username}</option> `
+                  )
+                : html` <option value="" disabled selected>No friends available</option> `}
             </select>
           </div>
           <div>
