@@ -14,6 +14,7 @@ export type ChatMessage = {
   user_uid: string;
   message_text: string;
   time: number;
+  username?: string;
 };
 
 /**
@@ -52,7 +53,7 @@ export const fetchChatMessages = async (uid: string, page = 0) => {
       data: await Promise.all(
         messages.map(async (msg) => ({
           ...msg,
-          username: await fetchUserInfo(msg.user_uid),
+          username: (await fetchUserInfo(msg.user_uid))?.username || 'Unknown',
         }))
       ),
     };

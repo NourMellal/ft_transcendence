@@ -210,7 +210,7 @@ export default class ChatPage extends HTMLElement {
                                 ? 'text-right'
                                 : 'text-left'}"
                             >
-                              ${msg.user_uid === currentUID ? 'You' : this.selectedChat?.name} ·
+                              ${msg.user_uid === currentUID ? 'You' : msg.username} ·
                               ${new Date(msg.time * 1000).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
@@ -229,16 +229,17 @@ export default class ChatPage extends HTMLElement {
                     )}
                   </div>
                   <footer class="border-t p-4 bg-card">
-                    <div class="flex items-center gap-2">
-                      <textarea
+                    <form id="send-message-form" class="flex items-center gap-2">
+                      <input
                         id="input-message"
                         type="text"
                         value="${this.newMessageText}"
                         placeholder="Type your message..."
-                        class="input flex-1 h-16 resize-none"
-                      ></textarea>
+                        class="input flex-1"
+                        autocomplete="off"
+                      />
                       <button id="btn-send" class="btn btn-primary">Send</button>
-                    </div>
+                    </form>
                   </footer>
                 `
               : html`
@@ -258,7 +259,8 @@ export default class ChatPage extends HTMLElement {
       this.toggleSidebar()
     );
     this.querySelector('#btn-close-sidebar')?.addEventListener('click', () => this.toggleSidebar());
-    this.querySelector('#btn-send')?.addEventListener('click', () => {
+    this.querySelector<HTMLFormElement>('#send-message-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
       const inp = this.querySelector<HTMLInputElement>('#input-message');
       if (inp) {
         this.newMessageText = inp.value;
@@ -285,7 +287,7 @@ export default class ChatPage extends HTMLElement {
           <div class="text-xs text-muted-foreground mb-1 ${
             msg.user_uid === currentUID ? 'text-right' : 'text-left'
           }">
-            ${msg.user_uid === currentUID ? 'You' : this.selectedChat?.name} · ${new Date(
+            ${msg.user_uid === currentUID ? 'You' : msg.username} · ${new Date(
         msg.time * 1000
       ).toLocaleTimeString([], {
         hour: '2-digit',
