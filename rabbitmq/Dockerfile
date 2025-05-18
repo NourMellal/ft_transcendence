@@ -1,6 +1,6 @@
 FROM debian:bookworm
 
-RUN apt update && apt upgrade -y
+RUN apt update
 
 COPY ./tools/install.sh .
 

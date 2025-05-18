@@ -1,8 +1,6 @@
 FROM debian:bookworm
 
-RUN apt update && apt upgrade -y 
-
-RUN apt install nginx openssl -y
+RUN apt update && apt install nginx openssl -y
 
 COPY ./tools/ModSecurity.sh /ModSecurity.sh
 
@@ -12,7 +10,9 @@ COPY ./conf/modsec.conf /etc/nginx/modsec/modsec.conf
 
 WORKDIR /usr/local/nginx/conf
 
-RUN openssl req -x509 -newkey rsa:4096 -keyout cert.key -out cert.pem -sha256 -days 3650 -noenc -subj "/C=MA/ST=BENGURIR/L=BENGURIR/SN=msitni"
+COPY ./tools/san.cnf /san.cnf
+RUN openssl ecparam -name prime256v1 -genkey -out cert.key
+RUN openssl req -x509 -key cert.key -out cert.pem -sha256 -days 3650 -noenc -config /san.cnf
 
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf 
 

@@ -1,8 +1,6 @@
 FROM debian:bookworm
 
-RUN apt update && apt upgrade -y
-
-RUN apt install wget -y 
+RUN apt update && apt install wget -y 
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
