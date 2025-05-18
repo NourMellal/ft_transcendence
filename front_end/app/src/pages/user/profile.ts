@@ -48,7 +48,7 @@ export default class ProfilePage extends HTMLElement {
         });
 
         if (!res.ok) {
-          navigateTo('/profile');
+          navigateTo('/404');
           return null;
         }
         profileUser = await res.json();
@@ -79,7 +79,7 @@ export default class ProfilePage extends HTMLElement {
       };
     } catch (error) {
       console.error('Error fetching user data:', error);
-      navigateTo('/profile');
+      navigateTo('/404');
       return null;
     }
   }
@@ -504,19 +504,6 @@ export default class ProfilePage extends HTMLElement {
                             ${new Date(match.started * 1000).toLocaleString()}
                           </p>
                         </div>
-                        <span
-                          class="text-sm font-medium ${match.state === MatchStatus.WIN
-                            ? 'text-primary'
-                            : match.state === MatchStatus.LOSS
-                            ? 'text-destructive'
-                            : 'text-muted-foreground'}"
-                        >
-                          ${match.state === MatchStatus.WIN
-                            ? '+25 pts'
-                            : match.state === MatchStatus.LOSS
-                            ? '-15 pts'
-                            : ''}
-                        </span>
                       </div>
                     `
                   )
