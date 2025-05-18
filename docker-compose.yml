@@ -209,11 +209,6 @@ volumes:
       device: "${HOME}/docker_volumes/chat_manager_db_volume"
   static_data_volume:
     name: static_data_volume
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "${HOME}/docker_volumes/static_data_volume"
   rabbit_mq_log_volume:
     name: rabbit_mq_log_volume
     driver: local

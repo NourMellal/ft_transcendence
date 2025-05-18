@@ -257,7 +257,7 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "POST",
     },
-    GetUserActiveStatus:{
+    GetUserActiveStatus: {
       description: "HTTP: Get a user active status. (200 for active 404 inactive)",
       route: "/api/user/status",
       QueryParams: [{ name: "uid" }],
@@ -349,7 +349,7 @@ export const discoveryDocument = {
       description: "HTTP: send a message to a conversation.",
       route: "/api/chat/send",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
-      QueryParams: [{ name: "uid", description: "conversation uid"}],
+      QueryParams: [{ name: "uid", description: "conversation uid" }],
       multipart_params: [
         { name: "message", description: "message to send", type: "text/plain" },
       ],
@@ -376,18 +376,25 @@ export const discoveryDocument = {
       method: "GET",
     },
     ListConversations: {
-      description: "HTTP: list conversations with their ids and names and both users uids involving the user.",
+      description: "HTTP: list conversations with their {data: ids and names and both users uids involving the user} and unread conversations_uids between them. return : [conversations_data:{uid, name, users uids}, unread_uids:{[uid:string]}]",
       route: "/api/chat/list",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
     ReadConversation: {
-      description: "HTTP: Get a conversation messages by uid and page.",
+      description: "HTTP: Get a conversation messages by uid and page if page == 0 conversation also marked as read.",
       route: "/api/chat/read",
       QueryParams: [{ name: "uid" }, { name: "page" }],
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
+    MarkConversationAsRead: {
+      description: "HTTP: Mark conversation as read.",
+      route: "/api/chat/mark_read",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "POST",
+    }
   },
 };
 

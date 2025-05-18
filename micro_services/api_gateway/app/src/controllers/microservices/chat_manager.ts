@@ -17,8 +17,29 @@ export const ListConversations = async (
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
         reply.raw.statusCode = response.status;
+        if (response.status !== 200) {
+            return reply.raw.end();
+        }
         reply.raw.setHeader("Content-Type", "application/json");
-        reply.raw.end(response.message);
+        ListUnreadConversations(request, reply, response.message)
+    })
+}
+
+export const ListUnreadConversations = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    DATA?: string
+) => {
+    const RMQrequest: RabbitMQRequest = {
+        JWT: request.jwt,
+        op: RabbitMQChatManagerOp.LIST_UNREAD_CONVERSATIONS,
+    } as RabbitMQRequest;
+    rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+        reply.raw.statusCode = response.status;
+        if (response.status !== 200) {
+            return reply.raw.end();
+        }
+        reply.raw.end(JSON.stringify({ unread_uids: response.message, conversations_data: response.message }));
     })
 }
 
@@ -202,6 +223,24 @@ export const UnBlockUser = async (
     const RMQrequest: RabbitMQRequest = {
         JWT: request.jwt,
         op: RabbitMQChatManagerOp.UNBLOCK,
+        message: request.query.uid
+    } as RabbitMQRequest;
+    rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+        reply.raw.statusCode = response.status;
+        reply.raw.end(response.message);
+    })
+}
+
+export const MarkConversationAsRead = async (
+    request: FastifyRequest<{ Querystring: { uid: string } }>,
+    reply: FastifyReply
+) => {
+    if (!request.query.uid)
+        return reply.code(400).send('bad request');
+    reply.hijack();
+    const RMQrequest: RabbitMQRequest = {
+        JWT: request.jwt,
+        op: RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ,
         message: request.query.uid
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {

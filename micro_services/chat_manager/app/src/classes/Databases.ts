@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-import { conversations_table_name, block_table_name } from "../types/DbTables";
+import { conversations_table_name, block_table_name, unread_conversations_table_name } from "../types/DbTables";
 
 class Databases {
   persistent: DatabaseSync;
@@ -14,6 +14,9 @@ class Databases {
       );
       db.persistent.exec(
         `create table IF NOT EXISTS '${block_table_name}' ('UID' TEXT NOT NULL PRIMARY KEY, 'user_uid' TEXT NOT NULL, 'blocked_uid' TEXT NOT NULL)`
+      );
+      db.persistent.exec(
+        `create table IF NOT EXISTS '${unread_conversations_table_name}' ('HASH' TEXT NOT NULL PRIMARY KEY, 'user_uid' TEXT NOT NULL, 'conversation_uid' TEXT NOT NULL)`
       );
     } catch (err) {
       console.log("fatal error: " + err);

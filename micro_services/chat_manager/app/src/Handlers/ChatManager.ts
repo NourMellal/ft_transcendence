@@ -1,7 +1,7 @@
 import db from "../classes/Databases";
 import rabbitmq from "../classes/RabbitMQ";
 import { JWT } from "../types/common";
-import { block_table_name, conversations_table_name, ConversationsUIDsModel } from "../types/DbTables";
+import { block_table_name, conversations_table_name, ConversationsUIDsModel, unread_conversations_table_name } from "../types/DbTables";
 import {
   RabbitMQMicroServices,
   RabbitMQChatManagerOp,
@@ -127,21 +127,27 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
     return response;
   }
   {
-    // Send a notification
-    const Notification = {
-      type: NotificationType.NewMessage,
-      conversation_name: conversation_name,
-      conversation_uid: request.uid,
-      from_uid: RMqRequest.JWT.sub,
-      to_uid: receiver_uid
-    };
-    const notificationRequest: RabbitMQRequest = {
-      id: '',
-      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
-      message: JSON.stringify(Notification),
-      JWT: {} as JWT
-    };
-    rabbitmq.sendToNotificationQueue(notificationRequest);
+    // Send a notification only if already read ==> Not spamming user
+    try {
+      const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES ('?','?','?');`);
+      const res = query.run(request.uid + ';' + receiver_uid, receiver_uid, request.uid);
+      const Notification = {
+        type: NotificationType.NewMessage,
+        conversation_name: conversation_name,
+        conversation_uid: request.uid,
+        from_uid: RMqRequest.JWT.sub,
+        to_uid: receiver_uid
+      };
+      const notificationRequest: RabbitMQRequest = {
+        id: '',
+        op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+        message: JSON.stringify(Notification),
+        JWT: {} as JWT
+      };
+      rabbitmq.sendToNotificationQueue(notificationRequest);
+    } catch (error) {
+      // Ignore error because older messages in this conversation have not been read no need to spam user
+    }
   }
   response.status = 200;
   response.message = 'MessageSent';
@@ -210,6 +216,8 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
   {
+    const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES ('?','?','?');`);
+    const res = query.run(conversation_uid + ';' + request.uid, request.uid, conversation_uid);
     // Send a notification
     const Notification = {
       type: NotificationType.NewMessage,
@@ -264,6 +272,8 @@ function ReadConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     }
     const query = db.persistent.prepare(`SELECT * FROM '${request.uid}' ORDER BY time DESC LIMIT 10 OFFSET (10 * ?);`);
     const res = query.all(request.page);
+    if (request.page === 0 && MarkConversationAsRead({ id: '', message: request.uid, JWT: RMqRequest.JWT } as RabbitMQRequest).status !== 200)
+      throw 'Can not mark conversation as read';
     response.status = 200;
     response.message = JSON.stringify(res);
     return response;
@@ -301,6 +311,40 @@ function RenameConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
 }
 
+function ListUnreadConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  let response = {
+    req_id: RMqRequest.id,
+    op: RabbitMQChatManagerOp.LIST_UNREAD_CONVERSATIONS,
+    service: RabbitMQMicroServices.chat_manager,
+  } as RabbitMQResponse;
+  const query = db.persistent.prepare(`SELECT conversation_uid FROM ${unread_conversations_table_name} WHERE user_uid = ? ;`);
+  const res = query.all(RMqRequest.JWT.sub);
+  response.status = 200;
+  response.message = JSON.stringify(res);
+  return response;
+}
+
+
+function MarkConversationAsRead(RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  if (!RMqRequest.message)
+    throw 'Invalid request';
+  let response = {
+    req_id: RMqRequest.id,
+    op: RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ,
+    service: RabbitMQMicroServices.chat_manager,
+    status: 200
+  } as RabbitMQResponse;
+  const query = db.persistent.prepare(`DELETE FROM ${unread_conversations_table_name} WHERE user_uid = ? AND conversation_uid = ? ;`);
+  const res = query.run(RMqRequest.JWT.sub, RMqRequest.message);
+  if (res.changes !== 1) {
+    response.status = 400;
+    response.message = 'bad request';
+    return response;
+  }
+  response.message = 'conversation read';
+  return response;
+}
+
 export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   switch (RMqRequest.op) {
     case RabbitMQChatManagerOp.BLOCK: {
@@ -326,6 +370,12 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     }
     case RabbitMQChatManagerOp.READ_CONVERSATION: {
       return ReadConversation(RMqRequest);
+    }
+    case RabbitMQChatManagerOp.LIST_UNREAD_CONVERSATIONS: {
+      return ListUnreadConversation(RMqRequest);
+    }
+    case RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ: {
+      return MarkConversationAsRead(RMqRequest);
     }
     default: {
       console.log(

@@ -53,6 +53,8 @@ export enum RabbitMQChatManagerOp {
   BLOCK_LIST,
   BLOCK,
   UNBLOCK,
+  LIST_UNREAD_CONVERSATIONS,
+  MARK_CONVERSATIONS_READ,
 }
 
 export type ChatMessage = {
