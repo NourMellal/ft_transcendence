@@ -22,7 +22,7 @@ db.init();
 AuthProvider.init();
 rabbitmq.init();
 const port: number = (process.env.API_GATEWAY_PORT || 5566) as number;
-const app = fastify({ logger: true });
+const app = fastify();
 
 // Register cors module to allow traffic from all hosts:
 app.register(cors, { origin: "*" });

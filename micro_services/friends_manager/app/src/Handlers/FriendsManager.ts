@@ -125,7 +125,7 @@ function AddFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     RMqResponse.message = "friend request sent";
     RMqResponse.status = 200;
   }
-  // Send a message to notification service
+  // Ping user if existed
   {
     const Notification: NotificationBody = {
       type: NotificationType.NewFriendRequest,
@@ -210,7 +210,7 @@ function AcceptFriendRequest(RMqRequest: RabbitMQRequest): RabbitMQResponse {
       id: '',
       op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
       message: JSON.stringify(Notification),
-      JWT: {} as JWT
+      JWT: RMqRequest.JWT
     };
     rabbitmq.sendToNotificationQueue(notificationRequest);
   }

@@ -83,7 +83,7 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
     service: RabbitMQMicroServices.NOTIFICATIONS,
     op: RabbitMQNotificationsOp.PING_USER,
     status: 200,
-    message: JSON.stringify([notif])
+    message: RMqRequest.message
   }
   return RMqResponse;
 }
