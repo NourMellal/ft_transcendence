@@ -376,7 +376,7 @@ export const discoveryDocument = {
       method: "GET",
     },
     ListConversations: {
-      description: "HTTP: list conversations with their {data: ids and names and both users uids involving the user} and unread conversations_uids between them. return : [conversations_data:{uid, name, users uids}, unread_uids:{[uid:string]}]",
+      description: "HTTP: list conversations with their {data: ids and names and both users uids involving the user} and unread conversations_uids between them. return : [conversations_data:[{uid, name, users uids}], unread_uids:{[uid:string]}]",
       route: "/api/chat/list",
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
