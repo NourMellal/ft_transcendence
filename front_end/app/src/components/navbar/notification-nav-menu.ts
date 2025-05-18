@@ -15,7 +15,6 @@ class NotificationNavMenu extends HTMLElement {
 
   setNotificationCount(count: number) {
     const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
-
     if (notificationCount) {
       notificationCount.textContent = count.toString();
       notificationCount.style.display = count > 0 ? 'flex' : 'none';
@@ -41,7 +40,6 @@ class NotificationNavMenu extends HTMLElement {
 
   async getNotificationMessage(data: Notification) {
     const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
-
     switch (data.type) {
       case NotificationType.NewFriendRequest:
         return `${fromUsername} sent you a friend request`;
@@ -60,7 +58,6 @@ class NotificationNavMenu extends HTMLElement {
 
   async render() {
     const notifications = notificationsStore.get();
-
     this.replaceChildren(html`
       <div class="relative">
         <button id="notification-btn" class="btn-outlined btn-icon">
@@ -79,6 +76,7 @@ class NotificationNavMenu extends HTMLElement {
           <div class="flex justify-between items-center px-4 py-2 border-b border-muted">
             <h4 class="text-sm font-semibold">Notifications</h4>
             <button
+              id="mark-all-as-read-btn"
               class="cursor-pointer text-sm text-muted-foreground hover:underline focus:outline-none"
             >
               Mark all as read
@@ -91,7 +89,10 @@ class NotificationNavMenu extends HTMLElement {
                     return html`
                       <button
                         data-uid="${data.notification_uid}"
-                        class="w-full text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none"
+                        class="w-full text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none ${data.read
+                          ? ''
+                          : 'font-bold'}"
+                        style="background: none; border: none;"
                       >
                         <h4>${this.getNotificationTitle(data.type)}</h4>
                         <p class="text-sm text-muted-foreground">
@@ -107,19 +108,21 @@ class NotificationNavMenu extends HTMLElement {
                   </div>
                 `}
           </div>
+          <div class="border-t border-muted px-4 py-2 text-center">
+            <a href="/notifications" class="text-primary hover:underline text-sm"
+              >View all notifications</a
+            >
+          </div>
         </div>
       </div>
     `);
-
     this.setup();
-    this.setNotificationCount(notificationsStore.get()?.length || 0);
+    this.setNotificationCount(notificationsStore.get()?.filter((n) => !n.read).length || 0);
   }
 
   toggle = () => {
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
-
     if (!notificationMenu) return;
-
     if (notificationMenu.classList.contains('hidden')) {
       this.open();
     } else {
@@ -129,11 +132,8 @@ class NotificationNavMenu extends HTMLElement {
 
   open = () => {
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
-
     if (!notificationMenu) return;
-
     notificationMenu.classList.remove('hidden');
-
     notificationMenu.animate(
       [
         { opacity: 0, transform: 'translateY(-10px)' },
@@ -149,9 +149,7 @@ class NotificationNavMenu extends HTMLElement {
 
   close = () => {
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
-
     if (!notificationMenu) return;
-
     const animation = notificationMenu.animate(
       [
         { opacity: 1, transform: 'translateY(0)' },
@@ -163,15 +161,12 @@ class NotificationNavMenu extends HTMLElement {
         fill: 'forwards',
       }
     );
-
     animation.onfinish = () => notificationMenu.classList.add('hidden');
   };
 
   clickOutsideHandler = (event: MouseEvent) => {
     const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
-
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
-
     const target = event.target as HTMLElement;
     if (
       !notificationMenu?.classList.contains('hidden') &&
@@ -182,35 +177,77 @@ class NotificationNavMenu extends HTMLElement {
     }
   };
 
+  private updateNotificationItemAsRead(uid: string) {
+    const btn = this.querySelector(`button[data-uid="${uid}"]`);
+    if (btn) {
+      btn.classList.remove('font-bold');
+    }
+  }
+
+  private updateAllNotificationItemsAsRead() {
+    const btns = this.querySelectorAll('button[data-uid]');
+    btns.forEach((btn) => btn.classList.remove('font-bold'));
+  }
+
+  private updateNotificationCount(count: number) {
+    const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
+    if (notificationCount) {
+      notificationCount.textContent = count.toString();
+      notificationCount.style.display = count > 0 ? 'flex' : 'none';
+    }
+  }
+
   private setup() {
     this.cleanup();
     const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
-
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+    const markAllBtn = this.querySelector<HTMLButtonElement>('#mark-all-as-read-btn');
 
     notificationBtn?.addEventListener('click', this.toggle);
     document.addEventListener('click', this.clickOutsideHandler);
 
-    notificationMenu?.addEventListener('click', async (e) => {
-      const target = e.target;
+    // Mark all as read
+    markAllBtn?.addEventListener('click', async () => {
+      const notifications = notificationsStore.get();
+      if (!notifications || notifications.length === 0) return;
+      const unreadUids = notifications.filter((n) => !n.read).map((n) => n.notification_uid);
+      if (unreadUids.length === 0) return;
+      const result = await markNotificationAsRead(unreadUids.join(';'));
+      if (result.success) {
+        // Update store and UI without full re-render
+        const newNotifications = await fetchUndreadNotifications();
+        if (newNotifications.success) {
+          notificationsStore.set(newNotifications.data);
+          this.updateAllNotificationItemsAsRead();
+          this.updateNotificationCount(0);
+        } else {
+          showToast({ type: 'error', message: newNotifications.message });
+        }
+      } else {
+        showToast({ type: 'error', message: result.message });
+      }
+    });
 
-      if (target instanceof HTMLButtonElement && target.dataset.uid) {
-        const result = await markNotificationAsRead(target.dataset.uid);
+    // Mark individual notification as read
+    notificationMenu?.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('button[data-uid]') as HTMLButtonElement | null;
+      if (btn && btn.dataset.uid) {
+        const uid = btn.dataset.uid;
+        const result = await markNotificationAsRead(uid);
         if (result.success) {
+          // Update store and UI without full re-render
           const newNotifications = await fetchUndreadNotifications();
           if (newNotifications.success) {
             notificationsStore.set(newNotifications.data);
+            this.updateNotificationItemAsRead(uid);
+            const unreadCount = newNotifications.data.filter((n: any) => !n.read).length;
+            this.updateNotificationCount(unreadCount);
           } else {
-            showToast({
-              type: 'error',
-              message: newNotifications.message,
-            });
+            showToast({ type: 'error', message: newNotifications.message });
           }
         } else {
-          showToast({
-            type: 'error',
-            message: result.message,
-          });
+          showToast({ type: 'error', message: result.message });
         }
       }
     });
