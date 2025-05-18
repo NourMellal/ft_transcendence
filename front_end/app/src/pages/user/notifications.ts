@@ -38,39 +38,48 @@ export default class NotificationsPage extends HTMLElement {
         <div class="flex border-b border-border mb-6">
           <button
             class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'all'
-              ? 'border-primary text-foreground -mb-px'
+              ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'}"
             data-tab="all"
           >
             All
             <span
-              class="ml-1 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs px-2 py-0.5"
+              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+                .activeTab === 'all'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'}"
             >
               ${all.length}
             </span>
           </button>
           <button
             class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'unread'
-              ? 'border-primary text-foreground -mb-px'
+              ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'}"
             data-tab="unread"
           >
             Unread
             <span
-              class="ml-1 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs px-2 py-0.5"
+              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+                .activeTab === 'unread'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'}"
             >
               ${unread.length}
             </span>
           </button>
           <button
             class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'read'
-              ? 'border-primary text-foreground -mb-px'
+              ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'}"
             data-tab="read"
           >
             Read
             <span
-              class="ml-1 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs px-2 py-0.5"
+              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+                .activeTab === 'read'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'}"
             >
               ${read.length}
             </span>
