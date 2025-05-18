@@ -22,6 +22,7 @@ services:
       - ft_transcendence
     restart: always
   rabbitmq:
+    env_file: .env
     container_name: rabbitmq
     build:
       context: ./rabbitmq
@@ -47,10 +48,10 @@ services:
       - rabbit_mq_log_volume:/var/log/rabbitmq:rw
     networks:
       - ft_transcendence
-    env_file: .env
     init: true
     restart: always
   api_gateway:
+    env_file: .env
     container_name: api_gateway
     build:
       context: ./micro_services/api_gateway
@@ -65,6 +66,7 @@ services:
     init: true
     restart: always
   user_manager:
+    env_file: .env
     container_name: user_manager
     build:
       context: ./micro_services/user_manager
@@ -73,12 +75,12 @@ services:
     volumes:
       - ./micro_services/user_manager/app:/app:rw
       - user_manager_db_volume:/database:rw
-      - static_data_volume:/static:rw
     networks:
       - ft_transcendence
     init: true
     restart: always
   friends_manager:
+    env_file: .env
     container_name: friends_manager
     build:
       context: ./micro_services/friends_manager
@@ -92,6 +94,7 @@ services:
     init: true
     restart: always
   notifications:
+    env_file: .env
     container_name: notifications
     build:
       context: ./micro_services/notifications
@@ -105,6 +108,7 @@ services:
     init: true
     restart: always
   leaderboard:
+    env_file: .env
     container_name: leaderboard
     build:
       context: ./micro_services/leaderboard
@@ -118,6 +122,7 @@ services:
     init: true
     restart: always
   match_manager:
+    env_file: .env
     container_name: match_manager
     build:
       context: ./micro_services/match_manager
@@ -131,6 +136,7 @@ services:
     init: true
     restart: always
   chat_manager:
+    env_file: .env
     container_name: chat_manager
     build:
       context: ./micro_services/chat_manager
@@ -153,6 +159,7 @@ services:
     # for developement
     volumes:
       - ./front_end/app:/app:rw
+      - static_data_volume:/static:rw
 
 networks:
   ft_transcendence:
@@ -211,11 +218,6 @@ volumes:
       device: "${HOME}/docker_volumes/chat_manager_db_volume"
   static_data_volume:
     name: static_data_volume
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "${HOME}/docker_volumes/static_data_volume"
   rabbit_mq_log_volume:
     name: rabbit_mq_log_volume
     driver: local

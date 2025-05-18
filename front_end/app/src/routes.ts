@@ -52,6 +52,11 @@ export const routes: Route[] = [
     title: 'Play',
   },
   {
+    pathname: '/notifications',
+    component: () => import('./pages/user/notifications'),
+    title: 'Notifications',
+  },
+  {
     pathname: '*',
     component: () => import('./pages/not-found'),
     title: '404 - Not Found',

@@ -53,6 +53,8 @@ export enum RabbitMQChatManagerOp {
   BLOCK_LIST,
   BLOCK,
   UNBLOCK,
+  LIST_UNREAD_CONVERSATIONS,
+  MARK_CONVERSATIONS_READ,
 }
 
 export type ChatMessage = {
@@ -88,8 +90,15 @@ export enum NotificationType {
 export type NotificationBody = {
   type: NotificationType,
   from_uid: string,
-  to_uid: string
+  to_uid: string,
 }
+
+export type NotificationsModel = {
+  UID: string;
+  user_uid: string;
+  messageJson: string;
+  is_read: number;
+};
 
 export type UpdateUser = {
   picture_url: string | null;

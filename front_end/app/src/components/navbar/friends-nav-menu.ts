@@ -1,9 +1,8 @@
 import { showToast } from '~/components/toast';
-import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import { UsersIcon } from '~/icons';
-import { friendRequestsState } from '~/app-state';
-import { fetchFriendRequests } from '~/api/friends';
+import { friendRequestsStore } from '~/app-state';
+import { acceptFriendRequest, denyFriendRequest, fetchFriendRequests } from '~/api/friends';
 
 class FriendsNavMenu extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
@@ -19,55 +18,38 @@ class FriendsNavMenu extends HTMLElement {
     }
   }
 
-  async acceptFriendRequest(reqId: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/accept?uid=${reqId}`, {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to accept friend request`);
-      }
-
+  async accept(reqId: string) {
+    const result = await acceptFriendRequest(reqId);
+    if (result.success) {
       showToast({
-        type: 'success',
-        message: 'Friend request accepted!',
+        type: 'info',
+        message: 'Friend request accepted.',
       });
-    } catch (error) {
+    } else {
       showToast({
         type: 'error',
-        message: 'Failed to accept request',
+        message: result.message,
       });
     }
   }
 
-  async denyFriendRequest(reqId: string) {
-    try {
-      const response = await fetchWithAuth(`/api/friends/deny?uid=${reqId}`, {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to deny friend request: ${response.status}`);
-      }
+  async deny(reqId: string) {
+    const result = await denyFriendRequest(reqId);
+    if (result.success) {
       showToast({
         type: 'info',
-        message: 'Friend request declined.',
+        message: 'Friend request denied.',
       });
-    } catch (error) {
+    } else {
       showToast({
         type: 'error',
-        message: 'Failed to deny request',
+        message: result.message,
       });
     }
   }
 
   private render() {
-    const requests = friendRequestsState.get();
+    const requests = friendRequestsStore.get();
 
     this.replaceChildren(html`
       <div class="relative">
@@ -172,11 +154,11 @@ class FriendsNavMenu extends HTMLElement {
 
     if (reqId) {
       if (action === 'accept') {
-        await this.acceptFriendRequest(reqId);
+        await this.accept(reqId);
       } else if (action === 'deny') {
-        await this.denyFriendRequest(reqId);
+        await this.deny(reqId);
       }
-      friendRequestsState.set(await fetchFriendRequests());
+      friendRequestsStore.set(await fetchFriendRequests());
     }
   };
 
@@ -226,7 +208,7 @@ class FriendsNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(friendRequestsState.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(friendRequestsStore.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

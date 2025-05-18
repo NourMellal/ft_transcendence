@@ -1,7 +1,10 @@
 import { closeNotificationSocket } from './api/notifications';
 import { setupUser } from './api/user';
-import { friendRequestsState, notificationsState, userState } from './app-state';
+import { friendRequestsStore, notificationsStore, userStore } from './app-state';
 import { handleEffect } from './utils';
+
+import '~/components/toast';
+import '~/components/dialog';
 
 function initTheme() {
   let isDarkMode = true;
@@ -24,11 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
   handleEffect(document.body, async () => {
     await setupUser();
 
-    userState.subscribe((u) => {
+    userStore.subscribe((u) => {
       if (u === null) {
         closeNotificationSocket();
-        friendRequestsState.set(null);
-        notificationsState.set(null);
+        friendRequestsStore.set(null);
+        notificationsStore.set(null);
       }
     });
 

@@ -8,18 +8,6 @@ import {
   RabbitMQResponse,
 } from "../types/RabbitMQMessages";
 
-const GetResponseMessage = function (result: any[]): string {
-  for (let i = 0; i < result.length; i++) {
-    const element = result[i];
-    try {
-      element.DATA = JSON.parse(element.messageJson);
-      element.DATA.notification_uid = element.UID;
-      element.DATA.read = element.is_read;
-    } catch (error) {
-    }
-  }
-  return JSON.stringify(result, (key, value) => key === "UID" || key === "is_read" || key === "messageJson" ? undefined : value);
-}
 
 const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
   let RMqResponse: RabbitMQResponse = {
@@ -31,7 +19,7 @@ const ListAllNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQRes
   const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? ;`);
   const res = query.all(RMqRequest.JWT.sub) as any[];
   if (res.length > 0)
-    RMqResponse.message = GetResponseMessage(res);
+    RMqResponse.message = JSON.stringify(res);
   else
     RMqResponse.message = '[]';
   return RMqResponse;
@@ -47,7 +35,7 @@ const ListUnreadNotifications = function (RMqRequest: RabbitMQRequest): RabbitMQ
   const query = db.persistent.prepare(`SELECT UID, messageJson, is_read from ${notifications_table_name} WHERE user_uid = ? AND is_read = 0 ;`);
   const res = query.all(RMqRequest.JWT.sub);
   if (res.length > 0)
-    RMqResponse.message = GetResponseMessage(res);
+    RMqResponse.message = JSON.stringify(res);
   else
     RMqResponse.message = '[]';
   return RMqResponse;
@@ -95,7 +83,7 @@ const SaveNotification = function (RMqRequest: RabbitMQRequest): RabbitMQRespons
     service: RabbitMQMicroServices.NOTIFICATIONS,
     op: RabbitMQNotificationsOp.PING_USER,
     status: 200,
-    message: GetResponseMessage([notif])
+    message: RMqRequest.message
   }
   return RMqResponse;
 }

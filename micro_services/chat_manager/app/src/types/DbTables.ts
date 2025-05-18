@@ -1,5 +1,6 @@
 export const conversations_table_name = "conversations_uids";
 export const block_table_name = "block";
+export const unread_conversations_table_name = "unread";
 
 export type ConversationsUIDsModel = {
   UID: string;
@@ -14,6 +15,12 @@ export type ConversationsModel = {
   user_uid: string;
   message_text: string;
   time:number;
+};
+
+export type UnreadConversationModel = {
+  HASH: string;
+  user_uid:string
+  conversation_uid:string;
 };
 
 export type BlockModel = {

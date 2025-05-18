@@ -17,7 +17,7 @@ DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES})
 %/node_modules:
 	cd ./$@/.. && npm install
 %/dist:
-	cd ./$@/.. && tsc
+	cd ./$@/.. && npx tsc
 all: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
 build: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
@@ -38,7 +38,6 @@ create_volumes_dir:
 	@mkdir -p /home/${VOL_USER}/docker_volumes/leaderboard_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/match_manager_db_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/chat_manager_db_volume
-	@mkdir -p /home/${VOL_USER}/docker_volumes/static_data_volume
 	@mkdir -p /home/${VOL_USER}/docker_volumes/rabbit_mq_log_volume
 #Set host to fake route domains used to localhost
 set-host-and-permission:

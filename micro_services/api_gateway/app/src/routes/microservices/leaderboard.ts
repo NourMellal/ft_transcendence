@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { AuthHeaderValidation } from "../../types/AuthProvider";
-import { ListAllRank, ListUserRank } from "../../controllers/microservices/leaderboard";
+import { ListAllRank, GetUserRank } from "../../controllers/microservices/leaderboard";
 
 const RankOpts = {
   schema: {
@@ -27,7 +27,7 @@ async function LeaderboardRoutes(fastify: FastifyInstance) {
   fastify.get(
     discoveryDocument.LeaderboardRoutes.ListUserRank.route,
     AuthHeaderValidation,
-    ListUserRank
+    GetUserRank
   );
 }
 

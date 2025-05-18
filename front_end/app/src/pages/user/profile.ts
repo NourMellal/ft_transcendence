@@ -1,11 +1,12 @@
 import { navigateTo } from '~/components/app-router';
-import { User } from '~/api/user';
+import { User, fetchMatchHistory, MatchHistoryEntry, MatchStatus, MatchType } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { friendRequestsState, userState } from '~/app-state';
-import { fetchFriendRequests } from '~/api/friends';
+import { friendRequestsStore, userStore, notificationsStore } from '~/app-state';
+import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
+import { NotificationType } from '~/api/notifications';
 
 enum FriendStatus {
   NONE,
@@ -19,6 +20,7 @@ interface ProfileState {
   isOwnProfile: boolean;
   friendStatus: FriendStatus;
   pendingRequestId: string | null;
+  matchHistory: MatchHistoryEntry[];
 }
 
 export default class ProfilePage extends HTMLElement {
@@ -26,7 +28,7 @@ export default class ProfilePage extends HTMLElement {
   private cleanupCallbacks = new Array<Function>();
 
   async loadProfileData(): Promise<ProfileState | null> {
-    const currentUser = userState.get();
+    const currentUser = userStore.get();
     if (!currentUser) {
       navigateTo('/signin');
       return null;
@@ -46,7 +48,7 @@ export default class ProfilePage extends HTMLElement {
         });
 
         if (!res.ok) {
-          navigateTo('/profile');
+          navigateTo('/404');
           return null;
         }
         profileUser = await res.json();
@@ -59,27 +61,25 @@ export default class ProfilePage extends HTMLElement {
         return null;
       }
 
+      const matchHistoryRes = await fetchMatchHistory(profileUser.UID);
+      const matchHistory = matchHistoryRes.success ? matchHistoryRes.data : [];
+
       const isOwnProfile = profileUser.UID === currentUser.UID;
-
-      if (isOwnProfile) {
-        return {
-          user: profileUser,
-          isOwnProfile,
-          friendStatus: FriendStatus.NONE,
-          pendingRequestId: null,
-        };
-      }
-
-      const friendStatus = await this.getFriendStatus(profileUser.UID);
 
       return {
         user: profileUser,
         isOwnProfile,
-        ...friendStatus,
+        friendStatus: isOwnProfile
+          ? FriendStatus.NONE
+          : await this.getFriendStatus(profileUser.UID).then((fs) => fs.friendStatus),
+        pendingRequestId: isOwnProfile
+          ? null
+          : await this.getFriendStatus(profileUser.UID).then((fs) => fs.pendingRequestId),
+        matchHistory,
       };
     } catch (error) {
       console.error('Error fetching user data:', error);
-      navigateTo('/profile');
+      navigateTo('/404');
       return null;
     }
   }
@@ -88,55 +88,34 @@ export default class ProfilePage extends HTMLElement {
     targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
-      const friendsRes = await fetchWithAuth('/api/friends', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      // Check if target user is already a friend
+      const friendsRes = await fetchFriends();
+      if (friendsRes.success && friendsRes.data.some((u) => u.UID === targetUid)) {
+        return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
+      }
 
-      if (friendsRes.ok) {
-        const friends = await friendsRes.json();
-        if (friends.includes(targetUid)) {
-          return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
+      // Check for incoming friend requests
+      const incoming = await fetchFriendRequests();
+      if (incoming) {
+        const req = incoming.find((r) => r.from_uid === targetUid);
+        if (req) {
+          return { friendStatus: FriendStatus.PENDING_INCOMING, pendingRequestId: req.REQ_ID };
         }
       }
 
-      const requestsRes = await fetchWithAuth('/api/friends/requests', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (requestsRes.ok) {
-        const requests = await requestsRes.json();
-        const incomingRequest = requests.find((request: any) => request.from_uid === targetUid);
-
-        if (incomingRequest) {
-          return {
-            friendStatus: FriendStatus.PENDING_INCOMING,
-            pendingRequestId: incomingRequest.REQ_ID,
-          };
+      // Check for outgoing (sent) friend requests
+      const sentRes = await fetchSentFriendRequests();
+      if (sentRes.success) {
+        const outReq = sentRes.data.find((r) => r.to_uid === targetUid);
+        if (outReq) {
+          return { friendStatus: FriendStatus.PENDING_OUTGOING, pendingRequestId: outReq.REQ_ID };
         }
       }
 
-      const sentRequestsRes = await fetchWithAuth('/api/friends/sent_requests', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (sentRequestsRes.ok) {
-        const sentRequests = await sentRequestsRes.json();
-        const outgoingRequest = sentRequests.find((request: any) => request.to_uid === targetUid);
-
-        if (outgoingRequest) {
-          return {
-            friendStatus: FriendStatus.PENDING_OUTGOING,
-            pendingRequestId: outgoingRequest.REQ_ID,
-          };
-        }
-      }
-
+      // No friendship or pending requests
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
-    } catch (error) {
-      console.error('Error checking friend status:', error);
+    } catch (err) {
+      console.error('Error checking friend status:', err);
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     }
   }
@@ -366,7 +345,7 @@ export default class ProfilePage extends HTMLElement {
       });
     }
 
-    friendRequestsState.set(await fetchFriendRequests());
+    friendRequestsStore.set(await fetchFriendRequests());
   }
 
   setup() {
@@ -389,12 +368,28 @@ export default class ProfilePage extends HTMLElement {
     this.state = await this.loadProfileData();
     if (!this.state) return;
 
-    const { user, isOwnProfile } = this.state;
+    const { user, isOwnProfile, matchHistory } = this.state;
+
+    let gamesPlayed = '0';
+    let winRate = '0%';
+    let rank = 'Unranked';
+    let wins = 0;
+    let losses = 0;
+
+    if (matchHistory && matchHistory.length > 0) {
+      wins = matchHistory.filter((match) => match.state === MatchStatus.WIN).length;
+      losses = matchHistory.filter((match) => match.state === MatchStatus.LOSS).length;
+      const completedGames = wins + losses;
+      gamesPlayed = completedGames.toString();
+      winRate = completedGames > 0 ? ((wins / completedGames) * 100).toFixed(0) + '%' : '0%';
+    }
 
     const stats = [
-      { label: 'Games Played', value: '42' },
-      { label: 'Win Rate', value: '65%' },
-      { label: 'Rank', value: '#12' },
+      { label: 'Games Played', value: gamesPlayed },
+      { label: 'Wins', value: wins.toString() },
+      { label: 'Losses', value: losses.toString() },
+      { label: 'Win Rate', value: winRate },
+      { label: 'Rank', value: rank },
     ];
 
     this.replaceChildren(html`
@@ -440,11 +435,13 @@ export default class ProfilePage extends HTMLElement {
             <h1 class="text-2xl font-bold">${user.username}</h1>
             <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
-          <div class="flex gap-2">${!isOwnProfile ? this.renderFriendActionButtons() : ''}</div>
+          <div id="profile-friend-actions" class="flex gap-2">
+            ${!isOwnProfile ? this.renderFriendActionButtons() : ''}
+          </div>
         </div>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           ${stats.map(
             (stat) => html`
               <div class="card border rounded-lg p-6 text-center">
@@ -462,22 +459,34 @@ export default class ProfilePage extends HTMLElement {
           </div>
           <div class="card-content p-6">
             <div class="space-y-4">
-              <div class="flex items-center gap-4">
-                <div class="w-2 h-2 rounded-full bg-primary"></div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium">Won against johndoe</p>
-                  <p class="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-                <span class="text-sm font-medium text-primary">+25 pts</span>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="w-2 h-2 rounded-full bg-destructive"></div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium">Lost against janedoe</p>
-                  <p class="text-xs text-muted-foreground">5 hours ago</p>
-                </div>
-                <span class="text-sm font-medium text-destructive"> -15 pts </span>
-              </div>
+              ${matchHistory.length > 0
+                ? matchHistory.map(
+                    (match) => html`
+                      <div class="flex items-center gap-4">
+                        <div
+                          class="w-2 h-2 rounded-full ${match.state === MatchStatus.WIN
+                            ? 'bg-primary'
+                            : match.state === MatchStatus.LOSS
+                            ? 'bg-destructive'
+                            : 'bg-muted-foreground'}"
+                        ></div>
+                        <div class="flex-1">
+                          <p class="text-sm font-medium">
+                            ${match.state === MatchStatus.WIN
+                              ? 'Won'
+                              : match.state === MatchStatus.LOSS
+                              ? 'Lost'
+                              : 'Pending'}
+                            against ${match.match_type === MatchType.AI ? 'AI' : 'Opponent'}
+                          </p>
+                          <p class="text-xs text-muted-foreground">
+                            ${new Date(match.started * 1000).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    `
+                  )
+                : html`<p class="text-sm text-muted-foreground">No recent activity.</p>`}
             </div>
           </div>
         </div>
@@ -489,11 +498,39 @@ export default class ProfilePage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(friendRequestsState.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(
+      friendRequestsStore.subscribe(() => this.handleNotificationUpdate()),
+      notificationsStore.subscribe(() => this.handleNotificationUpdate())
+    );
   }
 
   disconnectedCallback() {
     this.cleanupCallbacks.forEach((cleanup) => cleanup());
+  }
+
+  private async handleNotificationUpdate() {
+    if (!this.state || this.state.isOwnProfile) return;
+    const notifications = notificationsStore.get();
+    if (!notifications) return;
+    const profileUserId = this.state.user.UID;
+    const relevant = notifications.some(
+      (n) =>
+        n.from_uid === profileUserId &&
+        (n.type === NotificationType.NewFriendRequest ||
+          n.type === NotificationType.FriendRequestAccepted ||
+          n.type === NotificationType.FriendRequestDenied)
+    );
+    if (!relevant) return;
+    const newStatus = await this.getFriendStatus(profileUserId);
+    if (this.state) {
+      this.state.friendStatus = newStatus.friendStatus;
+      this.state.pendingRequestId = newStatus.pendingRequestId;
+      const container = this.querySelector('#profile-friend-actions');
+      if (container) {
+        container.replaceChildren(this.renderFriendActionButtons());
+        this.setup();
+      }
+    }
   }
 }
 

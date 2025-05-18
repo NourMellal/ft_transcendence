@@ -1,0 +1,695 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', cursive;
+  font-weight: 400;
+  font-style: normal;
+  margin: 0;
+  padding: 0;
+  background-color: black;
+  position: relative;
+  display: flex;
+}
+
+.games {
+  min-width: 400px;
+  z-index: 2;
+  position: relative;
+  border: 1dvw solid #5f0f40;
+  border-radius: 2dvw;
+  width: 90dvw;
+  height: 90dvh;
+  top: 5dvh;
+  left: 5dvw;
+  background-color: black;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.v1 {
+  color: white;
+}
+
+.tournment {
+  color: white;
+}
+
+.buttonCard {
+  margin: 0;
+  min-width: 200px;
+  width: 35dvw;
+  height: 20dvh;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: 2dvw;
+  background-color: #007074;
+  position: relative;
+}
+
+.buttonCard:hover::after {
+  filter: blur(30px);
+}
+.buttonCard::after {
+  content: '';
+  position: absolute;
+  width: 100.6%;
+  height: 101%;
+  inset: 0;
+  background: conic-gradient(from 0deg at center, #be1099, #4d0199, #6300c6, #be1099);
+  z-index: -1;
+  /* padding: 10px; */
+  border-radius: inherit;
+  transition: filter 350ms ease-in-out;
+  /* transition: width 350ms ease-in-out; */
+}
+
+.V2 {
+  color: white;
+}
+
+.AI {
+  background-image: url('./game/images/gameAi3.png');
+  background-size: 100% 100%;
+}
+
+button {
+  font-family: inherit;
+}
+
+.score {
+  width: 100%;
+  height: 250px;
+  /* border: 10px solid white; */
+  display: flex;
+  position: absolute;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: row;
+}
+
+.board {
+  min-width: 250px;
+  width: 20dvw;
+  margin: 0;
+  border-radius: 15px;
+  /* border: 10px solid #09122C; */
+  background-color: #5f0f40;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.board1 {
+  min-width: 400px;
+  height: 45%;
+  font-size: clamp(1rem, 2vw, 3rem);
+  color: white;
+  position: relative;
+}
+
+.board1::before,
+.board1::after {
+  content: '';
+  position: absolute;
+  width: 100.6%;
+  height: 101%;
+  left: -0.25%;
+  top: -0.5%;
+  background: conic-gradient(from 0deg at center, #be1099, #4d0199, #6300c6, #be1099);
+  z-index: -2;
+  padding: 10px;
+  border-radius: inherit;
+}
+
+.board1::after {
+  filter: blur(60px);
+}
+
+.board2 {
+  min-width: 400px;
+  height: 45%;
+  font-size: 1.5dvw;
+  position: relative;
+  color: white;
+}
+
+.board2::before,
+.board2::after {
+  content: '';
+  position: absolute;
+  width: 100.6%;
+  height: 101%;
+  left: -0.25%;
+  top: -0.5%;
+  background: conic-gradient(from 0deg at center, #be1099, #4d0199, #6300c6, #be1099);
+  z-index: -2;
+  padding: 10px;
+  border-radius: inherit;
+}
+
+.board2::after {
+  filter: blur(60px);
+}
+
+.vs {
+  position: absolute;
+  font-size: clamp(1rem, 2.5vw, 5rem);
+  margin: 0;
+  z-index: 1;
+  text-align: center;
+  background: linear-gradient(to right, #be1099, #4d0199, #6300c6, #be1099);
+  background-size: 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: animate 5.5s linear infinite;
+}
+
+.playground {
+  min-width: 400px;
+  position: absolute;
+  justify-content: center;
+  display: block;
+  width: 70dvw;
+  height: 70dvh;
+  background-color: #5f0f40;
+  top: 250px;
+  left: 15%;
+  right: 15%;
+  border-radius: 20px;
+}
+
+.playground::before,
+.playground::after {
+  content: '';
+  position: absolute;
+  width: 100.6%;
+  height: 101%;
+  left: -0.3%;
+  top: -0.5%;
+  background: conic-gradient(from 0deg at center, #be1099, #4d0199, #6300c6, #be1099);
+  z-index: -2;
+  padding: 10px;
+  border-radius: inherit;
+}
+
+.playground::after {
+  filter: blur(40px);
+}
+
+.padle1 {
+  --position: 50;
+  position: absolute;
+  background-color: aquamarine;
+  top: calc(var(--position) * 1%);
+  left: 1%;
+  transform: translateY(-50%);
+  width: 1%;
+  border-radius: 5px;
+  height: 15%;
+}
+
+.padle2 {
+  --position: 50;
+  position: absolute;
+  background-color: aquamarine;
+  top: calc(var(--position) * 1%);
+  right: 1%;
+  transform: translateY(-50%);
+  width: 1%;
+  border-radius: 5px;
+  height: 15%;
+}
+
+.padle3 {
+  --position: 50;
+  position: absolute;
+  background-color: crimson;
+  top: calc(var(--position) * 1%);
+  left: 15%;
+  transform: translateY(-50%);
+  width: 1.2%;
+  border-radius: 5px;
+  height: 15%;
+}
+
+.padle4 {
+  --position: 50;
+  position: absolute;
+  background-color: chocolate;
+  top: calc(var(--position) * 1%);
+  right: 15%;
+  transform: translateY(-50%);
+  width: 1.2%;
+  border-radius: 5px;
+  height: 15%;
+}
+
+.ball {
+  --x: 50;
+  --y: 50;
+  z-index: 0;
+  height: 4%;
+  aspect-ratio: 1/1;
+  background: #bce7c0;
+  border-radius: 50%;
+  top: calc(var(--y) * 1%);
+  left: calc(var(--x) * 1%);
+  transform: translate(-50%, -50%);
+  position: absolute;
+  will-change: transform;
+}
+
+.frame {
+  width: 50%;
+  height: 20%;
+  position: relative;
+  border-radius: 10px;
+  top: calc(50 * 1%);
+  left: calc(50 * 1%);
+  background: #007074;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+.player1name {
+  margin-left: 1dvw;
+}
+
+.player2name {
+  margin-left: 1dvw;
+}
+
+.player1score {
+  margin-right: 1dvw;
+}
+
+.player2score {
+  margin-right: 1dvw;
+}
+
+.startText {
+  text-align: center;
+  color: white;
+  padding-top: 4.5%;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.frame2 {
+  min-width: 400px;
+  z-index: 2;
+  position: relative;
+  border: 1dvw solid #5f0f40;
+  border-radius: 2dvw;
+  width: 90dvw;
+  height: 90dvh;
+  top: 5dvh;
+  left: 5dvw;
+  background-color: black;
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.resetMatch {
+  display: none;
+  min-width: 300px;
+  color: white;
+  width: 30dvw;
+  height: 15dvh;
+  background-color: #007074;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.restartTournment {
+  display: none;
+  min-width: 300px;
+  color: white;
+  width: 30dvw;
+  height: 15dvh;
+  background-color: #007074;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.resetMatchAi {
+  display: none;
+  min-width: 300px;
+  color: white;
+  width: 30dvw;
+  height: 15dvh;
+  background-color: #007074;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.reset2v2 {
+  display: none;
+  min-width: 300px;
+  color: white;
+  width: 30dvw;
+  height: 15dvh;
+  background-color: #007074;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.quit {
+  min-width: 300px;
+  color: white;
+  width: 30dvw;
+  height: 15dvh;
+  background-color: #007074;
+  border: 0.5dvw solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.winnerText {
+  text-align: center;
+  color: white;
+  padding-top: 4.5%;
+  font-size: clamp(3rem, 5vw, 8rem);
+}
+
+.userName {
+  min-width: 200px;
+  z-index: 2;
+  position: relative;
+  border: 10px solid #007074;
+  border-radius: 1dvw;
+  width: 40dvw;
+  height: 45dvh;
+  top: 36dvh;
+  left: 30dvw;
+  background-color: black;
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.playerNumber {
+  text-align: center;
+  color: white;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.error {
+  align-self: center;
+  color: red;
+  display: none;
+  font-size: clamp(0.2rem, 0.8vw, 1rem);
+}
+
+.inputName {
+  min-width: 200px;
+  width: 25dvw;
+  height: 7dvh;
+  border: 5px solid #5f0f40;
+  border-radius: 0.3dvw;
+  font-size: clamp(0.8rem, 1vw, 1.5rem);
+  left: 5px;
+}
+
+input {
+  font-family: 'Press Start 2P', cursive;
+}
+
+:placeholder-shown {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+}
+
+.submit {
+  min-width: 100px;
+  width: 15dvw;
+  height: 6dvh;
+  background-color: #007074;
+  border: 5px solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(0.3rem, 1vw, 1.5rem);
+}
+
+.tournmentNames {
+  min-width: 300px;
+  z-index: 2;
+  position: relative;
+  border: 10px solid #007074;
+  border-radius: 1dvw;
+  width: 40dvw;
+  height: 70dvh;
+  top: 15dvh;
+  left: 30dvw;
+  background-color: black;
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.participantUsers {
+  text-align: center;
+  color: white;
+  font-size: clamp(1rem, 2vw, 3rem);
+}
+
+.error2 {
+  align-self: center;
+  color: red;
+  display: none;
+  font-size: clamp(0.2rem, 0.4vw, 0.8rem);
+}
+
+/* .inputName{
+    min-width: 200px;
+    width: 30dvw;
+    height: 7dvh;
+    border: 5px solid #5F0F40;
+    border-radius: 0.3dvw;
+    /* font-size: clamp(0.1rem,  0.5vw, 1rem); */ /*
+    font-size: 0.8rem;
+    left: 5px;
+} */
+
+.submitUsers {
+  min-width: 100px;
+  width: 15dvw;
+  height: 6dvh;
+  background-color: #007074;
+  border: 5px solid #5f0f40;
+  border-radius: 1dvw;
+  font-size: clamp(0.8rem, 1vw, 1.5rem);
+}
+
+.tournament-board {
+  min-width: 400px;
+  z-index: 2;
+  position: relative;
+  border: 0.5dvw solid #007074;
+  border-radius: 1dvw;
+  width: 60dvw;
+  aspect-ratio: 16/8;
+  top: 30dvh;
+  left: 20dvw;
+  background-color: black;
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.match-line2 {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.match-line {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.final-line {
+  display: flex;
+  position: relative;
+  justify-content: center;
+}
+
+.player,
+.winner,
+.final {
+  position: relative;
+  color: white;
+  width: 12dvw;
+  aspect-ratio: 5/2;
+  border: 0.3dvw solid #007074;
+  border-radius: 1dvw;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.5rem, 1vw, 1.8rem);
+  background: linear-gradient(to right, #be1099, #4d0199, #6300c6, #be1099);
+  background-size: 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: animate 5.5s linear infinite;
+}
+
+.winner {
+  background-color: #d0f0d0;
+}
+
+.final {
+  background-color: #ffe599;
+  font-weight: bold;
+}
+
+@media (max-width: 850px) {
+  .score {
+    flex-direction: column;
+    justify-content: space-around;
+  }
+  .board {
+    width: 70%;
+  }
+  .board1 {
+    height: 30%;
+  }
+  .board2 {
+    height: 30%;
+    text-align: right;
+  }
+  .playground {
+    width: 90%;
+    right: 5%;
+    left: 5%;
+  }
+  .tournament-board {
+    width: 90%;
+    right: 5%;
+    left: 5%;
+  }
+  .games {
+    min-width: 400px;
+    flex-direction: column;
+  }
+  .v1 {
+    width: 80dvw;
+  }
+  .tournment {
+    width: 80dvw;
+  }
+  .V2 {
+    width: 80dvw;
+  }
+  .AI {
+    width: 80dvw;
+  }
+  .frame2 {
+    width: 90%;
+  }
+  .resetMatch {
+    width: 90%;
+    left: 5%;
+  }
+  .quit {
+    width: 90%;
+    left: 5%;
+  }
+  .userName {
+    width: 80dvw;
+    left: 10dvw;
+  }
+  /* .inputName{
+        width: 70%;
+    } */
+  .tournmentNames {
+    width: 80dvw;
+    left: 10dvw;
+  }
+  .inputName {
+    width: 70%;
+  }
+}
+
+@media (max-width: 450px) {
+  .games {
+    left: 0;
+    width: 100dvw;
+    height: 100dvh;
+  }
+  .playground {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+  .board {
+    width: 100%;
+  }
+  .frame2 {
+    width: 100%;
+    left: 0;
+  }
+  .board {
+    /* min-width: 200px; */
+    width: 100%;
+    left: 1px;
+    right: 0;
+  }
+  .board1 {
+    height: 30%;
+  }
+  .board2 {
+    height: 30%;
+    text-align: right;
+  }
+  .v1 {
+    width: 100%;
+  }
+  .tournment {
+    width: 100%;
+  }
+  .V2 {
+    width: 100%;
+  }
+  .AI {
+    width: 100%;
+    left: 0;
+  }
+  .tournmentNames {
+    width: 90dvw;
+    left: 5dvw;
+  }
+  .inputName {
+    width: 90%;
+  }
+  .userName {
+    width: 90dvw;
+    left: 5dvw;
+  }
+}
+
+@keyframes animate {
+  to {
+    background-position: 200%;
+  }
+}

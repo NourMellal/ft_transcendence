@@ -76,8 +76,15 @@ GET https://transcendence.fr/api/chat/blocked
 
 ###
 
-# Get list of conversations infos [{uid, name, users uids}]:
+# Get list of conversations infos [conversations_data:{uid, name, users uids}, unread_uids:{[uid:string]}]:
 GET https://transcendence.fr/api/chat/list
+#Cookie: jwt={{jwt_token}}
+
+###
+
+
+# Get list of unread conversations :
+GET https://transcendence.fr/api/chat/list_unread
 #Cookie: jwt={{jwt_token}}
 
 ###
@@ -86,5 +93,10 @@ GET https://transcendence.fr/api/chat/list
 GET https://transcendence.fr/api/chat/read?uid=XXX&page=2
 #Cookie: jwt={{jwt_token}}
 
+# mark as read:
+POST https://transcendence.fr/api/chat/mark_read?uid=
+#Cookie: jwt={{jwt_token}}
+
+###
 
 ###### END CHAT MANAGER TESTs ######

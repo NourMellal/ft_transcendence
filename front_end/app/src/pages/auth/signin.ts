@@ -6,8 +6,9 @@ import { handleEffect } from '~/utils';
 import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 import { LockIcon } from '~/icons';
+import { showDialog } from '~/components/dialog';
 
 export default class SigninPage extends HTMLElement {
   intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
@@ -33,6 +34,57 @@ export default class SigninPage extends HTMLElement {
           return;
         }
 
+        if (res.redirected) {
+          showDialog({
+            title: '2FA verification',
+            asForm: true,
+            content: html`
+              <div>
+                <input
+                  type="hidden"
+                  name="state"
+                  value="${new URL(res.url).searchParams.get('state')}"
+                />
+                <label class="label" for="code">TOTP Code</label>
+                <input
+                  autocomplete="off"
+                  name="code"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="6"
+                  class="input w-full tracking-wider"
+                  placeholder="XXXXXX"
+                />
+              </div>
+            `,
+            actions: [{ label: 'verify', className: 'btn-primary', submit: true }],
+            formHandler: async (formData, dialog) => {
+              const res = await fetch(`/api/2FA/verify?state=${formData.get('state')}`, {
+                method: 'POST',
+                body: formData,
+              });
+
+              if (res.ok) {
+                dialog.close();
+                await setupUser();
+                navigateTo(this.intended);
+                showToast({
+                  message: 'Welcome Back!',
+                });
+                return;
+              }
+
+              showToast({
+                message: await res.text(),
+                type: 'error',
+              });
+            },
+          });
+
+          return;
+        }
+
         await setupUser();
 
         showToast({
@@ -45,7 +97,7 @@ export default class SigninPage extends HTMLElement {
   };
 
   async render() {
-    if (userState.get()) return navigateTo('/profile');
+    if (userStore.get()) return navigateTo('/profile');
 
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>

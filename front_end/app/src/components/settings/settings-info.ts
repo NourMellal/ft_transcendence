@@ -2,7 +2,7 @@ import { handleEffect } from '~/utils';
 import { showToast } from '../toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { userState } from '~/app-state';
+import { userStore } from '~/app-state';
 import { fetchUserInfo } from '~/api/user';
 
 class ProfileInfo extends HTMLElement {
@@ -27,7 +27,7 @@ class ProfileInfo extends HTMLElement {
                 <div class="flex items-center gap-4">
                   <img
                     id="avatar-preview"
-                    src="/api/${userState.get()?.picture_url}"
+                    src="/api/${userStore.get()?.picture_url}"
                     alt="Avatar"
                     class="h-16 w-16 rounded-full object-cover border"
                   />
@@ -70,7 +70,7 @@ class ProfileInfo extends HTMLElement {
                   type="text"
                   class="input w-full"
                   placeholder="Your username"
-                  value="${userState.get()?.username}"
+                  value="${userStore.get()?.username}"
                   autocomplete="off"
                 />
                 <p id="username-availability" class="text-xs text-muted-foreground">
@@ -87,7 +87,7 @@ class ProfileInfo extends HTMLElement {
                   class="input w-full min-h-[80px]"
                   placeholder="Tell us a little about yourself"
                 >
-${userState.get()?.bio}</textarea
+${userStore.get()?.bio}</textarea
                 >
                 <p class="text-xs text-muted-foreground">A brief description about you.</p>
               </div>
@@ -128,7 +128,7 @@ ${userState.get()?.bio}</textarea
           type: 'success',
           message: 'Profile updated successfully',
         });
-        userState.set(await fetchUserInfo());
+        userStore.set(await fetchUserInfo());
       } else {
         showToast({
           type: 'error',
@@ -153,7 +153,7 @@ ${userState.get()?.bio}</textarea
           type: 'success',
           message: 'Picture removed successfully',
         });
-        userState.set(await fetchUserInfo());
+        userStore.set(await fetchUserInfo());
       } else {
         showToast({ type: 'error', message: 'something went wrong' });
       }
@@ -167,7 +167,7 @@ ${userState.get()?.bio}</textarea
     const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
     const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
 
-    if (userState.get()?.picture_url.split('?')[0] !== '/static/profile/default.jpg') {
+    if (userStore.get()?.picture_url.split('?')[0] !== '/static/profile/default.jpg') {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
@@ -192,7 +192,7 @@ ${userState.get()?.bio}</textarea
       const saveBtn = this.querySelector<HTMLButtonElement>('#save-profile-btn')!;
       this.debounceTimeout = window.setTimeout(async () => {
         if (e.key === 'Enter') return;
-        if (!target.value || target.value === userState.get()?.username) {
+        if (!target.value || target.value === userStore.get()?.username) {
           errorSpan.innerText = '';
           saveBtn.disabled = false;
           return;
@@ -224,7 +224,7 @@ ${userState.get()?.bio}</textarea
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(userState.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(userStore.subscribe(() => this.render()));
   }
 
   disconnectedCallback() {

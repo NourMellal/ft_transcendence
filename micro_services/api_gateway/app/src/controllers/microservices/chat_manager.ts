@@ -4,6 +4,7 @@ import rabbitmq from "../../classes/RabbitMQ";
 import { multipart_fields } from "../../types/multipart";
 import db from "../../classes/Databases";
 import { users_table_name } from "../../types/DbTables";
+import { GetUsernamesByUIDs } from "../Common";
 
 export const ListConversations = async (
     request: FastifyRequest,
@@ -16,8 +17,29 @@ export const ListConversations = async (
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
         reply.raw.statusCode = response.status;
+        if (response.status !== 200) {
+            return reply.raw.end();
+        }
         reply.raw.setHeader("Content-Type", "application/json");
-        reply.raw.end(response.message);
+        ListUnreadConversations(request, reply, response.message)
+    })
+}
+
+export const ListUnreadConversations = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    DATA?: string
+) => {
+    const RMQrequest: RabbitMQRequest = {
+        JWT: request.jwt,
+        op: RabbitMQChatManagerOp.LIST_UNREAD_CONVERSATIONS,
+    } as RabbitMQRequest;
+    rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+        reply.raw.statusCode = response.status;
+        if (response.status !== 200) {
+            return reply.raw.end();
+        }
+        reply.raw.end(JSON.stringify({ unread_uids: response.message, conversations_data: response.message }));
     })
 }
 
@@ -54,9 +76,21 @@ export const ListBlocked = async (
         op: RabbitMQChatManagerOp.BLOCK_LIST,
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
-        reply.raw.statusCode = response.status;
-        reply.raw.setHeader("Content-Type", "application/json");
-        reply.raw.end(response.message);
+        try {
+            reply.raw.statusCode = response.status;
+            reply.raw.setHeader("Content-Type", "application/json");
+            if (!response.message)
+                throw 'ListBlocked(): Invalid response'
+            let payload = JSON.parse(response.message) as { blocked_uid: string, username?: string }[];
+            if (payload.length > 0) {
+                const usernames = GetUsernamesByUIDs(payload.map(e => e.blocked_uid));
+                payload.forEach(element => element.username = usernames.get(element.blocked_uid));
+            }
+            reply.raw.end(JSON.stringify(payload));
+        } catch (error) {
+            console.log(`ListBlocked(): ${error}`);
+            reply.raw.end('[]');
+        }
     })
 }
 
@@ -189,6 +223,24 @@ export const UnBlockUser = async (
     const RMQrequest: RabbitMQRequest = {
         JWT: request.jwt,
         op: RabbitMQChatManagerOp.UNBLOCK,
+        message: request.query.uid
+    } as RabbitMQRequest;
+    rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+        reply.raw.statusCode = response.status;
+        reply.raw.end(response.message);
+    })
+}
+
+export const MarkConversationAsRead = async (
+    request: FastifyRequest<{ Querystring: { uid: string } }>,
+    reply: FastifyReply
+) => {
+    if (!request.query.uid)
+        return reply.code(400).send('bad request');
+    reply.hijack();
+    const RMQrequest: RabbitMQRequest = {
+        JWT: request.jwt,
+        op: RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ,
         message: request.query.uid
     } as RabbitMQRequest;
     rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {

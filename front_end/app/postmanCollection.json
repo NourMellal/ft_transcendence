@@ -1,0 +1,708 @@
+{
+  "info": {
+    "name": "Transcendence API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0",
+    "description": "Collection of all Transcendence API routes organized by folders"
+  },
+  "variable": [
+    { "key": "ServerUrl", "value": "https://transcendence.fr" },
+    { "key": "jwt_token", "value": "" },
+    { "key": "Ticket", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Discovery",
+      "item": [
+        {
+          "name": "Get Discovery Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ServerUrl}}/api/.well-known/discovery",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", ".well-known", "discovery"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "OAuth",
+      "item": [
+        {
+          "name": "Get OAuth State",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ServerUrl}}/api/OAuth/state",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "OAuth", "state"]
+            }
+          }
+        },
+        {
+          "name": "OAuth Redirect",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ServerUrl}}/api/OAuth/code?state={{state}}&code={{code}}&scope={{scope}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "OAuth", "code"],
+              "query": [
+                { "key": "state", "value": "" },
+                { "key": "code", "value": "" },
+                { "key": "scope", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard Auth",
+      "item": [
+        {
+          "name": "Check Username Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/namecheck?username={{username}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "namecheck"],
+              "query": [{ "key": "username", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "username", "type": "text", "value": "" },
+                { "key": "password", "type": "text", "value": "" },
+                { "key": "picture", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/signup",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "username", "type": "text", "value": "" },
+                { "key": "password", "type": "text", "value": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/signin",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "signin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Logout",
+      "item": [
+        {
+          "name": "Log Out",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/logout",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh Token",
+      "item": [
+        {
+          "name": "List Active Connections",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/jwt/list",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "jwt", "list"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/jwt/revoke?token_id={{token_id}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "jwt", "revoke"],
+              "query": [{ "key": "token_id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Two-Factor Auth",
+      "item": [
+        {
+          "name": "Get 2FA URI",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/2FA/geturi",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "2FA", "geturi"]
+            }
+          }
+        },
+        {
+          "name": "Enable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/2FA/enable",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "2FA", "enable"]
+            }
+          }
+        },
+        {
+          "name": "Disable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "code", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/2FA/disable",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "2FA", "disable"]
+            }
+          }
+        },
+        {
+          "name": "Verify 2FA Code",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "code", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/2FA/verify?state={{state}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "2FA", "verify"],
+              "query": [{ "key": "state", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Fetch User Info",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/info?uid={{uid}}&uname={{uname}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "info"],
+              "query": [
+                { "key": "uid", "value": "" },
+                { "key": "uname", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Info",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "username", "type": "text", "value": "" },
+                { "key": "bio", "type": "text", "value": "" },
+                { "key": "picture", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/info",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "info"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "old_password", "type": "text", "value": "" },
+                { "key": "new_password", "type": "text", "value": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/passwd",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "passwd"]
+            }
+          }
+        },
+        {
+          "name": "Remove Profile Picture",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/remove_picture",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "remove_picture"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Friends",
+      "item": [
+        {
+          "name": "List Friends",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends"]
+            }
+          }
+        },
+        {
+          "name": "List Friend Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/requests",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "requests"]
+            }
+          }
+        },
+        {
+          "name": "List Sent Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/sent_requests",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "sent_requests"]
+            }
+          }
+        },
+        {
+          "name": "Send Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/request?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "request"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Accept Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/accept?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "accept"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Deny Friend Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/deny?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "deny"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Remove Friend",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/friends/remove?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "friends", "remove"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Push Ticket",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/notifications/ticket",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "notifications", "ticket"]
+            }
+          }
+        },
+        {
+          "name": "List Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/notifications/list_unread",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "notifications", "list_unread"]
+            }
+          }
+        },
+        {
+          "name": "List All Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/notifications/list_all",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "notifications", "list_all"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification As Read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/notifications/mark_as_read?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "notifications", "mark_as_read"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/notifications/delete?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "notifications", "delete"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Poke Friend",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/poke?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "poke"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Get User Active Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/user/status?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "user", "status"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard",
+      "item": [
+        {
+          "name": "List All Ranks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/leaderboard/list?page={{page}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "leaderboard", "list"],
+              "query": [{ "key": "page", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Get My Rank",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/leaderboard/myrank",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "leaderboard", "myrank"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Match Manager",
+      "item": [
+        {
+          "name": "List Match History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/match/history?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "match", "history"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Create New Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/match/create?match_type={{match_type}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "match", "create"],
+              "query": [{ "key": "match_type", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Win Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "match_uid", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/match/win",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "match", "win"]
+            }
+          }
+        },
+        {
+          "name": "Lose Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "match_uid", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/match/lose",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "match", "lose"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat Manager",
+      "item": [
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "type": "text", "value": "" },
+                { "key": "to_uid", "type": "text", "value": "" },
+                { "key": "message", "type": "text", "value": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/new",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "new"]
+            }
+          }
+        },
+        {
+          "name": "Rename Conversation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "name", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/rename?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "rename"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "message", "type": "text", "value": "" }]
+            },
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/send?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "send"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/block?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "block"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/unblock?uid={{uid}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "unblock"],
+              "query": [{ "key": "uid", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "List Blocked Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/blocked",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "blocked"]
+            }
+          }
+        },
+        {
+          "name": "List Conversations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/list",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "list"]
+            }
+          }
+        },
+        {
+          "name": "Read Conversation",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
+            "url": {
+              "raw": "{{ServerUrl}}/api/chat/read?uid={{uid}}&page={{page}}",
+              "host": ["{{ServerUrl}}"],
+              "path": ["api", "chat", "read"],
+              "query": [
+                { "key": "uid", "value": "" },
+                { "key": "page", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

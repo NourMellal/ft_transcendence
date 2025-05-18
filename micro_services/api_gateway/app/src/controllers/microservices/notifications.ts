@@ -1,10 +1,14 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import AuthProvider from "../../classes/AuthProvider";
 import WebSocket from "ws";
-import { GetRandomString } from "../Common";
-import { state_expiree_sec, UserModel, users_table_name } from "../../types/DbTables";
+import { GetRandomString, GetUsernamesByUIDs } from "../Common";
+import {
+  state_expiree_sec,
+  UserModel,
+  users_table_name,
+} from "../../types/DbTables";
 import {
   NotificationBody,
+  NotificationsModel,
   RabbitMQFriendsManagerOp,
   RabbitMQNotificationsOp,
   RabbitMQRequest,
@@ -15,22 +19,29 @@ import db from "../../classes/Databases";
 export const PushNotificationSocketsMap = new Map<string, WebSocket[]>();
 const PushNotificationStates = new Map<string, string>();
 
-const decorateNotificationBody = function (notification: NotificationBody[] | string) {
-  if (typeof notification === 'string') {
-    notification = JSON.parse(notification) as any[];
-  }
-  for (let i = 0; i < notification.length; i++) {
-    const notif: any = notification[i];
-    const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
-    {
-      const res = query.all(notif.DATA.from_uid) as UserModel[];
-      if (res.length > 0) {
-        notif.DATA.from_username = res[0].username;
-      }
+const decorateNotificationBody = function (notificationsRaw: string) {
+  try {
+    let payload: any[] = [];
+    let notifications = JSON.parse(notificationsRaw) as NotificationsModel[];
+    let uids: string[] = [];
+    for (let i = 0; i < notifications.length; i++) {
+      payload[i] = JSON.parse(notifications[i].messageJson);
+      payload[i].notification_uid = notifications[i].UID;
+      if (uids.indexOf(payload[i].from_uid) === -1)
+        uids.push(payload[i].from_uid);
     }
+    if (uids.length > 0) {
+      const usernames = GetUsernamesByUIDs(uids);
+      payload.forEach(
+        (elem) => (elem.from_username = usernames.get(elem.from_uid)!)
+      );
+    }
+    return JSON.stringify(payload);
+  } catch (error) {
+    console.log(`decorateNotificationBody(): ${error}`);
+    return "[]";
   }
-  return JSON.stringify(notification);
-}
+};
 
 const removeSocket = function (socket: WebSocket, uid: string) {
   const sockets = PushNotificationSocketsMap.get(uid);
@@ -46,21 +57,24 @@ const removeSocket = function (socket: WebSocket, uid: string) {
 };
 
 export const pingUser = function (notificationRaw: string) {
-  const notification = JSON.parse(notificationRaw) as NotificationBody;
-  console.log(`Ping Request for uid=${notification.to_uid}:`);
-  const sockets = PushNotificationSocketsMap.get(notification.to_uid);
-  if (sockets) {
-    const payload = JSON.stringify(decorateNotificationBody([notification]));
-    for (let i = 0; i < sockets.length; i++) {
-      try {
+  try {
+    let notification: any = JSON.parse(notificationRaw) as NotificationBody;
+    const sockets = PushNotificationSocketsMap.get(notification.to_uid);
+    console.log(`\t[INFO]: pingUser(): Ping Request for uid=${notification.to_uid}`);
+    if (sockets && sockets.length > 0) {
+      console.log(`\t[INFO]: pingUser(): Sending notification to uid=${notification.to_uid}`);
+      const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
+      const res = query.all(notification.from_uid) as UserModel[];
+      if (res.length === 0)
+        throw `username for ${notification.from_uid} not found`;
+      notification.from_username = res[0].username;
+      const payload = JSON.stringify(notification);
+      for (let i = 0; i < sockets.length; i++) {
         sockets[i].send(payload);
-        console.log(
-          `pinging uid=${notification.to_uid} on registred web socket.`
-        );
-      } catch (error) {
-        console.log(`error pinging user uid=${notification.to_uid}: ${error}`);
       }
     }
+  } catch (error) {
+    console.log(`\t[INFO]: pingUser(): ${error} | notificationRaw=${notificationRaw}`);
   }
 };
 
@@ -116,8 +130,7 @@ export const GetUnreadNotification = async (
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
       reply.raw.end(decorateNotificationBody(response.message));
-    else
-      reply.raw.end();
+    else reply.raw.end("[]");
   });
 };
 
@@ -137,8 +150,7 @@ export const GetAllNotification = async (
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
       reply.raw.end(decorateNotificationBody(response.message));
-    else
-      reply.raw.end();
+    else reply.raw.end("[]");
   });
 };
 
@@ -199,7 +211,7 @@ export const GetUserActiveStatus = async (
 ) => {
   const sockets = PushNotificationSocketsMap.get(request.query.uid);
   if (sockets && sockets.length > 0) {
-    return reply.code(200).send('online');
+    return reply.code(200).send("online");
   }
-  return reply.code(404).send('offline');
-}
+  return reply.code(404).send("offline");
+};
