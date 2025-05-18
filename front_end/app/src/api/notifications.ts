@@ -12,12 +12,24 @@ export enum NotificationType {
   NewMessage,
 }
 
-export type WebsocketNotificationData = {
-  type: NotificationType;
+export type WebsocketNewMessageNotification = {
+  type: NotificationType.NewMessage;
+  conversation_name: string;
+  conversation_uid: string;
   from_uid: string;
   to_uid: string;
-  is_read: boolean;
+  notification_uid: string;
+  from_username: string;
 };
+
+export type WebsocketNotificationData =
+  | WebsocketNewMessageNotification
+  | {
+      type: NotificationType;
+      from_uid: string;
+      to_uid: string;
+      is_read: boolean;
+    };
 
 export const setupNotificationsSocket = async () => {
   if (pushNotificationStore.get()) return;
@@ -28,28 +40,29 @@ export const setupNotificationsSocket = async () => {
   const ticket = await (await fetchWithAuth('/api/notifications/ticket')).text();
 
   const ws = new WebSocket('/api/notifications/push_notification', [ticket]);
-  ws.onerror = (err) => {
-    console.error('WebSocket error:', err);
-  };
+  pushNotificationStore.set(ws);
 
-  ws.onopen = () => {
+  ws.addEventListener('error', () => {
+    pushNotificationStore.get()?.close();
+    pushNotificationStore.set(null);
+  });
+
+  ws.addEventListener('open', () => {
     pingInterval = setInterval(() => {
       ws.send(JSON.stringify({ type: 'ping' }));
-    }, 20_000);
-  };
+    }, 30_000);
+  });
 
-  ws.onmessage = async (event) => {
-    console.log(event.data);
-
+  ws.addEventListener('message', async (event) => {
     try {
+      console.log(event.data);
+
       const data = JSON.parse(event.data) as WebsocketNotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
           notificationSound.play();
         } catch {}
       }
-
-      console.log(data);
 
       switch (data.type) {
         case NotificationType.NewFriendRequest:
@@ -65,12 +78,11 @@ export const setupNotificationsSocket = async () => {
     } catch {
       console.error('Error parsing notification data');
     }
-  };
+  });
 
-  ws.onclose = () => {
+  ws.addEventListener('close', () => {
     clearInterval(pingInterval);
-  };
-  pushNotificationStore.set(ws);
+  });
 };
 
 export const closeNotificationSocket = () => {

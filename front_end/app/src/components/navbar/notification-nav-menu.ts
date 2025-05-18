@@ -88,8 +88,6 @@ class NotificationNavMenu extends HTMLElement {
             ${notifications?.length
               ? await Promise.all(
                   notifications.map(async (data) => {
-                    console.log(data);
-
                     return html`
                       <button
                         data-uid="${data.notification_uid}"

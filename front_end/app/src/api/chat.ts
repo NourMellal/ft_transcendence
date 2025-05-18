@@ -1,3 +1,6 @@
+import { fetchWithAuth } from './auth';
+import { fetchUserInfo } from './user';
+
 export type Chat = {
   UID: string;
   name: string;
@@ -7,7 +10,7 @@ export type Chat = {
 };
 
 export type ChatMessage = {
-  message_uid: string;
+  message_uid?: string;
   user_uid: string;
   message_text: string;
   time: number;
@@ -40,12 +43,18 @@ export const fetchUserChats = async () => {
  * @returns - An array of chat messages or null if the request failed
  */
 export const fetchChatMessages = async (uid: string, page = 0) => {
-  const response = await fetch(`/api/chat/read?uid=${uid}&page=${page}`);
+  const response = await fetchWithAuth(`/api/chat/read?uid=${uid}&page=${page}`);
 
   if (response.ok) {
+    const messages = (await response.json()) as ChatMessage[];
     return {
       success: true as const,
-      data: (await response.json()) as ChatMessage[],
+      data: await Promise.all(
+        messages.map(async (msg) => ({
+          ...msg,
+          username: await fetchUserInfo(msg.user_uid),
+        }))
+      ),
     };
   }
 

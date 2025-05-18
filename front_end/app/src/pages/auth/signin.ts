@@ -35,8 +35,6 @@ export default class SigninPage extends HTMLElement {
         }
 
         if (res.redirected) {
-          console.log(res.url);
-
           showDialog({
             title: '2FA verification',
             asForm: true,
@@ -62,8 +60,6 @@ export default class SigninPage extends HTMLElement {
             `,
             actions: [{ label: 'verify', className: 'btn-primary', submit: true }],
             formHandler: async (formData, dialog) => {
-              console.log('submitted');
-
               const res = await fetch(`/api/2FA/verify?state=${formData.get('state')}`, {
                 method: 'POST',
                 body: formData,

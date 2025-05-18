@@ -13,12 +13,5 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ['www.transcendence.fr', 'transcendence.fr'],
-    // proxy: {
-    //   "/api": {
-    //     target: "https://nginx/api",
-    //     secure: false,
-    //     rewrite: (path) => path.replace(/^\/api/, ""),
-    //   },
-    // },
   },
 });

@@ -12,6 +12,8 @@ import { PlusIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
 import { showToast } from '~/components/toast';
 import { fetchFriends } from '~/api/friends';
+import { pushNotificationStore, userStore } from '~/app-state';
+import { NotificationType, WebsocketNotificationData } from '~/api/notifications';
 
 export default class ChatPage extends HTMLElement {
   private isSidebarOpen = false;
@@ -19,10 +21,26 @@ export default class ChatPage extends HTMLElement {
   private messages: ChatMessage[] = [];
   private selectedChat: Chat | null = null;
   private newMessageText = '';
+  private chatUID = new URLSearchParams(window.location.search).get('chat');
 
-  connectedCallback() {
-    this.loadChats();
-    this.render();
+  handleNewMessage = async (ev: MessageEvent<WebsocketNotificationData>) => {
+    console.log(ev.data);
+
+    if (ev.data.type === NotificationType.NewMessage && this.chatUID) {
+      await this.selectChat(this.chatUID);
+    }
+  };
+
+  async connectedCallback() {
+    await this.loadChats();
+    if (this.chatUID) {
+      await this.selectChat(this.chatUID);
+    } else {
+      this.render();
+    }
+    console.log(pushNotificationStore.get());
+
+    pushNotificationStore.get()?.addEventListener('message', this.handleNewMessage);
   }
 
   async loadChats() {
@@ -38,6 +56,8 @@ export default class ChatPage extends HTMLElement {
     this.selectedChat = chat;
     this.messages = [];
     this.render();
+    // Update URL without reload
+    if (chat) window.history.replaceState(null, '', `?chat=${uid}`);
     if (chat) {
       const res = await fetchChatMessages(chat.UID, 0);
       if (res.success) {
@@ -50,12 +70,19 @@ export default class ChatPage extends HTMLElement {
 
   async sendMessage() {
     if (!this.selectedChat || !this.newMessageText.trim()) return;
+    const messageText = this.newMessageText.trim();
     const fd = new FormData();
-    fd.append('message', this.newMessageText.trim());
+    fd.append('message', messageText);
     const res = await sendChatMessage(this.selectedChat.UID, fd);
     if (res.success) {
+      const currentUID = userStore.get()?.UID;
+      const now = Math.floor(Date.now() / 1000);
+      const msg: ChatMessage = { user_uid: currentUID!, time: now, message_text: messageText };
+      this.messages = [...this.messages, msg];
+      this.appendMessage(msg);
       this.newMessageText = '';
-      await this.selectChat(this.selectedChat.UID);
+      const inp = this.querySelector<HTMLTextAreaElement>('#input-message');
+      if (inp) inp.value = '';
     }
   }
 
@@ -90,6 +117,7 @@ export default class ChatPage extends HTMLElement {
   }
 
   render() {
+    const currentUID = userStore.get()?.UID;
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container mx-auto">
@@ -165,56 +193,59 @@ export default class ChatPage extends HTMLElement {
                 ${this.selectedChat ? `Chat: ${this.selectedChat.name}` : 'Select a conversation'}
               </h3>
             </header>
-
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 messages">
-              ${this.messages.map(
-                (msg) => html`
-                  <div
-                    class="flex ${msg.user_uid === this.selectedChat?.uid_1
-                      ? 'justify-end'
-                      : 'justify-start'}"
-                  >
-                    <div class="max-w-xs lg:max-w-md">
-                      <div
-                        class="text-xs text-muted-foreground mb-1 ${msg.user_uid ===
-                        this.selectedChat?.uid_1
-                          ? 'text-right'
-                          : 'text-left'}"
-                      >
-                        ${msg.user_uid === this.selectedChat?.uid_1
-                          ? 'You'
-                          : this.selectedChat?.name}
-                        ·
-                        ${new Date(msg.time).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
-                      <div
-                        class="p-3 rounded-lg ${msg.user_uid === this.selectedChat?.uid_1
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground'}"
-                      >
-                        <p class="text-sm">${msg.message_text}</p>
-                      </div>
-                    </div>
+            ${this.selectedChat
+              ? html`
+                  <div class="flex-1 overflow-y-auto p-4 space-y-4 messages">
+                    ${[...this.messages].reverse().map(
+                      (msg) => html`
+                        <div
+                          class="flex ${msg.user_uid === currentUID
+                            ? 'justify-end'
+                            : 'justify-start'}"
+                        >
+                          <div class="max-w-xs lg:max-w-md">
+                            <div
+                              class="text-xs text-muted-foreground mb-1 ${msg.user_uid ===
+                              currentUID
+                                ? 'text-right'
+                                : 'text-left'}"
+                            >
+                              ${msg.user_uid === currentUID ? 'You' : this.selectedChat?.name} ·
+                              ${new Date(msg.time * 1000).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                            <div
+                              class="p-3 rounded-lg ${msg.user_uid === currentUID
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-secondary text-secondary-foreground'}"
+                            >
+                              <p class="text-sm">${msg.message_text}</p>
+                            </div>
+                          </div>
+                        </div>
+                      `
+                    )}
                   </div>
+                  <footer class="border-t p-4 bg-card">
+                    <div class="flex items-center gap-2">
+                      <textarea
+                        id="input-message"
+                        type="text"
+                        value="${this.newMessageText}"
+                        placeholder="Type your message..."
+                        class="input flex-1 h-16 resize-none"
+                      ></textarea>
+                      <button id="btn-send" class="btn btn-primary">Send</button>
+                    </div>
+                  </footer>
                 `
-              )}
-            </div>
-
-            <footer class="border-t p-4 bg-card">
-              <div class="flex items-center gap-2">
-                <input
-                  id="input-message"
-                  type="text"
-                  value="${this.newMessageText}"
-                  placeholder="Type your message..."
-                  class="input flex-1"
-                />
-                <button id="btn-send" class="btn btn-primary">Send</button>
-              </div>
-            </footer>
+              : html`
+                  <div class="flex-1 flex items-center justify-center">
+                    <p class="text-muted">Select a conversation to start chatting</p>
+                  </div>
+                `}
           </main>
         </div>
       </div>
@@ -243,10 +274,39 @@ export default class ChatPage extends HTMLElement {
     });
   }
 
+  appendMessage(msg: ChatMessage) {
+    const container = this.querySelector('.messages');
+    if (container) {
+      const currentUID = userStore.get()?.UID;
+      const msgEl = document.createElement('div');
+      msgEl.className = `flex ${msg.user_uid === currentUID ? 'justify-end' : 'justify-start'}`;
+      msgEl.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+          <div class="text-xs text-muted-foreground mb-1 ${
+            msg.user_uid === currentUID ? 'text-right' : 'text-left'
+          }">
+            ${msg.user_uid === currentUID ? 'You' : this.selectedChat?.name} · ${new Date(
+        msg.time * 1000
+      ).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
+          </div>
+          <div class="p-3 rounded-lg ${
+            msg.user_uid === currentUID
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }">
+            <p class="text-sm">${msg.message_text}</p>
+          </div>
+        </div>`;
+      container.appendChild(msgEl);
+      this.scrollToBottom();
+    }
+  }
+
   async createNewChat() {
     const friends = await fetchFriends();
-
-    console.log(friends);
 
     if (!friends) {
       showToast({
@@ -276,7 +336,7 @@ export default class ChatPage extends HTMLElement {
           </div>
           <div>
             <label class="label" for="chat-message">Message</label>
-            <input id="chat-message" type="text" name="message" class="input" />
+            <input id="chat-message" autocomplete="off" type="text" name="message" class="input" />
           </div>
         </div>
       `,
@@ -298,6 +358,10 @@ export default class ChatPage extends HTMLElement {
         }
       },
     });
+  }
+
+  disconnectedCallback() {
+    pushNotificationStore.get()?.removeEventListener('message', this.handleNewMessage);
   }
 }
 

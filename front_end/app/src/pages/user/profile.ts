@@ -5,7 +5,7 @@ import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
 import { friendRequestsStore, userStore, notificationsStore } from '~/app-state';
-import { fetchFriendRequests } from '~/api/friends';
+import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
 import { NotificationType } from '~/api/notifications';
 
 enum FriendStatus {
@@ -88,55 +88,34 @@ export default class ProfilePage extends HTMLElement {
     targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
-      const friendsRes = await fetchWithAuth('/api/friends', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      // Check if target user is already a friend
+      const friendsRes = await fetchFriends();
+      if (friendsRes.success && friendsRes.data.some((u) => u.UID === targetUid)) {
+        return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
+      }
 
-      if (friendsRes.ok) {
-        const friends = await friendsRes.json();
-        if (friends.includes(targetUid)) {
-          return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
+      // Check for incoming friend requests
+      const incoming = await fetchFriendRequests();
+      if (incoming) {
+        const req = incoming.find((r) => r.from_uid === targetUid);
+        if (req) {
+          return { friendStatus: FriendStatus.PENDING_INCOMING, pendingRequestId: req.REQ_ID };
         }
       }
 
-      const requestsRes = await fetchWithAuth('/api/friends/requests', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (requestsRes.ok) {
-        const requests = await requestsRes.json();
-        const incomingRequest = requests.find((request: any) => request.from_uid === targetUid);
-
-        if (incomingRequest) {
-          return {
-            friendStatus: FriendStatus.PENDING_INCOMING,
-            pendingRequestId: incomingRequest.REQ_ID,
-          };
+      // Check for outgoing (sent) friend requests
+      const sentRes = await fetchSentFriendRequests();
+      if (sentRes.success) {
+        const outReq = sentRes.data.find((r) => r.to_uid === targetUid);
+        if (outReq) {
+          return { friendStatus: FriendStatus.PENDING_OUTGOING, pendingRequestId: outReq.REQ_ID };
         }
       }
 
-      const sentRequestsRes = await fetchWithAuth('/api/friends/sent_requests', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (sentRequestsRes.ok) {
-        const sentRequests = await sentRequestsRes.json();
-        const outgoingRequest = sentRequests.find((request: any) => request.to_uid === targetUid);
-
-        if (outgoingRequest) {
-          return {
-            friendStatus: FriendStatus.PENDING_OUTGOING,
-            pendingRequestId: outgoingRequest.REQ_ID,
-          };
-        }
-      }
-
+      // No friendship or pending requests
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
-    } catch (error) {
-      console.error('Error checking friend status:', error);
+    } catch (err) {
+      console.error('Error checking friend status:', err);
       return { friendStatus: FriendStatus.NONE, pendingRequestId: null };
     }
   }
