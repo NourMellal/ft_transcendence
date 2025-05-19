@@ -48,8 +48,10 @@ const ListAllRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 const ListUserRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
+  if (!RMqRequest.message)
+    throw 'invalid request'
   const query = db.persistent.prepare(`SELECT * FROM (SELECT *, RANK() OVER(ORDER BY losses ASC, wins DESC) AS rank FROM ${leaderboard_table_name}) WHERE UID = ?;`);
-  const res = query.all(RMqRequest.JWT.sub);
+  const res = query.all(RMqRequest.message);
   const response: RabbitMQResponse = {
     service: RabbitMQMicroServices.Leaderboard,
     op: RabbitMQLeaderboardOp.LIST_USER_RANK,

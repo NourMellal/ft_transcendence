@@ -19,7 +19,7 @@ GET https://transcendence.fr/api/leaderboard/list?page=0
 ###
 
 # Get leaderboard rank for current user:
-GET https://transcendence.fr/api/leaderboard/myrank
+GET https://transcendence.fr/api/leaderboard/rank?uid=
 #Cookie: jwt={{jwt_token}}
 
 ###### END LEADERBOARD TESTs ######

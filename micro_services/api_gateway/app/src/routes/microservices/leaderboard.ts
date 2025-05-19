@@ -17,6 +17,19 @@ const RankOpts = {
   },
 };
 
+const UserRankOpts = {
+  schema: {
+    querystring: {
+      type: "object",
+      properties: {
+        uid: { type: "string" },
+      },
+      required: ["uid"],
+    },
+    headers: AuthHeaderValidation.schema.headers,
+  },
+};
+
 async function LeaderboardRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
@@ -26,7 +39,7 @@ async function LeaderboardRoutes(fastify: FastifyInstance) {
   );
   fastify.get(
     discoveryDocument.LeaderboardRoutes.ListUserRank.route,
-    AuthHeaderValidation,
+    UserRankOpts,
     GetUserRank
   );
 }

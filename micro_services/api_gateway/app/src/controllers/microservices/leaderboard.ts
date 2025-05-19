@@ -1,8 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import rabbitmq from "../../classes/RabbitMQ";
 import { RabbitMQLeaderboardOp, RabbitMQRequest } from "../../types/RabbitMQMessages";
-import { UserModel, users_table_name } from "../../types/DbTables";
-import db from "../../classes/Databases";
 import { GetUsernamesByUIDs } from "../Common";
 
 export const ListAllRank = async (
@@ -36,13 +34,16 @@ export const ListAllRank = async (
 }
 
 export const GetUserRank = async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Querystring: { uid: string } }>,
     reply: FastifyReply
 ) => {
+    if (!request.query.uid)
+        return reply.code(400).send('bad request');
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
         op: RabbitMQLeaderboardOp.LIST_USER_RANK,
         id: "",
+        message: request.query.uid,
         JWT: request.jwt,
     };
     rabbitmq.sendToLeaderboardQueue(RabbitMQReq, (response) => {
