@@ -18,7 +18,7 @@ GET https://transcendence.fr/api/leaderboard/list?page=0
 
 ###
 
-# Get leaderboard rank for current user:
+# Get leaderboard rank for user by uid (ommit to query current user rank):
 GET https://transcendence.fr/api/leaderboard/rank?uid=
 #Cookie: jwt={{jwt_token}}
 
@@ -30,7 +30,7 @@ GET https://transcendence.fr/api/leaderboard/rank?uid=
 ###### START MATCH MANAGER TESTs (Authorization required) ######
 
 # Get match history for a specific user:
-GET https://transcendence.fr/api/match/history?uid=
+GET https://transcendence.fr/api/match/history?uid=&page=0
 #Cookie: jwt={{jwt_token}}
 
 

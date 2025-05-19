@@ -4,14 +4,14 @@ import rabbitmq from "../../classes/RabbitMQ";
 import { multipart_fields } from "../../types/multipart";
 
 export const ListMatchHistory = async (
-    request: FastifyRequest<{ Querystring: { uid: string } }>,
+    request: FastifyRequest<{ Querystring: { uid: string, page: number } }>,
     reply: FastifyReply
 ) => {
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
         op: RabbitMQMatchManagerOp.LIST_MATCHS,
         id: "",
-        message: request.query.uid,
+        message: JSON.stringify({ UID: !request.query.uid ? request.jwt.sub : request.query.uid, page: request.query.page }),
         JWT: request.jwt,
     };
     rabbitmq.sendToMatchManagerQueue(RabbitMQReq, (response) => {

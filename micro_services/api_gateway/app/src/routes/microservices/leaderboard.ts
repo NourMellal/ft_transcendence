@@ -24,7 +24,6 @@ const UserRankOpts = {
       properties: {
         uid: { type: "string" },
       },
-      required: ["uid"],
     },
     headers: AuthHeaderValidation.schema.headers,
   },

@@ -17,11 +17,25 @@ const CreateNewMatchOpts = {
   },
 };
 
+const MatchHistoryOpts = {
+  schema: {
+    querystring: {
+      type: "object",
+      properties: {
+        uid: { type: "string" },
+        page: { type: "number" },
+      },
+      required: ["page"],
+    },
+    headers: AuthHeaderValidation.schema.headers,
+  },
+};
+
 async function MatchManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
     discoveryDocument.MatchManagerRoutes.ListMatchHistory.route,
-    AuthHeaderValidation,
+    MatchHistoryOpts,
     ListMatchHistory
   );
   fastify.post(

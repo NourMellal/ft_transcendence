@@ -61,11 +61,11 @@ const CreateMatch = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
 }
 
 const ListMatchs = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  let uid = RMqRequest.JWT.sub;
-  if (RMqRequest.message && RMqRequest.message.length > 0)
-    uid = RMqRequest.message;
-  const query = db.persistent.prepare(`SELECT * FROM ${matchs_table_name} WHERE UID = ?;`)
-  const res = query.all(uid);
+  if (!RMqRequest.message)
+    throw 'invalid request';
+  const requestParams = JSON.parse(RMqRequest.message) as { UID: string, page: number };
+  const query = db.persistent.prepare(`SELECT * FROM ${matchs_table_name} WHERE UID = ? LIMIT 10 OFFSET ?;`)
+  const res = query.all(requestParams.UID, requestParams.page);
   let response: RabbitMQResponse = {
     service: RabbitMQMicroServices.match_manager,
     op: RabbitMQMatchManagerOp.LIST_MATCHS,

@@ -37,13 +37,11 @@ export const GetUserRank = async (
     request: FastifyRequest<{ Querystring: { uid: string } }>,
     reply: FastifyReply
 ) => {
-    if (!request.query.uid)
-        return reply.code(400).send('bad request');
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
         op: RabbitMQLeaderboardOp.LIST_USER_RANK,
         id: "",
-        message: request.query.uid,
+        message: !request.query.uid ? request.jwt.sub : request.query.uid,
         JWT: request.jwt,
     };
     rabbitmq.sendToLeaderboardQueue(RabbitMQReq, (response) => {
