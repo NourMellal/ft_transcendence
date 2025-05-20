@@ -70,10 +70,9 @@ export default class ChatPage extends HTMLElement {
     const chat = this.chats.find((c) => c.UID === uid) || null;
     this.selectedChat = chat;
     this.messages = [];
-    this.render();
-    // Update URL without reload
-    if (chat) window.history.replaceState(null, '', `?chat=${uid}`);
+
     if (chat) {
+      window.history.pushState(null, '', `?chat=${uid}`);
       const res = await fetchChatMessages(chat.UID, 0);
       if (res.success) {
         this.messages = res.data;
@@ -158,7 +157,7 @@ export default class ChatPage extends HTMLElement {
               ${this.chats.map(
                 (chat) => html`
                   <button
-                    class="chat-item w-full text-left p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${this
+                    class="chat-item w-full text-left py-2 px-4 cursor-pointer rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${this
                       .selectedChat?.UID === chat.UID
                       ? 'bg-secondary text-secondary-foreground'
                       : 'text-foreground'}"
