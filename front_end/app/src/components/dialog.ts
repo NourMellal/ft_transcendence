@@ -43,6 +43,11 @@ class AppDialog extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener(DIALOG_EVENT_NAME, this.handleEvent as EventListener);
+    this.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.close();
+      }
+    });
   }
 
   disconnectedCallback() {
