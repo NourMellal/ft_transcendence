@@ -50,7 +50,17 @@ export default class ProfilePage extends HTMLElement {
         });
 
         if (!res.ok) {
-          navigateTo('/404');
+          this.replaceChildren(html`
+            <div
+              class="-mb-8 md:-mt-20 -mt-16 flex flex-col items-center justify-center min-h-screen space-y-4"
+            >
+              <h1 class="text-4xl font-bold tracking-tight">Profile Not Found</h1>
+              <p class="text-muted-foreground text-center">
+                The profile you're looking for doesn't exist.
+              </p>
+              <a href="/profile" class="btn-primary"> Go to my profile </a>
+            </div>
+          `);
           return null;
         }
         profileUser = await res.json();
