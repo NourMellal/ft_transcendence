@@ -24,13 +24,20 @@ export const fetchAllRanks = async (page: number) => {
   };
 };
 
-export const fetchUserRank = async () => {
-  const response = await fetchWithAuth('/api/leaderboard/myrank');
+type FetchUserRankResponse = {
+  UID: string;
+  wins: number;
+  losses: number;
+  rank: number;
+}[];
 
+export const fetchUserRank = async (uid: string) => {
+  const response = await fetchWithAuth(`/api/leaderboard/rank?uid=${uid}`);
   if (response.ok) {
+    const data = (await response.json()) as FetchUserRankResponse;
     return {
       success: true as const,
-      data: (await response.json()) as LeaderBoardEntry,
+      data: data.length === 0 ? 'Unranked' : data[0].rank.toString(),
     };
   }
 
