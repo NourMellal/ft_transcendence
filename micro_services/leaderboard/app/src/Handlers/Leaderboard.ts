@@ -57,7 +57,7 @@ const ListUserRank = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
     op: RabbitMQLeaderboardOp.LIST_USER_RANK,
     req_id: RMqRequest.id,
     status: 200,
-    message: JSON.stringify(res)
+    message: JSON.stringify(res[0])
   };
   return response;
 }

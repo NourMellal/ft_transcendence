@@ -27,6 +27,7 @@ const decorateNotificationBody = function (notificationsRaw: string) {
     for (let i = 0; i < notifications.length; i++) {
       payload[i] = JSON.parse(notifications[i].messageJson);
       payload[i].notification_uid = notifications[i].UID;
+      payload[i].is_read = notifications[i].is_read;
       if (uids.indexOf(payload[i].from_uid) === -1)
         uids.push(payload[i].from_uid);
     }
