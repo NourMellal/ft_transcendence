@@ -23,8 +23,8 @@ export default class NotificationsPage extends HTMLElement {
   async render() {
     // Group notifications by read/unread
     const all = this.notifications;
-    const unread = all.filter((n) => !n.read);
-    const read = all.filter((n) => n.read);
+    const unread = all.filter((n) => !n.is_read);
+    const read = all.filter((n) => n.is_read);
 
     let list: Notification[] = [];
     if (this.activeTab === 'all') list = all;
@@ -94,7 +94,7 @@ export default class NotificationsPage extends HTMLElement {
                 list.map(
                   async (n) => html`
                     <div
-                      class="rounded-lg border border-border bg-card p-6 shadow-sm relative ${n.read
+                      class="rounded-lg border border-border bg-card p-6 shadow-sm relative ${n.is_read
                         ? 'opacity-80'
                         : ''}"
                     >

@@ -29,16 +29,24 @@ type FetchUserRankResponse = {
   wins: number;
   losses: number;
   rank: number;
-}[];
+};
 
 export const fetchUserRank = async (uid: string) => {
   const response = await fetchWithAuth(`/api/leaderboard/rank?uid=${uid}`);
   if (response.ok) {
-    const data = (await response.json()) as FetchUserRankResponse;
-    return {
-      success: true as const,
-      data: data.length === 0 ? 'Unranked' : data[0].rank.toString(),
-    };
+    try {
+      const data = (await response.json()) as FetchUserRankResponse;
+      return {
+        success: true as const,
+        data: data,
+      };
+    } catch (e) {
+      // whatever ....
+      return {
+        success: true as const,
+        data: null,
+      };
+    }
   }
 
   return {

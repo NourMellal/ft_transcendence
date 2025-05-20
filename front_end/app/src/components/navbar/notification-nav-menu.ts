@@ -89,7 +89,7 @@ class NotificationNavMenu extends HTMLElement {
                     return html`
                       <button
                         data-uid="${data.notification_uid}"
-                        class="w-full text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none ${data.read
+                        class="w-full text-start cursor-pointer flex flex-col gap-1 px-4 py-3 hover:bg-accent/10 focus:bg-accent/10 outline-none ${data.is_read
                           ? ''
                           : 'font-bold'}"
                         style="background: none; border: none;"
@@ -117,7 +117,7 @@ class NotificationNavMenu extends HTMLElement {
       </div>
     `);
     this.setup();
-    this.setNotificationCount(notificationsStore.get()?.filter((n) => !n.read).length || 0);
+    this.setNotificationCount(notificationsStore.get()?.filter((n) => !n.is_read).length || 0);
   }
 
   toggle = () => {
@@ -210,7 +210,7 @@ class NotificationNavMenu extends HTMLElement {
     markAllBtn?.addEventListener('click', async () => {
       const notifications = notificationsStore.get();
       if (!notifications || notifications.length === 0) return;
-      const unreadUids = notifications.filter((n) => !n.read).map((n) => n.notification_uid);
+      const unreadUids = notifications.filter((n) => !n.is_read).map((n) => n.notification_uid);
       if (unreadUids.length === 0) return;
       const result = await markNotificationAsRead(unreadUids.join(';'));
       if (result.success) {

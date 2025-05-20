@@ -25,6 +25,8 @@ export default class ChatPage extends HTMLElement {
   private chatUID = new URLSearchParams(window.location.search).get('chat');
 
   handleNewMessage = async (ev: MessageEvent) => {
+    console.log('New message event:', ev);
+
     const data = JSON.parse(ev.data) as WebsocketNotificationData;
 
     if (data.type === NotificationType.NewMessage && data.conversation_uid === this.chatUID) {
@@ -59,7 +61,7 @@ export default class ChatPage extends HTMLElement {
   async loadChats() {
     const res = await fetchUserChats();
     if (res.success) {
-      this.chats = res.data;
+      this.chats = res.data.reverse();
       this.render();
     }
   }
@@ -134,7 +136,6 @@ export default class ChatPage extends HTMLElement {
 
   render() {
     const currentUID = userStore.get()?.UID;
-    console.log(this.chats);
 
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
@@ -364,14 +365,16 @@ export default class ChatPage extends HTMLElement {
       `,
       asForm: true,
       actions: [{ label: 'create', submit: true }],
-      async formHandler(formData, dialog) {
+      formHandler: async (formData, dialog) => {
         const res = await createNewChat(formData);
         if (res.success) {
           showToast({
             type: 'success',
             message: 'Chat created successfully',
           });
+          await this.loadChats();
           dialog.close();
+          await this.selectChat(res.data);
         } else {
           showToast({
             type: 'error',

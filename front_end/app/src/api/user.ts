@@ -75,7 +75,7 @@ export type MatchHistoryEntry = {
 };
 
 export const fetchMatchHistory = async (uid: string) => {
-  const response = await fetchWithAuth(`/api/match/history?uid=${uid}`);
+  const response = await fetchWithAuth(`/api/match/history?uid=${uid}&page=0`);
 
   if (response.ok) {
     return {

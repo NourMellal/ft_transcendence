@@ -371,27 +371,24 @@ export default class ProfilePage extends HTMLElement {
 
     const { user, isOwnProfile, matchHistory } = this.state;
 
-    let gamesPlayed = '0';
-    let winRate = '0%';
-    let wins = 0;
-    let losses = 0;
-
-    if (matchHistory && matchHistory.length > 0) {
-      wins = matchHistory.filter((match) => match.state === MatchStatus.WIN).length;
-      losses = matchHistory.filter((match) => match.state === MatchStatus.LOSS).length;
-      const completedGames = wins + losses;
-      gamesPlayed = completedGames.toString();
-      winRate = completedGames > 0 ? ((wins / completedGames) * 100).toFixed(0) + '%' : '0%';
-    }
-
-    const rank = await fetchUserRank(user.UID);
+    const rankInfo = await fetchUserRank(user.UID);
+    const rankData = rankInfo.data ? rankInfo.data : { rank: 'Unranked', wins: 0, losses: 0 };
+    const gamesPlayed = String(rankData.wins + rankData.losses);
+    const winRate = String(
+      rankData.wins + rankData.losses > 0
+        ? ((rankData.wins / (rankData.wins + rankData.losses)) * 100).toFixed(0) + '%'
+        : '0%'
+    );
+    const rank = String(rankData.rank);
+    let wins = String(rankData.wins);
+    let losses = String(rankData.losses);
 
     const stats = [
       { label: 'Games Played', value: gamesPlayed },
       { label: 'Wins', value: wins.toString() },
       { label: 'Losses', value: losses.toString() },
       { label: 'Win Rate', value: winRate },
-      { label: 'Rank', value: rank.success ? rank.data : 'Unranked' },
+      { label: 'Rank', value: rank },
     ];
 
     this.replaceChildren(html`

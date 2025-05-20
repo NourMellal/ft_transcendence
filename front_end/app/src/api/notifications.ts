@@ -3,6 +3,7 @@ import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 
 export enum NotificationType {
+  Ping = 'pong',
   NewFriendRequest = 1,
   FriendRemove,
   FriendRequestAccepted,
@@ -59,6 +60,8 @@ export const setupNotificationsSocket = async () => {
 
   ws.addEventListener('message', async (event) => {
     try {
+      console.log('Notification:', event.data);
+
       const data = JSON.parse(event.data) as WebsocketNotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
@@ -67,6 +70,8 @@ export const setupNotificationsSocket = async () => {
       }
 
       switch (data.type) {
+        case NotificationType.Ping:
+          return;
         case NotificationType.NewFriendRequest:
         case NotificationType.FriendRequestDenied:
         case NotificationType.FriendRequestAccepted:
@@ -100,7 +105,7 @@ export type Notification = {
   from_uid: string;
   to_uid: string;
   notification_uid: string;
-  read: boolean;
+  is_read: boolean;
   from_username: string;
 };
 
