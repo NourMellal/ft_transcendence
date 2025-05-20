@@ -7,10 +7,10 @@ import { XIcon } from '~/icons';
 import {
   deleteNotification,
   fetchAllNotifications,
+  getNotificationMessage,
+  getNotificationTitle,
   Notification,
-  NotificationType,
 } from '~/api/notifications';
-import { fetchUserInfo } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { showDialog } from '~/components/dialog';
 
@@ -111,10 +111,10 @@ export default class NotificationsPage extends HTMLElement {
                       <div class="flex items-start gap-4">
                         <div class="flex-1">
                           <h3 class="font-semibold text-card-foreground">
-                            ${this.getNotificationTitle(n.type)}
+                            ${getNotificationTitle(n.type)}
                           </h3>
                           <p class="text-sm text-muted-foreground mt-1">
-                            ${await this.getNotificationMessage(n)}
+                            ${await getNotificationMessage(n)}
                           </p>
                           <!-- <p class="text-xs text-muted-foreground mt-2">
                           ${''}
@@ -129,49 +129,6 @@ export default class NotificationsPage extends HTMLElement {
       </div>
     `);
     this.setup();
-  }
-
-  getNotificationTitle(type: NotificationType) {
-    switch (type) {
-      case NotificationType.NewFriendRequest:
-        return 'You have a new friend request';
-      case NotificationType.FriendRequestAccepted:
-        return 'Your friend request has been accepted';
-      case NotificationType.FriendRequestDenied:
-        return 'Your friend request has been denied';
-      case NotificationType.GameInvite:
-        return 'You have a new game invite';
-      case NotificationType.Poke:
-        return 'You have been poked';
-      case NotificationType.NewMessage:
-        return 'You have a new message';
-      case NotificationType.FriendRemove:
-        return 'You have been removed from a friend';
-      default:
-        return 'You have a new notification';
-    }
-  }
-
-  async getNotificationMessage(data: Notification) {
-    const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
-    switch (data.type) {
-      case NotificationType.NewFriendRequest:
-        return `${fromUsername} sent you a friend request`;
-      case NotificationType.FriendRequestAccepted:
-        return `${fromUsername} accepted your friend request`;
-      case NotificationType.FriendRequestDenied:
-        return `${fromUsername} denied your friend request`;
-      case NotificationType.GameInvite:
-        return `${fromUsername} invited you to play a game`;
-      case NotificationType.Poke:
-        return `${fromUsername} poked you`;
-      case NotificationType.NewMessage:
-        return `${fromUsername} sent you a message`;
-      case NotificationType.FriendRemove:
-        return `${fromUsername} removed you from their friends`;
-      default:
-        return 'You have a new notification';
-    }
   }
 
   async setup() {
