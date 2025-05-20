@@ -134,6 +134,8 @@ export default class ChatPage extends HTMLElement {
 
   render() {
     const currentUID = userStore.get()?.UID;
+    console.log(this.chats);
+
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
       <div class="container mx-auto">

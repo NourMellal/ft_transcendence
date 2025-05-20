@@ -27,7 +27,7 @@ export const fetchUserChats = async () => {
   if (response.ok) {
     return {
       success: true as const,
-      data: (await response.json()) as Chat[],
+      data: (await response.json()).conversations_data as Chat[],
     };
   }
 
