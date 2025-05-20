@@ -216,10 +216,8 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
   {
-    console.log('insert unread message');
     const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES (?,?,?);`);
     const res = query.run(conversation_uid + ';' + request.uid, request.uid, conversation_uid);
-    console.log('message inserted successfully');
     // Send a notification
     const Notification = {
       type: NotificationType.NewMessage,
@@ -274,8 +272,8 @@ function ReadConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     }
     const query = db.persistent.prepare(`SELECT * FROM '${request.uid}' ORDER BY time DESC LIMIT 10 OFFSET (10 * ?);`);
     const res = query.all(request.page);
-    if (request.page === 0 && MarkConversationAsRead({ id: '', message: request.uid, JWT: RMqRequest.JWT } as RabbitMQRequest).status !== 200)
-      throw 'Can not mark conversation as read';
+    if (request.page === 0)
+      MarkConversationAsRead({ id: '', message: request.uid, JWT: RMqRequest.JWT } as RabbitMQRequest)
     response.status = 200;
     response.message = JSON.stringify(res);
     return response;
