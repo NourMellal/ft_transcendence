@@ -452,7 +452,15 @@ export default class ChatPage extends HTMLElement {
         content: html`
           <div>
             <label class="label" for="chat-name">Chat Name</label>
-            <input id="chat-name" type="text" class="input" name="name" />
+            <input
+              value="${this.selectedChat?.name || ''}"
+              id="chat-name"
+              type="text"
+              class="input"
+              name="name"
+              autofocus
+              onFocus="if (this.dataset.focused === 1) return;this.dataset.focused = 1;this.select();"
+            />
           </div>
         `,
         asForm: true,
