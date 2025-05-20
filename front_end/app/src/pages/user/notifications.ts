@@ -19,9 +19,30 @@ type Tab = 'all' | 'unread' | 'read';
 export default class NotificationsPage extends HTMLElement {
   notifications: Notification[] = [];
   activeTab: Tab = 'all';
+  tabsElement: HTMLElement | null = null;
+  notificationsListElement: HTMLElement | null = null;
 
-  async render() {
-    // Group notifications by read/unread
+  // Render the initial structure only once
+  async renderStructure() {
+    this.replaceChildren(html`
+      <navigation-bar></navigation-bar>
+      <div class="container mt-8">
+        <!-- Tabs -->
+        <div id="tabs-container" class="flex border-b border-border mb-6"></div>
+        <!-- Notifications List -->
+        <div id="notifications-list" class="space-y-4"></div>
+      </div>
+    `);
+
+    this.tabsElement = this.querySelector('#tabs-container');
+    this.notificationsListElement = this.querySelector('#notifications-list');
+
+    await this.renderTabs();
+    await this.renderNotificationsList();
+    this.setupEventListeners();
+  }
+
+  getFilteredLists() {
     const all = this.notifications;
     const unread = all.filter((n) => !n.is_read);
     const read = all.filter((n) => n.is_read);
@@ -31,119 +52,128 @@ export default class NotificationsPage extends HTMLElement {
     else if (this.activeTab === 'unread') list = unread;
     else if (this.activeTab === 'read') list = read;
 
-    this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
-      <div class="container mt-8">
-        <!-- Tabs -->
-        <div class="flex border-b border-border mb-6">
-          <button
-            class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'all'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'}"
-            data-tab="all"
-          >
-            All
-            <span
-              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
-                .activeTab === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'}"
-            >
-              ${all.length}
-            </span>
-          </button>
-          <button
-            class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'unread'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'}"
-            data-tab="unread"
-          >
-            Unread
-            <span
-              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
-                .activeTab === 'unread'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'}"
-            >
-              ${unread.length}
-            </span>
-          </button>
-          <button
-            class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'read'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'}"
-            data-tab="read"
-          >
-            Read
-            <span
-              class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
-                .activeTab === 'read'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'}"
-            >
-              ${read.length}
-            </span>
-          </button>
-        </div>
-
-        <!-- Notifications List -->
-        <div class="space-y-4">
-          ${list.length === 0
-            ? html`<div class="text-muted-foreground text-center py-8">No notifications.</div>`
-            : await Promise.all(
-                list.map(
-                  async (n) => html`
-                    <div
-                      class="rounded-lg border border-border bg-card p-6 shadow-sm relative ${n.is_read
-                        ? 'opacity-80'
-                        : ''}"
-                    >
-                      <div class="absolute top-4 right-4">
-                        <button
-                          class="rounded-full p-1 hover:bg-accent text-muted-foreground hover:text-foreground"
-                          data-id="${n.notification_uid}"
-                          data-action="delete-notification"
-                          aria-label="Dismiss"
-                        >
-                          ${XIcon}
-                        </button>
-                      </div>
-                      <div class="flex items-start gap-4">
-                        <div class="flex-1">
-                          <h3 class="font-semibold text-card-foreground">
-                            ${getNotificationTitle(n.type)}
-                          </h3>
-                          <p class="text-sm text-muted-foreground mt-1">
-                            ${await getNotificationMessage(n)}
-                          </p>
-                          <!-- <p class="text-xs text-muted-foreground mt-2">
-                          ${''}
-                        </p> -->
-                        </div>
-                      </div>
-                    </div>
-                  `
-                )
-              )}
-        </div>
-      </div>
-    `);
-    this.setup();
+    return { all, unread, read, list };
   }
 
-  async setup() {
-    // Tab switching
-    this.querySelectorAll('button[data-tab]').forEach((btn) => {
+  async renderTabs() {
+    if (!this.tabsElement) return;
+
+    const { all, unread, read } = this.getFilteredLists();
+
+    this.tabsElement.innerHTML = '';
+    this.tabsElement.append(html`
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'all'
+          ? 'border-primary text-foreground'
+          : 'border-transparent text-muted-foreground hover:text-foreground'}"
+        data-tab="all"
+      >
+        All
+        <span
+          class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+            .activeTab === 'all'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground'}"
+        >
+          ${all.length}
+        </span>
+      </button>
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'unread'
+          ? 'border-primary text-foreground'
+          : 'border-transparent text-muted-foreground hover:text-foreground'}"
+        data-tab="unread"
+      >
+        Unread
+        <span
+          class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+            .activeTab === 'unread'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground'}"
+        >
+          ${unread.length}
+        </span>
+      </button>
+      <button
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'read'
+          ? 'border-primary text-foreground'
+          : 'border-transparent text-muted-foreground hover:text-foreground'}"
+        data-tab="read"
+      >
+        Read
+        <span
+          class="ml-1 inline-flex items-center justify-center rounded-full text-xs px-2 py-0.5 ${this
+            .activeTab === 'read'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground'}"
+        >
+          ${read.length}
+        </span>
+      </button>
+    `);
+
+    this.tabsElement.querySelectorAll('button[data-tab]').forEach((btn) => {
       btn.addEventListener('click', (e: Event) => {
         const tab = (e.currentTarget as HTMLElement).getAttribute('data-tab') as Tab;
         if (tab && tab !== this.activeTab) {
           this.activeTab = tab;
-          this.render();
+          this.renderTabs();
+          this.renderNotificationsList();
         }
       });
     });
+  }
 
-    // delete notification
+  async renderNotificationsList() {
+    if (!this.notificationsListElement) return;
+
+    const { list } = this.getFilteredLists();
+
+    this.notificationsListElement.innerHTML = '';
+
+    if (list.length === 0) {
+      this.notificationsListElement.append(
+        html`<div class="text-muted-foreground text-center py-8">No notifications.</div>`
+      );
+      return;
+    }
+
+    // Create and append each notification
+    for (const notification of list) {
+      const notificationElement = await this.createNotificationElement(notification);
+      this.notificationsListElement.append(notificationElement);
+    }
+  }
+
+  async createNotificationElement(n: Notification) {
+    return html`
+      <div
+        class="rounded-lg border border-border bg-card p-6 shadow-sm relative ${n.is_read
+          ? 'opacity-80'
+          : ''}"
+        data-notification-id="${n.notification_uid}"
+      >
+        <div class="absolute top-4 right-4">
+          <button
+            class="rounded-full p-1 hover:bg-accent text-muted-foreground hover:text-foreground"
+            data-id="${n.notification_uid}"
+            data-action="delete-notification"
+            aria-label="Dismiss"
+          >
+            ${XIcon}
+          </button>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="flex-1">
+            <h3 class="font-semibold text-card-foreground">${getNotificationTitle(n.type)}</h3>
+            <p class="text-sm text-muted-foreground mt-1">${await getNotificationMessage(n)}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  setupEventListeners() {
     this.addEventListener('click', (ev) => {
       if (ev.target instanceof HTMLButtonElement) {
         const action = ev.target.getAttribute('data-action');
@@ -158,10 +188,29 @@ export default class NotificationsPage extends HTMLElement {
                 callback: async (dialog) => {
                   const res = await deleteNotification(id);
                   if (res.success) {
+                    const notificationElement = this.querySelector(
+                      `[data-notification-id="${id}"]`
+                    );
+                    if (notificationElement) {
+                      notificationElement.remove();
+                    }
+
                     this.notifications = this.notifications.filter(
                       (n) => n.notification_uid !== id
                     );
-                    this.render();
+
+                    this.renderTabs();
+
+                    const { list } = this.getFilteredLists();
+                    if (list.length === 0 && this.notificationsListElement) {
+                      this.notificationsListElement.innerHTML = '';
+                      this.notificationsListElement.append(
+                        html`<div class="text-muted-foreground text-center py-8">
+                          No notifications.
+                        </div>`
+                      );
+                    }
+
                     showToast({
                       message: 'Notification deleted successfully',
                       type: 'success',
@@ -189,7 +238,7 @@ export default class NotificationsPage extends HTMLElement {
     } else {
       this.notifications = [];
     }
-    this.render();
+    await this.renderStructure();
   }
 
   timeAgo(dateStr: string) {

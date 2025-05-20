@@ -1,9 +1,9 @@
-FROM node:alpine3.21
+FROM node:slim
 
 WORKDIR /app
 
+RUN mkdir /static
+
 COPY ./app/game /static/game
 
-COPY ./app/profile /static/profile
-
-ENTRYPOINT [ "sh", "-c", "(cd ./game && npx tsc) && npm i && npm run dev" ]
+ENTRYPOINT [ "npm", "run", "dev" ]

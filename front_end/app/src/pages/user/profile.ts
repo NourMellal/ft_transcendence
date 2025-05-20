@@ -1,9 +1,10 @@
+import '~/components/navbar/navigation-bar';
+
 import { navigateTo } from '~/components/app-router';
 import { User, fetchMatchHistory, MatchHistoryEntry, MatchStatus, MatchType } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import '~/components/navbar/navigation-bar';
 import { friendRequestsStore, userStore, notificationsStore } from '~/app-state';
 import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
 import { NotificationType } from '~/api/notifications';

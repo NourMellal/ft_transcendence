@@ -14,7 +14,7 @@ services:
     container_name: vault
     build:
       context: ./vault
-      args: 
+      args:
         VAULT_CLIENT_APP_NAME: ${VAULT_CLIENT_APP_NAME}
         VAULT_OIDC_REDIRECT_URI: ${VAULT_OIDC_REDIRECT_URI}
     init: true
