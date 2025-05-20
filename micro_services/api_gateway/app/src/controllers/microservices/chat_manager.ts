@@ -47,7 +47,7 @@ export const ListUnreadConversations = async (
     reply.raw.end(
       JSON.stringify({
         unread_uids: JSON.parse(response.message || "[]"),
-        conversations_data: JSON.parse(response.message || "[]"),
+        conversations_data: JSON.parse(DATA || "[]"),
       })
     );
   });
