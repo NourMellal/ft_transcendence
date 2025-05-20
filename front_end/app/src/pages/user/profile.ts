@@ -7,6 +7,7 @@ import '~/components/navbar/navigation-bar';
 import { friendRequestsStore, userStore, notificationsStore } from '~/app-state';
 import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
 import { NotificationType } from '~/api/notifications';
+import { fetchUserRank } from '~/api/leaderboard';
 
 enum FriendStatus {
   NONE,
@@ -372,7 +373,6 @@ export default class ProfilePage extends HTMLElement {
 
     let gamesPlayed = '0';
     let winRate = '0%';
-    let rank = 'Unranked';
     let wins = 0;
     let losses = 0;
 
@@ -384,12 +384,14 @@ export default class ProfilePage extends HTMLElement {
       winRate = completedGames > 0 ? ((wins / completedGames) * 100).toFixed(0) + '%' : '0%';
     }
 
+    const rank = await fetchUserRank(user.UID);
+
     const stats = [
       { label: 'Games Played', value: gamesPlayed },
       { label: 'Wins', value: wins.toString() },
       { label: 'Losses', value: losses.toString() },
       { label: 'Win Rate', value: winRate },
-      { label: 'Rank', value: rank },
+      { label: 'Rank', value: rank.success ? rank.data : 'Unranked' },
     ];
 
     this.replaceChildren(html`
