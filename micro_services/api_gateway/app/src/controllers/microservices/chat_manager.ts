@@ -108,6 +108,23 @@ export const ListBlocked = async (
   });
 };
 
+export const CheckBlocked = async (
+  request: FastifyRequest<{ Querystring: { uid: string } }>,
+  reply: FastifyReply
+) => {
+  if (!request.query.uid || request.query.uid === request.jwt.sub)
+    return reply.code(400).send("bad request");
+  reply.hijack();
+  const RMQrequest: RabbitMQRequest = {
+    JWT: request.jwt,
+    op: RabbitMQChatManagerOp.CHECK_BLOCK,
+    message: request.query.uid,
+  } as RabbitMQRequest;
+  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+    reply.raw.statusCode = response.status;
+    reply.raw.end(response.message);
+  });
+}
 export const CreateConversation = async (
   request: FastifyRequest,
   reply: FastifyReply

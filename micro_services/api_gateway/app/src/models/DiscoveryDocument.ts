@@ -376,6 +376,13 @@ export const discoveryDocument = {
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },
+    CheckBlock: {
+      description: "HTTP: Check if the logged user is blocked by another user.",
+      route: "/api/chat/check_blocked",
+      QueryParams: [{ name: "uid" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    },
     ListConversations: {
       description: "HTTP: list conversations with their {data: ids and names and both users uids involving the user} and unread conversations_uids between them. return : [conversations_data:[{uid, name, users uids}], unread_uids:{[uid:string]}]",
       route: "/api/chat/list",

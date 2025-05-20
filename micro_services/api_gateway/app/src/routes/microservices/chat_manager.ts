@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { AuthHeaderValidation } from "../../types/AuthProvider";
-import { BlockUser, CreateConversation, ListBlocked, ListConversations, MarkConversationAsRead, ReadConversation, RenameConversation, SendMessageToConversation, UnBlockUser } from "../../controllers/microservices/chat_manager";
+import { BlockUser, CheckBlocked, CreateConversation, ListBlocked, ListConversations, MarkConversationAsRead, ReadConversation, RenameConversation, SendMessageToConversation, UnBlockUser } from "../../controllers/microservices/chat_manager";
 
 const EditPostOpts = {
   schema: {
@@ -47,6 +47,11 @@ async function ChatManagerRoutes(fastify: FastifyInstance) {
     discoveryDocument.ChatManagerRoutes.ListBlocked.route,
     AuthHeaderValidation,
     ListBlocked
+  );
+  fastify.get(
+    discoveryDocument.ChatManagerRoutes.CheckBlock.route,
+    EditPostOpts,
+    CheckBlocked
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.CreateConversation.route,

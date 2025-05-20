@@ -44,6 +44,27 @@ function BlockUser(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
 }
 
+function CheckIfBlocked(RMqRequest: RabbitMQRequest): RabbitMQResponse
+{
+  if (!RMqRequest.message)
+    throw 'Invalid request';
+  let response = {
+    req_id: RMqRequest.id,
+    op: RabbitMQChatManagerOp.CHECK_BLOCK,
+    service: RabbitMQMicroServices.chat_manager,
+    status: 200
+  } as RabbitMQResponse;
+  const query = db.persistent.prepare(`SELECT blocked_uid FROM ${block_table_name} WHERE user_uid = ? AND blocked_uid = ? ;`);
+  const res = query.all(RMqRequest.message, RMqRequest.JWT.sub);
+  if (res.length === 0) {
+    response.message = '{is_blocked: false}'
+  }
+  else {
+    response.message = '{is_blocked: true}'
+  }
+  return response;
+}
+
 function ListBlockedUsers(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   let response = {
     req_id: RMqRequest.id,
@@ -376,6 +397,9 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     }
     case RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ: {
       return MarkConversationAsRead(RMqRequest);
+    }
+    case RabbitMQChatManagerOp.CHECK_BLOCK:{
+      return CheckIfBlocked(RMqRequest);
     }
     default: {
       console.log(

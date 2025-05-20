@@ -45,7 +45,7 @@ export async function sendWinOrLose(uid:string, win:boolean) :Promise<void>{
     if (!win)
         status = "https://transcendence.fr/api/match/lose";
     let theForm = new FormData();
-    theForm.append("uid", uid)
+    theForm.append("match_uid", uid)
     try{
         let res = await fetch(status, {method:"POST", body:theForm});
         if (!res.ok)
