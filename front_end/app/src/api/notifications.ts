@@ -5,12 +5,12 @@ import { fetchFriendRequests } from './friends';
 export enum NotificationType {
   Ping = 'pong',
   NewFriendRequest = 1,
-  FriendRemove,
-  FriendRequestAccepted,
-  FriendRequestDenied,
-  GameInvite,
-  Poke,
-  NewMessage,
+  FriendRemove = 2,
+  FriendRequestAccepted = 3,
+  FriendRequestDenied = 4,
+  GameInvite = 5,
+  Poke = 6,
+  NewMessage = 7,
 }
 
 export type WebsocketNewMessageNotification = {
@@ -60,8 +60,6 @@ export const setupNotificationsSocket = async () => {
 
   ws.addEventListener('message', async (event) => {
     try {
-      console.log('Notification:', event.data);
-
       const data = JSON.parse(event.data) as WebsocketNotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
@@ -75,7 +73,6 @@ export const setupNotificationsSocket = async () => {
         case NotificationType.NewFriendRequest:
         case NotificationType.FriendRequestDenied:
         case NotificationType.FriendRequestAccepted:
-        case NotificationType.FriendRemove:
           friendRequestsStore.set(await fetchFriendRequests());
           break;
         default:

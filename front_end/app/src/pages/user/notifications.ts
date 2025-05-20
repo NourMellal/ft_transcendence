@@ -143,6 +143,10 @@ export default class NotificationsPage extends HTMLElement {
         return 'You have a new game invite';
       case NotificationType.Poke:
         return 'You have been poked';
+      case NotificationType.NewMessage:
+        return 'You have a new message';
+      case NotificationType.FriendRemove:
+        return 'You have been removed from a friend';
       default:
         return 'You have a new notification';
     }
@@ -161,6 +165,10 @@ export default class NotificationsPage extends HTMLElement {
         return `${fromUsername} invited you to play a game`;
       case NotificationType.Poke:
         return `${fromUsername} poked you`;
+      case NotificationType.NewMessage:
+        return `${fromUsername} sent you a message`;
+      case NotificationType.FriendRemove:
+        return `${fromUsername} removed you from their friends`;
       default:
         return 'You have a new notification';
     }

@@ -25,8 +25,6 @@ export default class ChatPage extends HTMLElement {
   private chatUID = new URLSearchParams(window.location.search).get('chat');
 
   handleNewMessage = async (ev: MessageEvent) => {
-    console.log('New message event:', ev);
-
     const data = JSON.parse(ev.data) as WebsocketNotificationData;
 
     if (data.type === NotificationType.NewMessage && data.conversation_uid === this.chatUID) {
