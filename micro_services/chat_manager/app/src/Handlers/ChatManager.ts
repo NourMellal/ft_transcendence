@@ -34,6 +34,21 @@ function BlockUser(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     const res = query.run(`${RMqRequest.JWT.sub};${RMqRequest.message}`, RMqRequest.JWT.sub, RMqRequest.message);
     if (res.changes !== 1)
       throw 'db error';
+    {
+      // Send a notification
+      const Notification = {
+        type: NotificationType.UserBlocked,
+        from_uid: RMqRequest.JWT.sub,
+        to_uid: RMqRequest.message
+      };
+      const notificationRequest: RabbitMQRequest = {
+        id: '',
+        op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+        message: JSON.stringify(Notification),
+        JWT: {} as JWT
+      };
+      rabbitmq.sendToNotificationQueue(notificationRequest);
+    }
     response.status = 200;
     response.message = `user ${RMqRequest.message} blocked`;
     return response;
@@ -44,8 +59,7 @@ function BlockUser(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
 }
 
-function CheckIfBlocked(RMqRequest: RabbitMQRequest): RabbitMQResponse
-{
+function CheckIfBlocked(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   if (!RMqRequest.message)
     throw 'Invalid request';
   let response = {
@@ -92,6 +106,21 @@ function UnblockUser(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     response.status = 400;
     response.message = 'bad request';
     return response;
+  }
+  {
+    // Send a notification
+    const Notification = {
+      type: NotificationType.UserUnBlocked,
+      from_uid: RMqRequest.JWT.sub,
+      to_uid: RMqRequest.message
+    };
+    const notificationRequest: RabbitMQRequest = {
+      id: '',
+      op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+      message: JSON.stringify(Notification),
+      JWT: {} as JWT
+    };
+    rabbitmq.sendToNotificationQueue(notificationRequest);
   }
   response.status = 200;
   response.message = 'user unblocked';
@@ -322,6 +351,34 @@ function RenameConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     const res = query.run(request.name, request.uid, RMqRequest.JWT.sub, RMqRequest.JWT.sub);
     if (res.changes !== 1)
       throw 'invalid permission or conversation uid';
+    {
+      // Send a notification
+      const Notification = {
+        type: NotificationType.ConversationNameChanged,
+        conversation_name: request.name,
+        conversation_uid: request.uid,
+        from_uid: RMqRequest.JWT.sub,
+        to_uid: ''
+      };
+      {
+        // Get other user's uid:
+        const query = db.persistent.prepare(`SELECT uid_1,uid_2 FROM ${conversations_table_name} WHERE UID = ?;`);
+        const res = query.get(request.uid) as { uid_1: string, uid_2: string };
+        if (!res)
+          throw 'invalid request';
+        if (res.uid_1 === RMqRequest.JWT.sub)
+          Notification.to_uid = res.uid_2;
+        else
+          Notification.to_uid = res.uid_1;
+      }
+      const notificationRequest: RabbitMQRequest = {
+        id: '',
+        op: RabbitMQNotificationsOp.SAVE_NOTIFICATION as number,
+        message: JSON.stringify(Notification),
+        JWT: {} as JWT
+      };
+      rabbitmq.sendToNotificationQueue(notificationRequest);
+    }
     response.status = 200;
     response.message = 'conversation renamed';
     return response;
@@ -398,7 +455,7 @@ export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     case RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ: {
       return MarkConversationAsRead(RMqRequest);
     }
-    case RabbitMQChatManagerOp.CHECK_BLOCK:{
+    case RabbitMQChatManagerOp.CHECK_BLOCK: {
       return CheckIfBlocked(RMqRequest);
     }
     default: {

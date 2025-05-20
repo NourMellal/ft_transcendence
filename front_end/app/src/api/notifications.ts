@@ -12,6 +12,9 @@ export enum NotificationType {
   GameInvite = 5,
   Poke = 6,
   NewMessage = 7,
+  ConversationNameChanged,
+  UserBlocked,
+  UserUnBlocked,
 }
 
 export type WebsocketNewMessageNotification = {

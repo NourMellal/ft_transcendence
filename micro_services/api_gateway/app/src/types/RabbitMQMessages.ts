@@ -86,6 +86,9 @@ export enum NotificationType {
   GameInvite,
   Poke,
   NewMessage,
+  ConversationNameChanged,
+  UserBlocked,
+  UserUnBlocked,
 }
 
 export type NotificationBody = {

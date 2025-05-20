@@ -1,8 +1,9 @@
 ## TODOs
 
 - [ ] mark chat notifications `/api/notifications/list_all` as read if a user reads the conv page=0
-- [ ] get websocket notification if a user got blocked by someone else
-- [ ] get websocket notification if a converstation name changes
+- [X] get websocket notification if a user got blocked by someone else
+- [X] get websocket notification if a user got unblocked by someone else
+- [X] get websocket notification if a converstation name changes
 - [X] need a way to check if a player is blocked by someone else
 
 ## Frontend
@@ -13,4 +14,4 @@
 - [ ] fix game fetch calls
 - [ ] update game UI
 - [ ] Fix chat header not updating after rename
-- [ ] Friend removal and friend request denial not updated when received the notification
+- [ ] Friend removal and friend request denial not updating the the target user's UI when receiving the respective notification.
