@@ -129,7 +129,7 @@ function SendMessageToConversation(RMqRequest: RabbitMQRequest): RabbitMQRespons
   {
     // Send a notification only if already read ==> Not spamming user
     try {
-      const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES ('?','?','?');`);
+      const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES (?,?,?);`);
       const res = query.run(request.uid + ';' + receiver_uid, receiver_uid, request.uid);
       const Notification = {
         type: NotificationType.NewMessage,
