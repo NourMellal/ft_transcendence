@@ -65,7 +65,7 @@ export default class ChatPage extends HTMLElement {
     await this.loadChats();
 
     if (this.chatUID) {
-      await this.selectChat(this.chatUID);
+      this.selectChat(this.chatUID);
     }
 
     pushNotificationStore.get()?.addEventListener('message', this.handleNewMessage);
@@ -154,7 +154,6 @@ export default class ChatPage extends HTMLElement {
   // Render initial layout once
   renderLayout() {
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <div class="container mx-auto">
         <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
           <aside
@@ -166,7 +165,7 @@ export default class ChatPage extends HTMLElement {
             style="z-index:20"
           ></aside>
 
-          <main class="w-full md:w-3/4 flex flex-col bg-background">
+          <main id="main-chat" class="relative w-full md:w-3/4 flex flex-col bg-background">
             <header id="chat-header" class="flex items-center gap-4 border-b p-4 bg-card"></header>
             <div
               id="messages-container"

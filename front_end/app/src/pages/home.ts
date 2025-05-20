@@ -10,7 +10,6 @@ export default class HomePage extends HTMLElement {
       return navigateTo('/profile');
     }
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <main class="min-h-screen bg-background">
         <section
           class="h-screen relative overflow-hidden bg-gradient-to-b from-background to-muted/50"

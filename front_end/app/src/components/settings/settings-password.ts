@@ -1,4 +1,3 @@
-import { handleEffect } from '~/utils';
 import { showToast } from '../toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
@@ -65,7 +64,7 @@ class SettingsPassword extends HTMLElement {
     this.setup();
   }
 
-  updatePassword = (e: SubmitEvent) => {
+  updatePassword = async (e: SubmitEvent) => {
     e.preventDefault();
     const formData = new FormData(this.querySelector<HTMLFormElement>('#password-form')!);
 
@@ -84,7 +83,7 @@ class SettingsPassword extends HTMLElement {
 
     fieldset.disabled = true;
 
-    handleEffect(document.body, async () => {
+    try {
       const res = await fetchWithAuth('/api/user/passwd', {
         method: 'POST',
         credentials: 'include',
@@ -103,13 +102,15 @@ class SettingsPassword extends HTMLElement {
           message: await res.text(),
         });
       }
-    })
-      .then(() => {
-        (e.target as HTMLFormElement).reset();
-      })
-      .finally(() => {
-        fieldset.disabled = false;
+      (e.target as HTMLFormElement).reset();
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'An error occurred while updating the password',
       });
+    } finally {
+      fieldset.disabled = false;
+    }
   };
 
   setup() {

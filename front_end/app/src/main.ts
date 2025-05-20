@@ -1,10 +1,13 @@
+import '~/components/app-loader';
+import '~/components/toast';
+import '~/components/dialog';
+import '~/components/navbar/navigation-bar';
+import '~/components/app-router';
+
 import { closeNotificationSocket } from './api/notifications';
 import { setupUser } from './api/user';
 import { friendRequestsStore, notificationsStore, userStore } from './app-state';
-import { handleEffect } from './utils';
-
-import '~/components/toast';
-import '~/components/dialog';
+import { html } from './lib/html';
 
 function initTheme() {
   let isDarkMode = true;
@@ -21,23 +24,23 @@ function initTheme() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await setupUser();
   initTheme();
 
-  handleEffect(document.body, async () => {
-    await setupUser();
-
-    userStore.subscribe((u) => {
-      if (u === null) {
-        closeNotificationSocket();
-        friendRequestsStore.set(null);
-        notificationsStore.set(null);
-      }
-    });
-
-    const root = document.querySelector('#app');
-    if (!root) throw Error('App Root Not Found!');
-
-    root.replaceChildren(document.createElement('app-router'));
+  userStore.subscribe((u) => {
+    if (u === null) {
+      closeNotificationSocket();
+      friendRequestsStore.set(null);
+      notificationsStore.set(null);
+    }
   });
+
+  const root = document.querySelector('#app');
+  if (!root) throw Error('App Root Not Found!');
+
+  root.replaceChildren(html`
+    <navigation-bar></navigation-bar>
+    <app-router></app-router>
+  `);
 });

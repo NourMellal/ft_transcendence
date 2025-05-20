@@ -393,7 +393,6 @@ export default class ProfilePage extends HTMLElement {
     ];
 
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <div class="container space-y-8 mt-16">
         <!-- Profile Header -->
         <div class="flex flex-col items-center space-y-4">

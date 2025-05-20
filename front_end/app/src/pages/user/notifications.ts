@@ -3,7 +3,6 @@ import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
 import { XIcon } from '~/icons';
 
-// Assume fetchAllNotifications is imported from your API utilities
 import {
   deleteNotification,
   fetchAllNotifications,
@@ -13,6 +12,8 @@ import {
 } from '~/api/notifications';
 import { showToast } from '~/components/toast';
 import { showDialog } from '~/components/dialog';
+import { userStore } from '~/app-state';
+import { navigateTo } from '~/components/app-router';
 
 type Tab = 'all' | 'unread' | 'read';
 
@@ -22,14 +23,13 @@ export default class NotificationsPage extends HTMLElement {
   tabsElement: HTMLElement | null = null;
   notificationsListElement: HTMLElement | null = null;
 
-  // Render the initial structure only once
   async renderStructure() {
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <div class="container mt-8">
-        <!-- Tabs -->
+        <button data-action="delete-all-notifications" class="btn-destructive mb-4">
+          Delete All Notifications
+        </button>
         <div id="tabs-container" class="flex border-b border-border mb-6"></div>
-        <!-- Notifications List -->
         <div id="notifications-list" class="space-y-4"></div>
       </div>
     `);
@@ -227,11 +227,47 @@ export default class NotificationsPage extends HTMLElement {
             ],
           });
         }
+
+        if (action === 'delete-all-notifications') {
+          showDialog({
+            title: 'Delete All Notifications',
+            content: html`<p>Are you sure you want to delete all notifications?</p>`,
+            actions: [
+              {
+                label: 'confirm',
+                callback: async (dialog) => {
+                  try {
+                    await Promise.all(
+                      this.notifications.map((n) => deleteNotification(n.notification_uid))
+                    );
+                    this.notifications = [];
+                    this.renderTabs();
+                    this.renderNotificationsList();
+                    showToast({
+                      message: 'All notifications deleted successfully',
+                      type: 'success',
+                    });
+                  } catch {
+                    showToast({
+                      message: 'Failed to delete all notifications',
+                      type: 'error',
+                    });
+                  }
+                  dialog.close();
+                },
+              },
+            ],
+          });
+        }
       }
     });
   }
 
   async connectedCallback() {
+    if (!userStore.get()) {
+      navigateTo('/signin');
+      return;
+    }
     const res = await fetchAllNotifications();
     if (res.success) {
       this.notifications = res.data;

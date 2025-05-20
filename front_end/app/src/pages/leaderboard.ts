@@ -44,7 +44,6 @@ export default class LeaderboardPage extends HTMLElement {
     const isFirstPage = this.currentPage === 0; // First page is 0
 
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <div class="container mt-16">
         <h1 class="text-3xl font-bold mb-6">Leaderboard</h1>
         ${this.isLoading

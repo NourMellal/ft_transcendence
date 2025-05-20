@@ -8,6 +8,7 @@ import { html } from '~/lib/html';
 import { userStore } from '~/app-state';
 
 import { LockIcon, MenuIcon, RocketIcon } from '~/icons';
+import { navigateTo } from '../app-router';
 
 const UserLinks = [
   {
@@ -86,6 +87,19 @@ class NavigationBar extends HTMLElement {
   connectedCallback() {
     this.render();
     this.cleanupCallbacks.push(userStore.subscribe(() => this.render()));
+    this.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+      if (anchor && anchor.href) {
+        const origin = window.location.origin;
+        if (anchor.href.startsWith(origin)) {
+          e.preventDefault();
+          if (anchor.href !== window.location.href) {
+            navigateTo(anchor.href.replace(origin, ''));
+          }
+        }
+      }
+    });
   }
 
   disconnectedCallback() {

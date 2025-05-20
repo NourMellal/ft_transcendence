@@ -1,4 +1,3 @@
-import { handleEffect } from '~/utils';
 import { showToast } from '../toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
@@ -104,7 +103,7 @@ ${userStore.get()?.bio}</textarea
     this.setup();
   }
 
-  updateProfile = (e: SubmitEvent) => {
+  updateProfile = async (e: SubmitEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
 
@@ -117,47 +116,43 @@ ${userStore.get()?.bio}</textarea
 
     const fieldset = this.querySelector('fieldset')!;
     fieldset.disabled = true;
-    handleEffect(document.body, async () => {
-      const res = await fetchWithAuth('/api/user/info', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        showToast({
-          type: 'success',
-          message: 'Profile updated successfully',
-        });
-        userStore.set(await fetchUserInfo());
-      } else {
-        showToast({
-          type: 'error',
-          message: await res.text(),
-        });
-      }
-    }).finally(() => {
-      fieldset.disabled = false;
+    const res = await fetchWithAuth('/api/user/info', {
+      method: 'POST',
+      body: formData,
     });
+
+    if (res.ok) {
+      showToast({
+        type: 'success',
+        message: 'Profile updated successfully',
+      });
+      userStore.set(await fetchUserInfo());
+    } else {
+      showToast({
+        type: 'error',
+        message: await res.text(),
+      });
+    }
+
+    fieldset.disabled = false;
   };
 
-  removeAvatar = () => {
-    handleEffect(this, async () => {
-      const res = await fetchWithAuth('/api/user/remove_picture', {
-        method: 'DELETE',
-        credentials: 'include',
-        cache: 'no-store',
-      });
-
-      if (res.ok) {
-        showToast({
-          type: 'success',
-          message: 'Picture removed successfully',
-        });
-        userStore.set(await fetchUserInfo());
-      } else {
-        showToast({ type: 'error', message: 'something went wrong' });
-      }
+  removeAvatar = async () => {
+    const res = await fetchWithAuth('/api/user/remove_picture', {
+      method: 'DELETE',
+      credentials: 'include',
+      cache: 'no-store',
     });
+
+    if (res.ok) {
+      showToast({
+        type: 'success',
+        message: 'Picture removed successfully',
+      });
+      userStore.set(await fetchUserInfo());
+    } else {
+      showToast({ type: 'error', message: 'something went wrong' });
+    }
   };
 
   setup() {

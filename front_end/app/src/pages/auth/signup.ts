@@ -2,7 +2,6 @@ import '~/components/signin/google-signin-btn';
 
 import { navigateTo } from '~/components/app-router';
 import { showToast } from '~/components/toast';
-import { handleEffect } from '~/utils';
 import { setupUser } from '~/api/user';
 import { html } from '~/lib/html';
 import '~/components/navbar/navigation-bar';
@@ -36,26 +35,24 @@ export default class SignupPage extends HTMLElement {
       }
       formData.delete('password_confirmation');
 
-      handleEffect(document.body, async () => {
-        const res = await fetch('/api/user/signup', {
-          method: 'POST',
-          body: formData,
-          cache: 'no-store',
-        });
-        if (!res.ok) {
-          showToast({
-            type: 'error',
-            message: await res.text(),
-          });
-          return;
-        }
-        await setupUser();
-        showToast({
-          type: 'success',
-          message: `Welcome to ft_transcendence!`,
-        });
-        navigateTo(this.intended);
+      const res = await fetch('/api/user/signup', {
+        method: 'POST',
+        body: formData,
+        cache: 'no-store',
       });
+      if (!res.ok) {
+        showToast({
+          type: 'error',
+          message: await res.text(),
+        });
+        return;
+      }
+      await setupUser();
+      showToast({
+        type: 'success',
+        message: `Welcome to ft_transcendence!`,
+      });
+      navigateTo(this.intended);
     }
   };
 
@@ -74,7 +71,6 @@ export default class SignupPage extends HTMLElement {
       return navigateTo('/profile');
     }
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <fieldset class="max-w-md mx-auto my-4 flex flex-col gap-4 mt-16">
         <div class="p-6 md:rounded-md border">
           <form class="space-y-6 [&_label]:block [&_label]:mb-4">

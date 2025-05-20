@@ -13,7 +13,6 @@ export default class SettingsPage extends HTMLElement {
       return navigateTo('/signin');
     }
     this.replaceChildren(html`
-      <navigation-bar></navigation-bar>
       <div class="container mt-16">
         <profile-info></profile-info>
         <settings-password></settings-password>
