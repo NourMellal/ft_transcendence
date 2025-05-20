@@ -108,11 +108,12 @@ class RabbitMQ {
       this.reply_map.delete(RMqResponse.req_id);
     }
   }
-  public sendToUserManagerQueue(
+  public async sendToUserManagerQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;
@@ -122,11 +123,12 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
-  public sendToFriendsManagerQueue(
+  public async sendToFriendsManagerQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;
@@ -136,11 +138,12 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
-  public sendToNotificationQueue(
+  public async sendToNotificationQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;
@@ -150,11 +153,12 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
-  public sendToLeaderboardQueue(
+  public async sendToLeaderboardQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;
@@ -164,11 +168,12 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
-  public sendToMatchManagerQueue(
+  public async sendToMatchManagerQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;
@@ -178,11 +183,12 @@ class RabbitMQ {
       Buffer.from(JSON.stringify(req))
     );
   }
-  public sendToChatManagerQueue(
+  public async sendToChatManagerQueue(
     req: RabbitMQRequest,
     callback: (response: RabbitMQResponse) => void
   ) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     req.id = crypto.randomUUID();
     if (this.reply_map.has(req.id))
       throw `request id with UID=${req.id} already exist`;

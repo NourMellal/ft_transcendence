@@ -87,15 +87,17 @@ class RabbitMQ {
       rabbitmq.sendToAPIGatewayQueue(RMqResponse);
     }
   }
-  public sendToAPIGatewayQueue(RMqResponse: RabbitMQResponse) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+  public async sendToAPIGatewayQueue(RMqResponse: RabbitMQResponse) {
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     this.channel.sendToQueue(
       this.api_gateway_queue,
       Buffer.from(JSON.stringify(RMqResponse))
     );
   }
-  public sendToNotificationQueue(req: RabbitMQRequest) {
-    if (!this.isReady) throw "RabbitMQ class not ready";
+  public async sendToNotificationQueue(req: RabbitMQRequest) {
+    while (!this.isReady) 
+      await new Promise((r) => setTimeout(r, 500));
     this.channel.sendToQueue(
       this.notifications_queue,
       Buffer.from(JSON.stringify(req))

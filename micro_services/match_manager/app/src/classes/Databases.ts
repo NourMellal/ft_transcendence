@@ -12,6 +12,7 @@ class Databases {
       db.persistent.exec(
         `create table IF NOT EXISTS '${matchs_table_name}' ('match_UID' TEXT NOT NULL PRIMARY KEY, 'UID' TEXT NOT NULL, 'match_type' INT NOT NULL, 'started' INT NOT NULL, 'state' INT NOT NULL)`
       );
+      db.persistent.exec(`DELETE FROM ${matchs_table_name} WHERE state = 0 ;`);
     } catch (err) {
       console.log("fatal error: " + err);
       process.exit(1);
