@@ -151,10 +151,9 @@ export default class ChatPage extends HTMLElement {
 
   getChatUserUID() {}
 
-  // Render initial layout once
   renderLayout() {
     this.replaceChildren(html`
-      <div class="container mx-auto">
+      <div class="container mx-auto mt-8">
         <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
           <aside
             id="sidebar"
@@ -177,25 +176,21 @@ export default class ChatPage extends HTMLElement {
       </div>
     `);
 
-    // Store references to main UI sections
     this.sidebarElement = this.querySelector('#sidebar');
     this.headerElement = this.querySelector('#chat-header');
     this.messagesContainer = this.querySelector('#messages-container');
     this.inputFieldset = this.querySelector('#chat-input');
 
-    // Update all UI parts
     this.updateSidebar();
     this.updateHeader();
     this.updateMessages();
     this.updateInputField();
   }
 
-  // Update specific parts of the UI
   updateSidebar() {
     if (!this.sidebarElement) return;
 
-    this.sidebarElement.innerHTML = '';
-    this.sidebarElement.appendChild(html`
+    this.sidebarElement.replaceChildren(html`
       <button
         id="btn-new-chat"
         class="btn-primary w-full mb-4 flex items-center justify-center gap-2"
@@ -238,7 +233,6 @@ export default class ChatPage extends HTMLElement {
       </button>
     `);
 
-    // Set up sidebar event handlers
     this.querySelector('#btn-new-chat')?.addEventListener('click', () => {
       this.createNewChat();
     });
@@ -254,9 +248,8 @@ export default class ChatPage extends HTMLElement {
     if (!this.headerElement) return;
 
     const currentUID = userStore.get()?.UID;
-    this.headerElement.innerHTML = '';
 
-    this.headerElement.appendChild(html`
+    this.headerElement.replaceChildren(html`
       <button id="btn-toggle-sidebar" class="md:hidden">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -278,7 +271,6 @@ export default class ChatPage extends HTMLElement {
       </h3>
     `);
 
-    // Add buttons only if a chat is selected
     if (this.selectedChat) {
       this.headerElement.appendChild(
         html`<button class="btn-outlined ms-auto" id="rename-chat-btn">Rename Chat</button>`
@@ -305,7 +297,6 @@ export default class ChatPage extends HTMLElement {
       }
     }
 
-    // Set up header event handlers
     this.querySelector('#btn-toggle-sidebar')?.addEventListener('click', this.toggleSidebar);
     this.setupHeaderActionEvents();
   }
@@ -313,19 +304,18 @@ export default class ChatPage extends HTMLElement {
   updateMessages() {
     if (!this.messagesContainer) return;
 
-    this.messagesContainer.innerHTML = '';
     const currentUID = userStore.get()?.UID;
 
     if (this.selectedChat && this.messages.length > 0) {
       this.messages.forEach((msg) => {
-        this.messagesContainer?.appendChild(this.createMessageElement(msg, currentUID));
+        this.messagesContainer?.replaceChildren(this.createMessageElement(msg, currentUID));
       });
     } else if (this.selectedChat) {
-      this.messagesContainer.appendChild(
+      this.messagesContainer.replaceChildren(
         html`<p class="text-center text-muted-foreground">No messages yet</p>`
       );
     } else {
-      this.messagesContainer.appendChild(html`
+      this.messagesContainer.replaceChildren(html`
         <div class="flex-1 flex items-center justify-center">
           <p class="text-muted-foreground">Select a conversation to start chatting</p>
         </div>
@@ -335,8 +325,6 @@ export default class ChatPage extends HTMLElement {
 
   updateInputField() {
     if (!this.inputFieldset) return;
-
-    this.inputFieldset.innerHTML = '';
 
     if (!this.selectedChat) {
       return;
@@ -351,7 +339,7 @@ export default class ChatPage extends HTMLElement {
 
     this.inputFieldset.toggleAttribute('disabled', isBlocked);
 
-    this.inputFieldset.appendChild(html`
+    this.inputFieldset.replaceChildren(html`
       <form id="send-message-form" class="flex items-center gap-2">
         <input
           id="input-message"
@@ -365,7 +353,6 @@ export default class ChatPage extends HTMLElement {
       </form>
     `);
 
-    // Set up input field events
     this.querySelector<HTMLFormElement>('#send-message-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const inp = this.querySelector<HTMLInputElement>('#input-message');

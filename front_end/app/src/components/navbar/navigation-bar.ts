@@ -45,7 +45,7 @@ class NavigationBar extends HTMLElement {
     mobileNav.setAttribute('pages', JSON.stringify(pages));
 
     this.replaceChildren(html`
-      <div class="fixed top-0 inset-x-0 z-40 px-2 py-2 border-b bg-background/80 backdrop-blur-md">
+      <div class="sticky top-0 inset-x-0 z-40 px-2 py-2 border-b bg-background/80 backdrop-blur-md">
         <div class="container flex items-center">
           <button id="open-menu-btn" class="me-4 md:hidden cursor-pointer">
             ${MenuIcon}

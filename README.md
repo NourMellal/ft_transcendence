@@ -5,3 +5,8 @@
 - get websocket notification if a converstation name changes
 
 - add UI for poking players
+- fix notification-nav-menu performance (re-renders)
+- fix settings performance (re-renders)
+- fix game fetch calls
+- update game UI
+- Fix chat header not updating after rename

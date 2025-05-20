@@ -132,11 +132,16 @@ class NotificationNavMenu extends HTMLElement {
     const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
     const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
     const target = event.target as HTMLElement;
-    if (
+
+    const isClickableWithin =
+      notificationMenu?.contains(target) &&
+      (target instanceof HTMLAnchorElement || target instanceof HTMLButtonElement);
+    const shouldClose =
       !notificationMenu?.classList.contains('hidden') &&
       !notificationMenu?.contains(target) &&
-      !notificationBtn?.contains(target)
-    ) {
+      !notificationBtn?.contains(target);
+
+    if (isClickableWithin || shouldClose) {
       this.close();
     }
   };

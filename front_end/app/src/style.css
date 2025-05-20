@@ -134,7 +134,7 @@
   }
 
   #app:has(navigation-bar) {
-    @apply pb-8 md:pt-20 pt-16;
+    @apply pb-8;
   }
 }
 
