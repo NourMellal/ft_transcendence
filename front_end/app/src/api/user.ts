@@ -1,8 +1,9 @@
-import { friendRequestsStore, notificationsStore, userStore } from '~/app-state';
+import { blockedUsersStore, friendRequestsStore, notificationsStore, userStore } from '~/app-state';
 import { fetchFriendRequests } from './friends';
 import { fetchUndreadNotifications, setupNotificationsSocket } from './notifications';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from './auth';
+import { fetchBlockedUsers } from './chat';
 
 export type User = {
   UID: string;
@@ -30,10 +31,16 @@ export const setupUser = async () => {
     userStore.set(await fetchUserInfo());
     if (!userStore.get()) throw Error('User Not Logged-in');
 
-    const [friendRequests, notifications] = await Promise.all([
+    const [friendRequests, notifications, blockedUsers] = await Promise.all([
       await fetchFriendRequests(),
       await fetchUndreadNotifications(),
+      await fetchBlockedUsers(),
     ]);
+
+    // blocked users
+    if (blockedUsers.success) {
+      blockedUsersStore.set(blockedUsers.data);
+    }
 
     // friend requests
     friendRequestsStore.set(friendRequests);

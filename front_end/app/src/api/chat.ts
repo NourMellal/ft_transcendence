@@ -1,3 +1,4 @@
+import { blockedUsersStore } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchUserInfo } from './user';
 
@@ -130,6 +131,43 @@ export const renameChat = async (chat_uid: string, formData: FormData) => {
   };
 };
 
+export type BlockedUser = {
+  blocked_uid: string;
+  username: string;
+};
+
+export const fetchBlockedUsers = async () => {
+  const res = await fetchWithAuth('/api/chat/blocked');
+  if (res.ok) {
+    return {
+      success: true as const,
+      data: (await res.json()) as BlockedUser[],
+    };
+  }
+  return {
+    success: false as const,
+    message: await res.text(),
+  };
+};
+
+export const unblockUser = async (uid: string) => {
+  const response = await fetch(`/api/chat/unblock?uid=${uid}`, {
+    method: 'POST',
+  });
+
+  if (response.ok) {
+    const newBlockedUsers = await fetchBlockedUsers();
+    if (newBlockedUsers.success) {
+      blockedUsersStore.set(newBlockedUsers.data);
+    }
+  }
+
+  return {
+    success: response.ok,
+    message: await response.text(),
+  };
+};
+
 /**
  * Block User by uid.
  * @param uid - The unique identifier of the user to be blocked
@@ -140,16 +178,12 @@ export const blockUser = async (uid: string) => {
     method: 'POST',
   });
 
-  return {
-    success: response.ok,
-    message: await response.text(),
-  };
-};
-
-export const unblockUser = async (uid: string) => {
-  const response = await fetch(`/api/chat/unblock?uid=${uid}`, {
-    method: 'POST',
-  });
+  if (response.ok) {
+    const newBlockedUsers = await fetchBlockedUsers();
+    if (newBlockedUsers.success) {
+      blockedUsersStore.set(newBlockedUsers.data);
+    }
+  }
 
   return {
     success: response.ok,

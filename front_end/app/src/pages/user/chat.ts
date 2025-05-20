@@ -7,12 +7,15 @@ import {
   createNewChat,
   Chat,
   ChatMessage,
+  blockUser,
+  unblockUser,
+  renameChat,
 } from '~/api/chat';
 import { PlusIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
 import { showToast } from '~/components/toast';
 import { fetchFriends } from '~/api/friends';
-import { pushNotificationStore, userStore } from '~/app-state';
+import { blockedUsersStore, pushNotificationStore, userStore } from '~/app-state';
 import { NotificationType, WebsocketNotificationData } from '~/api/notifications';
 import { navigateTo } from '~/components/app-router';
 
@@ -37,6 +40,7 @@ export default class ChatPage extends HTMLElement {
             this.appendMessage(newMessage);
           }
         }
+        this.scrollToBottom();
       }
     }
   };
@@ -73,7 +77,7 @@ export default class ChatPage extends HTMLElement {
       window.history.pushState(null, '', `?chat=${uid}`);
       const res = await fetchChatMessages(chat.UID, 0);
       if (res.success) {
-        this.messages = res.data;
+        this.messages = res.data.reverse();
         this.render();
         this.scrollToBottom();
       }
@@ -95,13 +99,14 @@ export default class ChatPage extends HTMLElement {
       this.newMessageText = '';
       const inp = this.querySelector<HTMLTextAreaElement>('#input-message');
       if (inp) inp.value = '';
+      this.scrollToBottom();
     }
   }
 
-  toggleSidebar() {
+  toggleSidebar = () => {
     this.isSidebarOpen = !this.isSidebarOpen;
     this.render();
-  }
+  };
 
   closeDialog() {
     const dialog = this.querySelector<HTMLDivElement>('#new-chat-dialog')!;
@@ -131,8 +136,11 @@ export default class ChatPage extends HTMLElement {
     }
   }
 
+  getChatUserUID() {}
+
   render() {
     const currentUID = userStore.get()?.UID;
+    console.log(blockedUsersStore.get());
 
     this.replaceChildren(html`
       <navigation-bar></navigation-bar>
@@ -208,11 +216,45 @@ export default class ChatPage extends HTMLElement {
               <h3 class="text-lg font-semibold text-card-foreground">
                 ${this.selectedChat ? `Chat: ${this.selectedChat.name}` : 'Select a conversation'}
               </h3>
+              ${this.selectedChat
+                ? html`
+                    <button class="btn-outlined ms-auto" id="rename-chat-btn">Rename Chat</button>
+                  `
+                : ''}
+              ${this.selectedChat
+                ? blockedUsersStore
+                    .get()
+                    ?.some(
+                      (blockedUser) =>
+                        blockedUser.blocked_uid ===
+                        (this.selectedChat?.uid_1 === userStore.get()!.UID
+                          ? this.selectedChat.uid_2
+                          : this.selectedChat?.uid_1)
+                    )
+                  ? html`<button
+                      class="btn-primary"
+                      id="unblock-user-btn"
+                      data-uid="${this.selectedChat?.uid_1 === userStore.get()!.UID
+                        ? this.selectedChat.uid_2
+                        : this.selectedChat?.uid_1}"
+                    >
+                      Unblock User
+                    </button>`
+                  : html`<button
+                      class="btn-destructive"
+                      id="block-user-btn"
+                      data-uid="${this.selectedChat?.uid_1 === userStore.get()!.UID
+                        ? this.selectedChat.uid_2
+                        : this.selectedChat?.uid_1}"
+                    >
+                      Block User
+                    </button>`
+                : ''}
             </header>
             ${this.selectedChat
               ? html`
                   <div class="flex-1 overflow-y-auto p-4 space-y-4 messages">
-                    ${[...this.messages].reverse().map(
+                    ${this.messages.map(
                       (msg) => html`
                         <div
                           class="flex ${msg.user_uid === currentUID
@@ -244,7 +286,20 @@ export default class ChatPage extends HTMLElement {
                       `
                     )}
                   </div>
-                  <footer class="border-t p-4 bg-card">
+                  <fieldset
+                    class="border-t p-4 bg-card"
+                    ${blockedUsersStore
+                      .get()
+                      ?.some(
+                        (blockedUser) =>
+                          blockedUser.blocked_uid ===
+                          (this.selectedChat?.uid_1 === userStore.get()!.UID
+                            ? this.selectedChat.uid_2
+                            : this.selectedChat?.uid_1)
+                      )
+                      ? 'disabled'
+                      : ''}
+                  >
                     <form id="send-message-form" class="flex items-center gap-2">
                       <input
                         id="input-message"
@@ -256,7 +311,7 @@ export default class ChatPage extends HTMLElement {
                       />
                       <button id="btn-send" class="btn btn-primary">Send</button>
                     </form>
-                  </footer>
+                  </fieldset>
                 `
               : html`
                   <div class="flex-1 flex items-center justify-center">
@@ -267,14 +322,15 @@ export default class ChatPage extends HTMLElement {
         </div>
       </div>
     `);
+    this.scrollToBottom();
+
     this.setup();
   }
 
   setup() {
-    this.querySelector('#btn-toggle-sidebar')?.addEventListener('click', () =>
-      this.toggleSidebar()
-    );
-    this.querySelector('#btn-close-sidebar')?.addEventListener('click', () => this.toggleSidebar());
+    this.querySelector('#btn-toggle-sidebar')?.addEventListener('click', this.toggleSidebar);
+    this.querySelector('#btn-close-sidebar')?.addEventListener('click', this.toggleSidebar);
+
     this.querySelector<HTMLFormElement>('#send-message-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const inp = this.querySelector<HTMLInputElement>('#input-message');
@@ -289,6 +345,76 @@ export default class ChatPage extends HTMLElement {
 
     this.querySelector('#btn-new-chat')?.addEventListener('click', () => {
       this.createNewChat();
+    });
+
+    this.querySelector('#block-user-btn')?.addEventListener('click', async (ev) => {
+      const uid = (ev.target as HTMLButtonElement).dataset.uid;
+      if (!uid) return;
+      const res = await blockUser(uid);
+      if (res.success) {
+        showToast({
+          type: 'success',
+          message: 'User blocked successfully',
+        });
+        await this.loadChats();
+        this.render();
+      } else {
+        showToast({
+          type: 'error',
+          message: `Failed to block user: ${res.message}`,
+        });
+      }
+    });
+
+    this.querySelector('#unblock-user-btn')?.addEventListener('click', async (ev) => {
+      const uid = (ev.target as HTMLButtonElement).dataset.uid;
+      if (!uid) return;
+      const res = await unblockUser(uid);
+      if (res.success) {
+        showToast({
+          type: 'success',
+          message: 'User unblocked successfully',
+        });
+        await this.loadChats();
+        this.render();
+      } else {
+        showToast({
+          type: 'error',
+          message: `Failed to unblock user: ${res.message}`,
+        });
+      }
+    });
+
+    this.querySelector('#rename-chat-btn')?.addEventListener('click', () => {
+      const uid = this.selectedChat?.UID;
+      if (!uid) return;
+      showDialog({
+        title: 'Rename Chat',
+        content: html`
+          <div>
+            <label class="label" for="chat-name">Chat Name</label>
+            <input id="chat-name" type="text" class="input" name="name" />
+          </div>
+        `,
+        asForm: true,
+        actions: [{ label: 'Rename', submit: true }],
+        formHandler: async (formData, dialog) => {
+          const res = await renameChat(uid, formData);
+          if (res.success) {
+            showToast({
+              type: 'success',
+              message: 'Chat renamed successfully',
+            });
+            await this.loadChats();
+            dialog.close();
+          } else {
+            showToast({
+              type: 'error',
+              message: `Failed to rename chat for the following reason: ${res.message}`,
+            });
+          }
+        },
+      });
     });
   }
 
@@ -321,7 +447,6 @@ export default class ChatPage extends HTMLElement {
         </div>
       </div>`;
       container.appendChild(msgEl);
-      this.scrollToBottom();
     }
   }
 

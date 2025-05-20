@@ -1,3 +1,4 @@
+import { BlockedUser } from './api/chat';
 import { FriendRequest } from './api/friends';
 import { Notification } from './api/notifications';
 import { User } from './api/user';
@@ -7,5 +8,12 @@ const userStore = createStateStore<User | null>(null);
 const pushNotificationStore = createStateStore<WebSocket | null>(null);
 const friendRequestsStore = createStateStore<(FriendRequest & User)[] | null>(null);
 const notificationsStore = createStateStore<Notification[] | null>(null);
+const blockedUsersStore = createStateStore<BlockedUser[]>([]);
 
-export { userStore, pushNotificationStore, friendRequestsStore, notificationsStore };
+export {
+  userStore,
+  pushNotificationStore,
+  friendRequestsStore,
+  notificationsStore,
+  blockedUsersStore,
+};

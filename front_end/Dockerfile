@@ -6,4 +6,4 @@ COPY ./app/game /static/game
 
 COPY ./app/profile /static/profile
 
-ENTRYPOINT npm run dev
+ENTRYPOINT [ "sh", "-c", "(cd ./game && npx tsc) && npm i && npm run dev" ]
