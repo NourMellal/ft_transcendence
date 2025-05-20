@@ -195,7 +195,7 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
   }
   {
     const query = db.persistent.prepare(
-      `create table IF NOT EXISTS '${conversation_uid}' ('message_uid' TEXT NOT NULL, 'user_uid' TEXT NOT NULL, 'message_text' TEXT NOT NULL, 'time' INT NOT NULL PRIMARY KEY);`
+      `create table IF NOT EXISTS '${conversation_uid}' ('message_uid' TEXT NOT NULL, 'user_uid' TEXT NOT NULL, 'message_text' TEXT NOT NULL, 'time' INT NOT NULL);`
     );
     const res = query.run();
     if (res.changes !== 1) {
@@ -216,8 +216,10 @@ function CreateConversation(RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
   {
-    const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES ('?','?','?');`);
+    console.log('insert unread message');
+    const query = db.persistent.prepare(`INSERT INTO '${unread_conversations_table_name}' (HASH , user_uid, conversation_uid) VALUES (?,?,?);`);
     const res = query.run(conversation_uid + ';' + request.uid, request.uid, conversation_uid);
+    console.log('message inserted successfully');
     // Send a notification
     const Notification = {
       type: NotificationType.NewMessage,
