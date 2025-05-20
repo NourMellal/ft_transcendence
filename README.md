@@ -5,6 +5,8 @@
 - get websocket notification if a converstation name changes
 - need a way to check if a player is blocked by someone else
 
+## Frontend
+
 - add UI for poking players
 - fix notification-nav-menu performance (re-renders)
 - fix settings performance (re-renders)

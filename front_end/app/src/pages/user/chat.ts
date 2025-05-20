@@ -190,7 +190,8 @@ export default class ChatPage extends HTMLElement {
   updateSidebar() {
     if (!this.sidebarElement) return;
 
-    this.sidebarElement.replaceChildren(html`
+    this.sidebarElement.innerHTML = '';
+    this.sidebarElement.appendChild(html`
       <button
         id="btn-new-chat"
         class="btn-primary w-full mb-4 flex items-center justify-center gap-2"
@@ -248,8 +249,9 @@ export default class ChatPage extends HTMLElement {
     if (!this.headerElement) return;
 
     const currentUID = userStore.get()?.UID;
+    this.headerElement.innerHTML = '';
 
-    this.headerElement.replaceChildren(html`
+    this.headerElement.appendChild(html`
       <button id="btn-toggle-sidebar" class="md:hidden">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -304,18 +306,19 @@ export default class ChatPage extends HTMLElement {
   updateMessages() {
     if (!this.messagesContainer) return;
 
+    this.messagesContainer.innerHTML = '';
     const currentUID = userStore.get()?.UID;
 
     if (this.selectedChat && this.messages.length > 0) {
       this.messages.forEach((msg) => {
-        this.messagesContainer?.replaceChildren(this.createMessageElement(msg, currentUID));
+        this.messagesContainer?.appendChild(this.createMessageElement(msg, currentUID));
       });
     } else if (this.selectedChat) {
-      this.messagesContainer.replaceChildren(
+      this.messagesContainer.appendChild(
         html`<p class="text-center text-muted-foreground">No messages yet</p>`
       );
     } else {
-      this.messagesContainer.replaceChildren(html`
+      this.messagesContainer.appendChild(html`
         <div class="flex-1 flex items-center justify-center">
           <p class="text-muted-foreground">Select a conversation to start chatting</p>
         </div>
@@ -325,6 +328,8 @@ export default class ChatPage extends HTMLElement {
 
   updateInputField() {
     if (!this.inputFieldset) return;
+
+    this.inputFieldset.innerHTML = '';
 
     if (!this.selectedChat) {
       return;
@@ -339,7 +344,7 @@ export default class ChatPage extends HTMLElement {
 
     this.inputFieldset.toggleAttribute('disabled', isBlocked);
 
-    this.inputFieldset.replaceChildren(html`
+    this.inputFieldset.appendChild(html`
       <form id="send-message-form" class="flex items-center gap-2">
         <input
           id="input-message"
