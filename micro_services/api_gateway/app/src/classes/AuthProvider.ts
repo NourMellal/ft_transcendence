@@ -65,7 +65,7 @@ class OAuthProvider {
   public ValidateJWT_Cookie(RawCookie: string): JWT | string {
     if (!this.isReady)
       throw `Error ValidateJWT_Cookie(): OAuthProvider class is not ready!`;
-    const cookies = RawCookie.split(";");
+    const cookies = RawCookie.split("; ");
     let jwt: JWT | null = null;
     let refresh_token: string | null = null;
     for (let i = 0; i < cookies.length; i++) {
@@ -77,13 +77,13 @@ class OAuthProvider {
       }
       if (cookie_part[0] === "refresh_token") {
         if (cookie_part.length !== 2)
-          throw `Error ValidateJWT_Cookie(): bad jwt cookie!`;
+          throw `Error ValidateJWT_Cookie(): bad jwt refresh_token cookie!`;
         refresh_token = cookie_part[1];
       }
     }
     if (!jwt && !refresh_token)
       throw `Error ValidateJWT_Cookie(): bad cookies: no jwt_token or refresh_token provided!`;
-    if (jwt && jwt.exp <= Date.now() / 1000)
+    if (jwt && jwt.exp > Date.now() / 1000)
       return jwt;
     if (!refresh_token)
       throw `Error ValidateJWT_Cookie(): expired JWT and no refresh_token provided!`;

@@ -20,7 +20,7 @@ class JWTFactory {
       sub: UID,
       name: name,
       picture: picture,
-      exp: Date.now() / 1000 + 3600,
+      exp: (Date.now() / 1000) + 3600,
       iss: process.env.SERVER_JWT_ISSUER || "",
       iat: Date.now() / 1000,
     };
