@@ -466,19 +466,27 @@ export default class ChatPage extends HTMLElement {
         asForm: true,
         actions: [{ label: 'Rename', submit: true }],
         formHandler: async (formData, dialog) => {
-          const res = await renameChat(uid, formData);
-          if (res.success) {
-            showToast({
-              type: 'success',
-              message: 'Chat renamed successfully',
-            });
-            await this.loadChats();
-            this.updateHeader();
-            dialog.close();
-          } else {
+          try {
+            const res = await renameChat(uid, formData);
+            if (res.success) {
+              showToast({
+                type: 'success',
+                message: 'Chat renamed successfully',
+              });
+              await this.loadChats();
+              this.selectedChat!.name = formData.get('name') as string;
+              this.updateHeader();
+              dialog.close();
+            } else {
+              showToast({
+                type: 'error',
+                message: `Failed to rename chat for the following reason: ${res.message}`,
+              });
+            }
+          } catch {
             showToast({
               type: 'error',
-              message: `Failed to rename chat for the following reason: ${res.message}`,
+              message: 'Failed to rename chat',
             });
           }
         },
