@@ -81,14 +81,13 @@ class OAuthProvider {
         refresh_token = cookie_part[1];
       }
     }
-    if (!jwt)
-      throw `Error ValidateJWT_Cookie(): bad cookies!`;
-    if (jwt.exp <= Date.now() / 1000)
-      if (!refresh_token)
-        throw `Error ValidateJWT_Cookie(): expired JWT and no refresh_token provided!`;
-      else
-        return refresh_token;
-    return jwt;
+    if (!jwt && !refresh_token)
+      throw `Error ValidateJWT_Cookie(): bad cookies: no jwt_token or refresh_token provided!`;
+    if (jwt && jwt.exp <= Date.now() / 1000)
+      return jwt;
+    if (!refresh_token)
+      throw `Error ValidateJWT_Cookie(): expired JWT and no refresh_token provided!`;
+    return refresh_token;
   }
   public ValidateJWT_AuthHeader(header: string): JWT {
     if (!this.isReady)
