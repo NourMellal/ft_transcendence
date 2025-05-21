@@ -11,6 +11,20 @@ import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
 
+export const SearchByUsername =  async (
+  request: FastifyRequest<{ Querystring: { uname: string } }>,
+  reply: FastifyReply
+) => {
+  if (!request.query.uname)
+    return reply.code(400).send("bad request");
+  reply.header("Content-Type", "application/json");
+  const query = db.persistent.prepare(
+    `SELECT UID,username FROM '${users_table_name}' WHERE username LIKE ? ;`
+  );
+  const res = query.all(`%${request.query.uname}%`);
+  reply.code(200).send(res);
+}
+
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
   reply: FastifyReply

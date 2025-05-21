@@ -107,6 +107,13 @@ export const discoveryDocument = {
     },
   },
   UserManagementRoutes: {
+    SearchByUsername: {
+      description: "HTTP: Search for users by username.",
+      route: "/api/user/search",
+      QueryParams: [{ name: "uname" }],
+      headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
+      method: "GET",
+    }, 
     FetchUserInfoRoute: {
       description: "HTTP: Get information about the user with uid.",
       route: "/api/user/info",

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import {
   FetchUserInfo,
   RemoveUserProfile,
+  SearchByUsername,
   UpdateUserInfo,
   UpdateUserPassword,
 } from "../../controllers/microservices/user_manager";
@@ -22,8 +23,26 @@ const GetUserInfoOpts = {
   },
 };
 
+const SearchByUsernameOpts = {
+  schema: {
+    querystring: {
+      type: "object",
+      properties: {
+        uname: { type: "string" },
+      },
+      required: ["uname"],
+    },
+    headers: AuthHeaderValidation.schema.headers,
+  },
+};
+
 async function UserManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
+  fastify.get(
+    discoveryDocument.UserManagementRoutes.SearchByUsername.route,
+    SearchByUsernameOpts,
+    SearchByUsername
+  );
   fastify.get(
     discoveryDocument.UserManagementRoutes.FetchUserInfoRoute.route,
     GetUserInfoOpts,
