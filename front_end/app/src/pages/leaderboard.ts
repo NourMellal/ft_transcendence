@@ -150,4 +150,6 @@ export default class LeaderboardPage extends HTMLElement {
   }
 }
 
-customElements.define('leaderboard-page', LeaderboardPage);
+if (!customElements.get('leaderboard-page')) {
+  customElements.define('leaderboard-page', LeaderboardPage);
+}

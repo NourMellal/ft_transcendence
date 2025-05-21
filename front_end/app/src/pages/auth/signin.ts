@@ -150,4 +150,6 @@ export default class SigninPage extends HTMLElement {
   }
 }
 
-customElements.define('signin-page', SigninPage);
+if (!customElements.get('signin-page')) {
+  customElements.define('signin-page', SigninPage);
+}

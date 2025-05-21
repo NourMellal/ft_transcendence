@@ -91,4 +91,6 @@ class AppRouter extends HTMLElement {
   }
 }
 
-customElements.define('app-router', AppRouter);
+if (!customElements.get('app-router')) {
+  customElements.define('app-router', AppRouter);
+}

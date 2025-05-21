@@ -185,4 +185,6 @@ export default class SignupPage extends HTMLElement {
   }
 }
 
-customElements.define('signup-page', SignupPage);
+if (!customElements.get('signup-page')) {
+  customElements.define('signup-page', SignupPage);
+}

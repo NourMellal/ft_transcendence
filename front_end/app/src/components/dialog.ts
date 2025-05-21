@@ -151,4 +151,6 @@ class AppDialog extends HTMLElement {
   }
 }
 
-customElements.define('app-dialog', AppDialog);
+if (!customElements.get('app-dialog')) {
+  customElements.define('app-dialog', AppDialog);
+}

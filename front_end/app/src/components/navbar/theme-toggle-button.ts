@@ -26,4 +26,6 @@ class ThemeToggleButton extends HTMLElement {
   }
 }
 
-customElements.define('theme-toggle-button', ThemeToggleButton);
+if (!customElements.get('theme-toggle-button')) {
+  customElements.define('theme-toggle-button', ThemeToggleButton);
+}

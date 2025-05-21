@@ -37,4 +37,6 @@ class AppLoader extends HTMLElement {
   }
 }
 
-customElements.define('app-loader', AppLoader);
+if (!customElements.get('app-loader')) {
+  customElements.define('app-loader', AppLoader);
+}

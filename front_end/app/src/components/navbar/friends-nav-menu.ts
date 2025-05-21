@@ -220,4 +220,6 @@ class FriendsNavMenu extends HTMLElement {
   }
 }
 
-customElements.define('friends-nav-menu', FriendsNavMenu);
+if (!customElements.get('friends-nav-menu')) {
+  customElements.define('friends-nav-menu', FriendsNavMenu);
+}

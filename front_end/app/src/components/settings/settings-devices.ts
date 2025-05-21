@@ -126,4 +126,6 @@ class SettingsDevices extends HTMLElement {
   }
 }
 
-customElements.define('settings-devices', SettingsDevices);
+if (!customElements.get('settings-devices')) {
+  customElements.define('settings-devices', SettingsDevices);
+}

@@ -238,4 +238,6 @@ class NotificationNavMenu extends HTMLElement {
   }
 }
 
-customElements.define('notification-nav-menu', NotificationNavMenu);
+if (!customElements.get('notification-nav-menu')) {
+  customElements.define('notification-nav-menu', NotificationNavMenu);
+}

@@ -556,4 +556,6 @@ export default class ChatPage extends HTMLElement {
   }
 }
 
-customElements.define('chat-page', ChatPage);
+if (!customElements.get('chat-page')) {
+  customElements.define('chat-page', ChatPage);
+}

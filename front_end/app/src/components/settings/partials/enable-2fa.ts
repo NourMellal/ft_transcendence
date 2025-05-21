@@ -86,4 +86,6 @@ class Enable2Fa extends HTMLElement {
   }
 }
 
-customElements.define('enable-2fa', Enable2Fa);
+if (!customElements.get('enable-2fa')) {
+  customElements.define('enable-2fa', Enable2Fa);
+}

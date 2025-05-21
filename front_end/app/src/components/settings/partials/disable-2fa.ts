@@ -64,4 +64,6 @@ class Disable2FA extends HTMLElement {
   }
 }
 
-customElements.define('disable-2fa', Disable2FA);
+if (!customElements.get('disable-2fa')) {
+  customElements.define('disable-2fa', Disable2FA);
+}

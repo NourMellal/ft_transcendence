@@ -27,4 +27,6 @@ export default class SettingsPage extends HTMLElement {
   }
 }
 
-customElements.define('settings-page', SettingsPage);
+if (!customElements.get('settings-page')) {
+  customElements.define('settings-page', SettingsPage);
+}

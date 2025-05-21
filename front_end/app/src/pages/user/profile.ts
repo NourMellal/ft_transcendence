@@ -543,4 +543,6 @@ export default class ProfilePage extends HTMLElement {
   }
 }
 
-customElements.define('profile-page', ProfilePage);
+if (!customElements.get('profile-page')) {
+  customElements.define('profile-page', ProfilePage);
+}

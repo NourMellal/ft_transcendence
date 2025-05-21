@@ -288,4 +288,6 @@ export default class NotificationsPage extends HTMLElement {
   }
 }
 
-customElements.define('notifications-page', NotificationsPage);
+if (!customElements.get('notifications-page')) {
+  customElements.define('notifications-page', NotificationsPage);
+}

@@ -130,4 +130,6 @@ class ToastContainer extends HTMLElement {
   }
 }
 
-customElements.define('toast-container', ToastContainer);
+if (!customElements.get('toast-container')) {
+  customElements.define('toast-container', ToastContainer);
+}

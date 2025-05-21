@@ -229,4 +229,6 @@ ${userStore.get()?.bio}</textarea
   }
 }
 
-customElements.define('profile-info', ProfileInfo);
+if (!customElements.get('profile-info')) {
+  customElements.define('profile-info', ProfileInfo);
+}

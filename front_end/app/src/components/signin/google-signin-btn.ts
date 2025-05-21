@@ -63,4 +63,6 @@ export class GoogleSignInButton extends HTMLElement {
   }
 }
 
-customElements.define('google-signin-btn', GoogleSignInButton);
+if (!customElements.get('google-signin-btn')) {
+  customElements.define('google-signin-btn', GoogleSignInButton);
+}

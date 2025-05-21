@@ -108,4 +108,6 @@ class NavigationBar extends HTMLElement {
   }
 }
 
-customElements.define('navigation-bar', NavigationBar);
+if (!customElements.get('navigation-bar')) {
+  customElements.define('navigation-bar', NavigationBar);
+}

@@ -23,4 +23,6 @@ export default class NotFound extends HTMLElement {
   }
 }
 
-customElements.define('not-found', NotFound);
+if (!customElements.get('not-found')) {
+  customElements.define('not-found', NotFound);
+}

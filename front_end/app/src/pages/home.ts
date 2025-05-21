@@ -251,4 +251,6 @@ export default class HomePage extends HTMLElement {
   }
 }
 
-customElements.define('home-page', HomePage);
+if (!customElements.get('home-page')) {
+  customElements.define('home-page', HomePage);
+}

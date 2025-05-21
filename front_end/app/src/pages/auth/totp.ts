@@ -59,7 +59,7 @@ export default class TotpVerify extends HTMLElement {
         duration: 300,
         easing: 'ease-out',
         fill: 'forwards',
-      },
+      }
     );
     form.querySelector('input')!.focus();
 
@@ -106,4 +106,6 @@ export default class TotpVerify extends HTMLElement {
   }
 }
 
-customElements.define('totp-verify-page', TotpVerify);
+if (!customElements.get('totp-verify-page')) {
+  customElements.define('totp-verify-page', TotpVerify);
+}

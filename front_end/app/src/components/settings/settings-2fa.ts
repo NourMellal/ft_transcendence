@@ -55,4 +55,6 @@ class Settings2FA extends HTMLElement {
   }
 }
 
-customElements.define('settings-2fa', Settings2FA);
+if (!customElements.get('settings-2fa')) {
+  customElements.define('settings-2fa', Settings2FA);
+}

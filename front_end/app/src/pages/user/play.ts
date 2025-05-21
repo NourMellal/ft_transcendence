@@ -27,4 +27,6 @@ export default class PlayPage extends HTMLElement {
   }
 }
 
-customElements.define('play-page', PlayPage);
+if (!customElements.get('play-page')) {
+  customElements.define('play-page', PlayPage);
+}

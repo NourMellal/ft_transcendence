@@ -123,4 +123,6 @@ class SettingsPassword extends HTMLElement {
   }
 }
 
-customElements.define('settings-password', SettingsPassword);
+if (!customElements.get('settings-password')) {
+  customElements.define('settings-password', SettingsPassword);
+}

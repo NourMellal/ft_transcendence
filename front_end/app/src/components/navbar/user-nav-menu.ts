@@ -157,4 +157,6 @@ class UserNavMenu extends HTMLElement {
   }
 }
 
-customElements.define('user-nav-menu', UserNavMenu);
+if (!customElements.get('user-nav-menu')) {
+  customElements.define('user-nav-menu', UserNavMenu);
+}
