@@ -14,7 +14,9 @@ import UsersSvg from './users.svg?raw';
 import XSvg from './x.svg?raw';
 import PlusSvg from './plus.svg?raw';
 import UserPlusSvg from './user-plus.svg?raw';
+import SearchSvg from './search.svg?raw';
 
+export const SearchIcon = raw(SearchSvg);
 export const PlusIcon = raw(PlusSvg);
 export const BellIcon = raw(BellSvg);
 export const CogIcon = raw(CogSvg);

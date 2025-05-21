@@ -409,7 +409,6 @@ export default class ProfilePage extends HTMLElement {
           <div class="relative">
             <img
               src="/api/${user.picture_url}"
-              alt="${user.username}"
               class="w-32 h-32 rounded-full ring ring-ring ring-offset-2 ring-offset-background object-cover"
             />
             ${isOwnProfile

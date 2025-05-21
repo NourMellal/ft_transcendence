@@ -82,7 +82,6 @@ class FriendsNavMenu extends HTMLElement {
                       <li class="flex items-center px-4 py-3 hover:bg-muted/50">
                         <img
                           src="/api/${request.picture_url || 'static/profile/default.jpg'}"
-                          alt="${request.username || 'User'}"
                           class="w-8 h-8 rounded-full object-cover"
                         />
                         <div class="ml-3 flex-1 min-w-0">

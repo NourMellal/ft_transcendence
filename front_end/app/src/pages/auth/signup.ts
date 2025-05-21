@@ -81,7 +81,6 @@ export default class SignupPage extends HTMLElement {
                 <img
                   id="avatar-preview"
                   src="/api/static/profile/default.jpg"
-                  alt="Avatar"
                   class="h-16 w-16 rounded-full object-cover border"
                 />
                 <input

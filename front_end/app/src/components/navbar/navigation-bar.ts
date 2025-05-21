@@ -3,6 +3,7 @@ import '~/components/navbar/mobile-navigation';
 import '~/components/navbar/notification-nav-menu';
 import '~/components/navbar/theme-toggle-button';
 import '~/components/navbar/user-nav-menu';
+import '~/components/navbar/nav-search-user';
 
 import { html } from '~/lib/html';
 import { userStore } from '~/app-state';
@@ -63,6 +64,7 @@ class NavigationBar extends HTMLElement {
             <theme-toggle-button></theme-toggle-button>
             ${userStore.get()
               ? html`
+                  <nav-search-user></nav-search-user>
                   <friends-nav-menu></friends-nav-menu>
                   <notification-nav-menu></notification-nav-menu>
                   <user-nav-menu></user-nav-menu>

@@ -109,3 +109,30 @@ export const fetchMatchHistory = async (uid: string) => {
     message: await response.text(),
   };
 };
+
+type SearchUserType = {
+  username: string;
+  UID: string;
+};
+
+export const SearchByUsername = async (username: string) => {
+  try {
+    const response = await fetch(`/api/user/search?uname=${username}`);
+    if (response.ok) {
+      return {
+        success: true as const,
+        data: (await response.json()) as SearchUserType[],
+      };
+    } else {
+      return {
+        success: false as const,
+        message: 'failed to search usernames',
+      };
+    }
+  } catch {
+    return {
+      success: false as const,
+      message: 'failed to search usernames',
+    };
+  }
+};

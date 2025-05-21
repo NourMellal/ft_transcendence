@@ -12,7 +12,7 @@ export default class PlayPage extends HTMLElement {
 
     this.replaceChildren(html`
       <iframe
-        class="absolute inset-0 w-screen h-screen z-50"
+        class="w-screen h-[calc(100vh-73px)]"
         src="https://transcendence.fr/api/static/game/"
         frameborder="0"
       ></iframe>

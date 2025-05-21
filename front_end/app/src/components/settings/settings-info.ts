@@ -27,7 +27,6 @@ class ProfileInfo extends HTMLElement {
                   <img
                     id="avatar-preview"
                     src="/api/${userStore.get()?.picture_url}"
-                    alt="Avatar"
                     class="h-16 w-16 rounded-full object-cover border"
                   />
                   <input

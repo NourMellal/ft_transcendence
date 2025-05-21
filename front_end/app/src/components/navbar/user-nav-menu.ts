@@ -15,7 +15,6 @@ class UserNavMenu extends HTMLElement {
           <img
             src="/api/${currentUser.picture_url}"
             class="ring ring-ring rounded-full ring-offset-1 object-cover h-10 w-10"
-            alt="${currentUser.username}"
           />
         </button>
         <div

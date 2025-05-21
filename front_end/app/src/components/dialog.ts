@@ -41,16 +41,19 @@ class AppDialog extends HTMLElement {
     this.className = 'fixed inset-0 z-[100] hidden items-center justify-center';
   }
 
+  handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      this.close();
+    }
+  };
+
   connectedCallback() {
     this.addEventListener(DIALOG_EVENT_NAME, this.handleEvent as EventListener);
-    this.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        this.close();
-      }
-    });
+    window.addEventListener('keydown', this.handleEscape);
   }
 
   disconnectedCallback() {
+    window.removeEventListener('keydown', this.handleEscape);
     this.removeEventListener(DIALOG_EVENT_NAME, this.handleEvent as EventListener);
   }
 
