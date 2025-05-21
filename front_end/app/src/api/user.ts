@@ -13,8 +13,21 @@ export type User = {
   totp_enabled: boolean;
 };
 
-export const fetchUserInfo = async (uid?: string) => {
+export const fetchUserInfo = async (uid?: string | null) => {
   const res = await fetch(`/api/user/info?uid=${uid ?? 'me'}`, {
+    cache: 'no-store',
+  });
+  if (res.ok) {
+    const data = (await res.json()) as User;
+    data.picture_url += `?t=${Date.now()}`; // to avoid the broser from caching the image
+    return data;
+  }
+  return null;
+};
+
+export const fetchUserByUsername = async (username?: string | null) => {
+  if (!username) return await fetchUserInfo();
+  const res = await fetch(`/api/user/info?uname=${username}`, {
     cache: 'no-store',
   });
   if (res.ok) {

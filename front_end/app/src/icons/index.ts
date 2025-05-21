@@ -13,6 +13,7 @@ import UserSvg from './user.svg?raw';
 import UsersSvg from './users.svg?raw';
 import XSvg from './x.svg?raw';
 import PlusSvg from './plus.svg?raw';
+import UserPlusSvg from './user-plus.svg?raw';
 
 export const PlusIcon = raw(PlusSvg);
 export const BellIcon = raw(BellSvg);
@@ -28,3 +29,4 @@ export const SunIcon = raw(SunSvg);
 export const UserIcon = raw(UserSvg);
 export const UsersIcon = raw(UsersSvg);
 export const XIcon = raw(XSvg);
+export const UserPlusIcon = raw(UserPlusSvg);

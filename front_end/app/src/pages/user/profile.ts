@@ -5,9 +5,9 @@ import { User, fetchMatchHistory, MatchHistoryEntry, MatchStatus, MatchType } fr
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { friendRequestsStore, userStore, notificationsStore } from '~/app-state';
+import { friendRequestsStore, userStore, pushNotificationStore } from '~/app-state';
 import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
-import { NotificationType } from '~/api/notifications';
+import { NotificationData, NotificationType } from '~/api/notifications';
 import { fetchUserRank } from '~/api/leaderboard';
 
 enum FriendStatus {
@@ -505,41 +505,31 @@ export default class ProfilePage extends HTMLElement {
     this.setup();
   }
 
+  handleNotification = (event: MessageEvent) => {
+    const data = JSON.parse(event.data) as NotificationData;
+
+    const notificationTypes = [
+      NotificationType.NewFriendRequest,
+      NotificationType.FriendRemove,
+      NotificationType.FriendRequestAccepted,
+      NotificationType.FriendRequestDenied,
+      NotificationType.UserBlocked,
+      NotificationType.UserUnBlocked,
+    ];
+
+    if (notificationTypes.some((type) => type === data.type)) {
+      this.render();
+    }
+  };
+
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(
-      friendRequestsStore.subscribe(() => this.handleNotificationUpdate()),
-      notificationsStore.subscribe(() => this.handleNotificationUpdate())
-    );
+    pushNotificationStore.get()?.addEventListener('message', this.handleNotification);
   }
 
   disconnectedCallback() {
+    pushNotificationStore.get()?.removeEventListener('message', this.handleNotification);
     this.cleanupCallbacks.forEach((cleanup) => cleanup());
-  }
-
-  private async handleNotificationUpdate() {
-    if (!this.state || this.state.isOwnProfile) return;
-    const notifications = notificationsStore.get();
-    if (!notifications) return;
-    const profileUserId = this.state.user.UID;
-    const relevant = notifications.some(
-      (n) =>
-        n.from_uid === profileUserId &&
-        (n.type === NotificationType.NewFriendRequest ||
-          n.type === NotificationType.FriendRequestAccepted ||
-          n.type === NotificationType.FriendRequestDenied)
-    );
-    if (!relevant) return;
-    const newStatus = await this.getFriendStatus(profileUserId);
-    if (this.state) {
-      this.state.friendStatus = newStatus.friendStatus;
-      this.state.pendingRequestId = newStatus.pendingRequestId;
-      const container = this.querySelector('#profile-friend-actions');
-      if (container) {
-        container.replaceChildren(this.renderFriendActionButtons());
-        this.setup();
-      }
-    }
   }
 }
 

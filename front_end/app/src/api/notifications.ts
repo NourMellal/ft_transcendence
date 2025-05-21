@@ -216,6 +216,12 @@ export const getNotificationTitle = (type: NotificationType) => {
       return 'You have a new message';
     case NotificationType.FriendRemove:
       return 'You have been removed from a friend';
+    case NotificationType.ConversationNameChanged:
+      return 'The conversation name has been changed';
+    case NotificationType.UserBlocked:
+      return 'You have been blocked';
+    case NotificationType.UserUnBlocked:
+      return 'You have been unblocked';
     default:
       return 'You have a new notification';
   }
@@ -238,6 +244,12 @@ export const getNotificationMessage = async (data: NotificationData) => {
       return `${fromUsername} sent you a message`;
     case NotificationType.FriendRemove:
       return `${fromUsername} removed you from their friends`;
+    case NotificationType.ConversationNameChanged:
+      return `${fromUsername} changed the conversation name`;
+    case NotificationType.UserBlocked:
+      return `${fromUsername} blocked you`;
+    case NotificationType.UserUnBlocked:
+      return `${fromUsername} unblocked you`;
     default:
       return 'You have a new notification';
   }
