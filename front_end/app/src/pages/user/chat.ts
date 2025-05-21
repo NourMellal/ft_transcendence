@@ -36,6 +36,13 @@ export default class ChatPage extends HTMLElement {
   handleNewMessage = async (ev: MessageEvent) => {
     const data = JSON.parse(ev.data) as NotificationData;
 
+    if (
+      data.type === NotificationType.UserBlocked ||
+      data.type === NotificationType.UserUnBlocked
+    ) {
+      this.updateInputField();
+    }
+
     if (data.type === NotificationType.ConversationNameChanged) {
       const chat = this.chats.find((c) => c.UID === data.conversation_uid);
       if (chat) {
@@ -349,9 +356,8 @@ export default class ChatPage extends HTMLElement {
       this.selectedChat.uid_1 === currentUID ? this.selectedChat.uid_2 : this.selectedChat.uid_1;
 
     const blockedByUser = await checkIfBlockedByUser(otherUserUID);
-    console.log(blockedByUser);
 
-    if (blockedByUser.success && blockedByUser.data) {
+    if (blockedByUser.success && blockedByUser.data.is_blocked) {
       this.inputFieldset.replaceChildren(html`
         <p class="text-muted-foreground text-center">
           You cannot send messages to this user because they have blocked you.
