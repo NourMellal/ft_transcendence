@@ -8,7 +8,7 @@ import {
   fetchAllNotifications,
   getNotificationMessage,
   getNotificationTitle,
-  Notification,
+  NotificationData,
 } from '~/api/notifications';
 import { showToast } from '~/components/toast';
 import { showDialog } from '~/components/dialog';
@@ -18,7 +18,7 @@ import { navigateTo } from '~/components/app-router';
 type Tab = 'all' | 'unread' | 'read';
 
 export default class NotificationsPage extends HTMLElement {
-  notifications: Notification[] = [];
+  notifications: NotificationData[] = [];
   activeTab: Tab = 'all';
   tabsElement: HTMLElement | null = null;
   notificationsListElement: HTMLElement | null = null;
@@ -47,7 +47,7 @@ export default class NotificationsPage extends HTMLElement {
     const unread = all.filter((n) => !n.is_read);
     const read = all.filter((n) => n.is_read);
 
-    let list: Notification[] = [];
+    let list: NotificationData[] = [];
     if (this.activeTab === 'all') list = all;
     else if (this.activeTab === 'unread') list = unread;
     else if (this.activeTab === 'read') list = read;
@@ -145,7 +145,7 @@ export default class NotificationsPage extends HTMLElement {
     }
   }
 
-  async createNotificationElement(n: Notification) {
+  async createNotificationElement(n: NotificationData) {
     return html`
       <div
         class="rounded-lg border border-border bg-card p-6 shadow-sm relative ${n.is_read

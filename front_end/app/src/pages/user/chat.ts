@@ -16,7 +16,7 @@ import { showDialog } from '~/components/dialog';
 import { showToast } from '~/components/toast';
 import { fetchFriends } from '~/api/friends';
 import { blockedUsersStore, pushNotificationStore, userStore } from '~/app-state';
-import { NotificationType, WebsocketNotificationData } from '~/api/notifications';
+import { NotificationType, NotificationData } from '~/api/notifications';
 import { navigateTo } from '~/components/app-router';
 
 export default class ChatPage extends HTMLElement {
@@ -33,7 +33,7 @@ export default class ChatPage extends HTMLElement {
   private inputFieldset: HTMLElement | null = null;
 
   handleNewMessage = async (ev: MessageEvent) => {
-    const data = JSON.parse(ev.data) as WebsocketNotificationData;
+    const data = JSON.parse(ev.data) as NotificationData;
 
     if (data.type === NotificationType.NewMessage) {
       if (this.selectedChat && this.selectedChat.UID === data.conversation_uid) {

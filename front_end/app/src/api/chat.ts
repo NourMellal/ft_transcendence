@@ -1,6 +1,7 @@
 import { blockedUsersStore } from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchUserInfo } from './user';
+import { markChatNotificationsAsRead } from './notifications';
 
 export type Chat = {
   UID: string;
@@ -18,10 +19,6 @@ export type ChatMessage = {
   username?: string;
 };
 
-/**
- * Fetches the list of chats for the current user.
- * @returns - An array of chat objects or null if the request failed
- */
 export const fetchUserChats = async () => {
   const response = await fetch('/api/chat/list');
 
@@ -38,16 +35,11 @@ export const fetchUserChats = async () => {
   };
 };
 
-/**
- * Fetches chat messages for a given user ID and page number.
- * @param uid - The unique identifier of the user
- * @param page - The page number to fetch (default is 0)
- * @returns - An array of chat messages or null if the request failed
- */
 export const fetchChatMessages = async (uid: string, page = 0) => {
   const response = await fetchWithAuth(`/api/chat/read?uid=${uid}&page=${page}`);
 
   if (response.ok) {
+    await markChatNotificationsAsRead(uid);
     const messages = (await response.json()) as ChatMessage[];
     return {
       success: true as const,
@@ -66,13 +58,6 @@ export const fetchChatMessages = async (uid: string, page = 0) => {
   };
 };
 
-/**
- * Sends a chat message to the server.
- * @param chat_uid - The unique identifier of the chat
- * @param formData - FormData containing the message data
- * @param formData.message - The message text to be sent
- * @returns - A boolean indicating whether the message was sent successfully
- */
 export const sendChatMessage = async (chat_uid: string, formData: FormData) => {
   const response = await fetch(`/api/chat/send?uid=${chat_uid}`, {
     method: 'POST',
@@ -85,14 +70,6 @@ export const sendChatMessage = async (chat_uid: string, formData: FormData) => {
   };
 };
 
-/**
- * Creates a new chat with the given form data.
- * @param formData - FormData containing the chat data
- * @param formData.name - The name of the chat
- * @param formData.to_uid - The unique identifier of the user to chat with
- * @param formData.message - The initial message text
- * @returns - An object containing the success status and chat data or error message
- */
 export const createNewChat = async (formData: FormData) => {
   const response = await fetch('/api/chat/new', {
     method: 'POST',
@@ -112,13 +89,6 @@ export const createNewChat = async (formData: FormData) => {
   };
 };
 
-/**
- * Rename an existing chat.
- * @param chat_uid - The unique identifier of the chat to be renamed
- * @param formData - FormData containing the deletion data
- * @param formData.name - The name of the chat
- * @returns - An object containing the success status and message
- */
 export const renameChat = async (chat_uid: string, formData: FormData) => {
   const response = await fetch(`/api/chat/rename?uid=${chat_uid}`, {
     method: 'POST',
@@ -168,11 +138,6 @@ export const unblockUser = async (uid: string) => {
   };
 };
 
-/**
- * Block User by uid.
- * @param uid - The unique identifier of the user to be blocked
- * @returns - An object containing the success status and message
- */
 export const blockUser = async (uid: string) => {
   const response = await fetch(`/api/chat/block?uid=${uid}`, {
     method: 'POST',

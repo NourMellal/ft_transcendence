@@ -12,12 +12,12 @@ export enum NotificationType {
   GameInvite = 5,
   Poke = 6,
   NewMessage = 7,
-  ConversationNameChanged,
-  UserBlocked,
-  UserUnBlocked,
+  ConversationNameChanged = 8,
+  UserBlocked = 9,
+  UserUnBlocked = 10,
 }
 
-export type WebsocketNewMessageNotification = {
+export type NewMessageNotification = {
   type: NotificationType.NewMessage;
   conversation_name: string;
   conversation_uid: string;
@@ -25,20 +25,20 @@ export type WebsocketNewMessageNotification = {
   to_uid: string;
   notification_uid: string;
   from_username: string;
+  is_read: boolean;
 };
 
 type ExcludeNewMessage = Exclude<NotificationType, NotificationType.NewMessage>;
 
-type GenericWebsocketNotification<T extends ExcludeNewMessage = ExcludeNewMessage> = {
+type GenericNotification<T extends ExcludeNewMessage = ExcludeNewMessage> = {
   type: T;
+  notification_uid: string;
   from_uid: string;
   to_uid: string;
   is_read: boolean;
 };
 
-export type WebsocketNotificationData =
-  | WebsocketNewMessageNotification
-  | GenericWebsocketNotification;
+export type NotificationData = NewMessageNotification | GenericNotification;
 
 export const setupNotificationsSocket = async () => {
   if (pushNotificationStore.get()) return;
@@ -64,7 +64,7 @@ export const setupNotificationsSocket = async () => {
 
   ws.addEventListener('message', async (event) => {
     try {
-      const data = JSON.parse(event.data) as WebsocketNotificationData;
+      const data = JSON.parse(event.data) as NotificationData;
       if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
         try {
           notificationSound.play();
@@ -101,22 +101,14 @@ export const closeNotificationSocket = () => {
   }
 };
 
-export type Notification = {
-  type: NotificationType;
-  from_uid: string;
-  to_uid: string;
-  notification_uid: string;
-  is_read: boolean;
-  from_username: string;
-};
-
 export const fetchUndreadNotifications = async () => {
   try {
     const response = await fetch(`/api/notifications/list_unread`);
     if (response.ok) {
+      const data = (await response.json()) as NotificationData[];
       return {
         success: true as const,
-        data: (await response.json()) as Notification[],
+        data: data.reverse(),
       };
     }
 
@@ -137,9 +129,10 @@ export const fetchAllNotifications = async () => {
     const response = await fetch(`/api/notifications/list_all`);
 
     if (response.ok) {
+      const data = (await response.json()) as NotificationData[];
       return {
         success: true as const,
-        data: (await response.json()) as Notification[],
+        data: data.reverse(),
       };
     }
 
@@ -228,7 +221,7 @@ export const getNotificationTitle = (type: NotificationType) => {
   }
 };
 
-export const getNotificationMessage = async (data: Notification) => {
+export const getNotificationMessage = async (data: NotificationData) => {
   const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
   switch (data.type) {
     case NotificationType.NewFriendRequest:
@@ -248,4 +241,35 @@ export const getNotificationMessage = async (data: Notification) => {
     default:
       return 'You have a new notification';
   }
+};
+
+export const markChatNotificationsAsRead = async (uid: string) => {
+  const allNotifications = await fetchAllNotifications();
+  if (allNotifications.success) {
+    const chatNotifications = allNotifications.data.filter(
+      (notification) =>
+        notification.type === NotificationType.NewMessage && notification.conversation_uid === uid
+    );
+
+    await Promise.all(
+      chatNotifications.map(
+        async (notification) => await markNotificationAsRead(notification.notification_uid)
+      )
+    );
+    notificationsStore.set(
+      allNotifications.data.filter(
+        (notification) =>
+          notification.type !== NotificationType.NewMessage || notification.conversation_uid !== uid
+      )
+    );
+    return {
+      success: true,
+      message: 'Chat notifications marked as read',
+    };
+  }
+  console.error('Error fetching notifications:', allNotifications.message);
+  return {
+    success: false,
+    message: 'Error fetching notifications',
+  };
 };
