@@ -11,7 +11,7 @@ import db from "../../classes/Databases";
 import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
 
-export const SearchByUsername =  async (
+export const SearchByUsername = async (
   request: FastifyRequest<{ Querystring: { uname: string } }>,
   reply: FastifyReply
 ) => {
@@ -29,6 +29,26 @@ export const SearchByUsername =  async (
   }
 }
 
+const DecorateUserInfo = (UID: string, response_message: string, request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    let payload = JSON.parse(response_message);
+    const query = db.persistent.prepare(
+      `SELECT username, totp_enabled FROM '${users_table_name}' WHERE UID = ? ;`
+    );
+    const res = query.get(UID) as UserModel;
+    if (!res)
+      throw "database error";
+    payload.username = res.username;
+    if (UID === request.jwt.sub)
+      payload.totp_enabled = res.totp_enabled;
+    reply.raw.end(reply.serialize(payload));
+  } catch (error) {
+    console.log(`[ERROR] DecorateUserInfo(): ${error}`);
+    reply.raw.statusCode = 400;
+    reply.raw.end('bad request');
+  }
+}
+
 export const FetchUserInfo = async (
   request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
   reply: FastifyReply
@@ -36,7 +56,7 @@ export const FetchUserInfo = async (
   try {
     const { uid, uname } = request.query;
     if (!uid && !uname) return reply.code(400).send("bad request");
-    var UID: string = "";
+    let UID: string = "";
     if (uid) {
       if (uid === "me") UID = request.jwt.sub;
       else UID = uid;
@@ -63,24 +83,12 @@ export const FetchUserInfo = async (
       reply.raw.statusCode = response.status;
       if (response.status !== 200 || response.message === undefined)
         return reply.raw.end(response.message);
-      var payload = JSON.parse(response.message);
-      const query = db.persistent.prepare(
-        `SELECT username, totp_enabled FROM '${users_table_name}' WHERE UID = ? ;`
-      );
-      const res = query.get(UID) as UserModel;
-      if (!res) {
-        reply.raw.statusCode = 500;
-        reply.raw.end("database error");
-        return;
-      }
-      payload.username = res.username;
-      if (UID === request.jwt.sub) payload.totp_enabled = res.totp_enabled;
-      reply.raw.end(reply.serialize(payload));
+      DecorateUserInfo(UID, response.message, request, reply);
     });
   } catch (error) {
     console.log(`ERROR: FetchUserInfo(): ${error}`);
-    reply.raw.statusCode = 500;
-    reply.raw.end("ERROR: internal error, try again later.");
+    reply.raw.statusCode = 400;
+    reply.raw.end('bad request');
   }
   return Promise.resolve();
 };
@@ -104,6 +112,7 @@ export const UpdateUserInfo = async (
     const image: multipart_files | undefined = request.files_uploaded.find(
       (file: multipart_files) => file.field_name === "picture"
     );
+    if (!username && !bio && !image) return reply.code(400).send("bad request");
     if (image) {
       if (image.mime_type !== "image/jpeg")
         return reply.code(400).send(`only image jpeg are allowed`);
@@ -148,8 +157,8 @@ export const UpdateUserInfo = async (
     });
   } catch (error) {
     console.log(`ERROR: UpdateUserInfo(): ${error}`);
-    reply.raw.statusCode = 500;
-    reply.raw.end("ERROR: internal error, try again later.");
+    reply.raw.statusCode = 400;
+    reply.raw.end('bad request');
   }
   return Promise.resolve();
 };
@@ -170,7 +179,7 @@ export const UpdateUserPassword = async (
         `SELECT password_hash FROM '${users_table_name}' WHERE UID = ? ;`
       );
       const result = query.get(request.jwt.sub) as UserModel;
-      if (result && result.password_hash && result.password_hash != null) {
+      if (result && result.password_hash && result.password_hash !== null) {
         const old_password: multipart_fields | undefined = request.fields.find(
           (field: multipart_fields, i) => field.field_name === "old_password"
         );
@@ -188,12 +197,11 @@ export const UpdateUserPassword = async (
       `UPDATE '${users_table_name}' SET password_hash = ? WHERE UID = ? ;`
     );
     const result = query.run(hasher.digest().toString(), request.jwt.sub);
-    if (result.changes !== 1) return reply.code(500).send("database error");
+    if (result.changes !== 1) throw "database error";
     return reply.code(200).send("password updated");
   } catch (error) {
     console.log(`ERROR: UpdateUserPassword(): ${error}`);
-    reply.raw.statusCode = 500;
-    reply.raw.end("ERROR: internal error, try again later.");
+    reply.code(400).send('bad request');
   }
 };
 
@@ -207,8 +215,8 @@ export const RemoveUserProfile = async (
       picture_url: process.env.DEFAULT_PROFILE_PATH as string,
     };
     const picture_path = `/static/profile/${request.jwt.sub}.jpg`;
-    if (fs.existsSync(picture_path)) fs.unlinkSync(picture_path);
-    else return reply.status(403).send("Picture already removed.");
+    if (!fs.existsSync(picture_path))
+      return reply.status(400).send("Picture already removed.");
     reply.hijack();
     const RabbitMQReq: RabbitMQRequest = {
       op: RabbitMQUserManagerOp.UPDATE,
@@ -217,13 +225,16 @@ export const RemoveUserProfile = async (
       JWT: request.jwt,
     };
     rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+      if (response.status === 200) {
+        fs.unlinkSync(picture_path);
+      }
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });
   } catch (error) {
-    console.log(`ERROR: RemoveUserProfile(): ${error}`);
-    reply.raw.statusCode = 500;
-    reply.raw.end("ERROR: internal error, try again later.");
+    console.log(`[ERROR] RemoveUserProfile(): ${error}`);
+    reply.raw.statusCode = 400;
+    reply.raw.end("bad request.");
   }
   return Promise.resolve();
 };

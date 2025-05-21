@@ -198,8 +198,7 @@ ${userStore.get()?.bio}</textarea
             cache: 'no-store',
           });
           if (!res.ok) {
-            const errorMessage = await res.text();
-            errorSpan.innerText = errorMessage || `Username already taken`;
+            errorSpan.innerText = `Username already taken`;
             saveBtn.disabled = true;
           } else {
             errorSpan.innerText = '';

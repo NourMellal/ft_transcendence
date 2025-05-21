@@ -10,5 +10,6 @@
 - [ ] add UI for poking players
 - [ ] fix game fetch calls
 - [ ] update game UI
+- [ ] WS Auto reconnect when connection fails
 - [x] Fix chat header not updating after rename
 - [x] Friend removal and friend request denial not updating the the target user's UI when receiving the respective notification.

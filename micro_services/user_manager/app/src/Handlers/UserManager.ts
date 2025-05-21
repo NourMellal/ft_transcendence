@@ -167,7 +167,7 @@ function UpdateUserInfo(request: RabbitMQRequest): RabbitMQResponse {
   } catch (error) {
     console.log(`[ERROR] UpdateUserInfo(): ${error}`)
     response.status = 400;
-    response.message = 'user information updated.';
+    response.message = 'bad request.';
   }
   return response;
 }
