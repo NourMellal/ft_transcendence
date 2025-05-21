@@ -1,4 +1,4 @@
-import { startTournment , reTournment} from "./tournment.js";
+import { startTournment , reTournment, player1Name} from "./tournment.js";
 import { quit } from "./quit.js";
 import { game1v1 } from "./game1v1.js"
 import { startAiGame } from "./ai.js";
@@ -15,6 +15,7 @@ export const aiButton = document.getElementById('AI') as HTMLButtonElement
 export const tournment = document.getElementById('tournment') as HTMLButtonElement;
 export const aiRematch = document.getElementById('resetMatchAi') as HTMLButtonElement;
 export const game2v2 = document.getElementById('V2') as HTMLButtonElement;
+// export let username_text : string = '';
 const quitGame = document.getElementById('quit') as HTMLButtonElement;
 
 resizeGame();
@@ -57,8 +58,11 @@ export async function sendWinOrLose(uid:string, win:boolean) :Promise<void>{
 }
 
 
-export function    gameMenu()
+export async function gameMenu()
 {
+    const UsernameQuery = await fetch("https://transcendence.fr/api/user/info?uid=me");
+    const UsernameQueryJson = await UsernameQuery.json() as { username: string };
+    player1Name.textContent = UsernameQueryJson.username;
     paddel3.style.display = 'none';
     paddel4.style.display = 'none';
     gamesboard.style.display = 'flex';

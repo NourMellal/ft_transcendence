@@ -2,7 +2,7 @@ import { gamesboard, winnerBoard, aiRematch , winnerText, resetMatch, getNewMatc
 import { gameRunning, startGame , games } from "./game.js";
 
 export const tournBoard = document.getElementById('tournamentBoard') as HTMLDivElement;
-export const player1Name = document.getElementById('player1name') as HTMLDivElement;
+export let player1Name = document.getElementById('player1name') as HTMLDivElement;
 export const player2Name = document.getElementById('player2name') as HTMLDivElement;
 export const reTournment = document.getElementById('restartTournment') as HTMLButtonElement;
 const tournmentNames = document.getElementById('tournmentNames') as HTMLDivElement;

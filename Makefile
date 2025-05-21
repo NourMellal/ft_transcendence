@@ -10,7 +10,7 @@ ENV_FILES=$(addsuffix /app/.env, ${MICRO_SERVICES})
 
 NODE_MODULES=$(addsuffix /app/node_modules, ${MICRO_SERVICES}) front_end/app/node_modules
 
-DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES}) front_end/app/game/src/dist
+DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES}) front_end/app/dist
 
 %.env:
 	ln .env $@
