@@ -10,6 +10,7 @@ import {
   blockUser,
   unblockUser,
   renameChat,
+  checkIfBlockedByUser,
 } from '~/api/chat';
 import { PlusIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
@@ -30,11 +31,19 @@ export default class ChatPage extends HTMLElement {
   private sidebarElement: HTMLElement | null = null;
   private headerElement: HTMLElement | null = null;
   private messagesContainer: HTMLElement | null = null;
-  private inputFieldset: HTMLElement | null = null;
+  private inputFieldset: HTMLFieldSetElement | null = null;
 
   handleNewMessage = async (ev: MessageEvent) => {
     const data = JSON.parse(ev.data) as NotificationData;
 
+    if (data.type === NotificationType.ConversationNameChanged) {
+      const chat = this.chats.find((c) => c.UID === data.conversation_uid);
+      if (chat) {
+        chat.name = data.conversation_name;
+        this.updateSidebar();
+        this.updateHeader();
+      }
+    }
     if (data.type === NotificationType.NewMessage) {
       if (this.selectedChat && this.selectedChat.UID === data.conversation_uid) {
         const res = await fetchChatMessages(this.selectedChat.UID);
@@ -60,7 +69,7 @@ export default class ChatPage extends HTMLElement {
       return;
     }
 
-    this.renderLayout();
+    await this.renderLayout();
 
     await this.loadChats();
 
@@ -97,7 +106,7 @@ export default class ChatPage extends HTMLElement {
         this.messages = res.data.reverse();
         this.updateHeader();
         this.updateMessages();
-        this.updateInputField();
+        await this.updateInputField();
         this.scrollToBottom();
         this.querySelector(`button[data-uid="${uid}"]`)?.classList.add(
           'bg-secondary',
@@ -151,7 +160,7 @@ export default class ChatPage extends HTMLElement {
 
   getChatUserUID() {}
 
-  renderLayout() {
+  async renderLayout() {
     this.replaceChildren(html`
       <div class="container mx-auto mt-8">
         <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
@@ -184,7 +193,7 @@ export default class ChatPage extends HTMLElement {
     this.updateSidebar();
     this.updateHeader();
     this.updateMessages();
-    this.updateInputField();
+    await this.updateInputField();
   }
 
   updateSidebar() {
@@ -326,7 +335,7 @@ export default class ChatPage extends HTMLElement {
     }
   }
 
-  updateInputField() {
+  async updateInputField() {
     if (!this.inputFieldset) return;
 
     this.inputFieldset.innerHTML = '';
@@ -338,12 +347,24 @@ export default class ChatPage extends HTMLElement {
     const currentUID = userStore.get()?.UID;
     const otherUserUID =
       this.selectedChat.uid_1 === currentUID ? this.selectedChat.uid_2 : this.selectedChat.uid_1;
+
+    const blockedByUser = await checkIfBlockedByUser(otherUserUID);
+    console.log(blockedByUser);
+
+    if (blockedByUser.success && blockedByUser.data) {
+      this.inputFieldset.replaceChildren(html`
+        <p class="text-muted-foreground text-center">
+          You cannot send messages to this user because they have blocked you.
+        </p>
+      `);
+      return;
+    }
+
     const isBlocked = blockedUsersStore
       .get()
       ?.some((blockedUser) => blockedUser.blocked_uid === otherUserUID);
 
-    this.inputFieldset.toggleAttribute('disabled', isBlocked);
-
+    this.inputFieldset.disabled = isBlocked;
     this.inputFieldset.appendChild(html`
       <form id="send-message-form" class="flex items-center gap-2">
         <input
@@ -415,7 +436,7 @@ export default class ChatPage extends HTMLElement {
         });
         await this.loadChats();
         this.updateHeader();
-        this.updateInputField();
+        await this.updateInputField();
       } else {
         showToast({
           type: 'error',
@@ -435,7 +456,7 @@ export default class ChatPage extends HTMLElement {
         });
         await this.loadChats();
         this.updateHeader();
-        this.updateInputField();
+        await this.updateInputField();
       } else {
         showToast({
           type: 'error',

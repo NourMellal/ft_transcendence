@@ -17,8 +17,8 @@ export enum NotificationType {
   UserUnBlocked = 10,
 }
 
-export type NewMessageNotification = {
-  type: NotificationType.NewMessage;
+export type ChatUpdateNotification = {
+  type: NotificationType.NewMessage | NotificationType.ConversationNameChanged;
   conversation_name: string;
   conversation_uid: string;
   from_uid: string;
@@ -28,7 +28,10 @@ export type NewMessageNotification = {
   is_read: boolean;
 };
 
-type ExcludeNewMessage = Exclude<NotificationType, NotificationType.NewMessage>;
+type ExcludeNewMessage = Exclude<
+  NotificationType,
+  NotificationType.NewMessage | NotificationType.ConversationNameChanged
+>;
 
 type GenericNotification<T extends ExcludeNewMessage = ExcludeNewMessage> = {
   type: T;
@@ -38,7 +41,7 @@ type GenericNotification<T extends ExcludeNewMessage = ExcludeNewMessage> = {
   is_read: boolean;
 };
 
-export type NotificationData = NewMessageNotification | GenericNotification;
+export type NotificationData = ChatUpdateNotification | GenericNotification;
 
 export const setupNotificationsSocket = async () => {
   if (pushNotificationStore.get()) return;

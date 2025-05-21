@@ -155,3 +155,40 @@ export const blockUser = async (uid: string) => {
     message: await response.text(),
   };
 };
+
+export const listBlockedUsers = async () => {
+  const response = await fetch('/api/chat/blocked');
+  if (response.ok) {
+    return {
+      success: true as const,
+      data: (await response.json()).blocked_users as string[],
+    };
+  }
+
+  return {
+    success: false as const,
+    message: await response.text(),
+  };
+};
+
+export const checkIfBlockedByUser = async (uid: string) => {
+  try {
+    const response = await fetch(`/api/chat/check_blocked?uid=${uid}`);
+    if (response.ok) {
+      return {
+        success: true as const,
+        data: (await response.json()) as { is_blocked: boolean },
+      };
+    }
+
+    return {
+      success: false as const,
+      message: await response.text(),
+    };
+  } catch (error) {
+    return {
+      success: false as const,
+      message: 'Error checking if blocked by user',
+    };
+  }
+};
