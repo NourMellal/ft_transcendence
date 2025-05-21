@@ -7,168 +7,195 @@ import {
   RabbitMQUserManagerOp,
   UpdateUser,
 } from "../types/RabbitMQMessages";
-import https from "https";
 import fs from "fs";
-import { Transform } from "stream";
-import { JWT } from "../types/common";
+import { DownloadGoogleImage } from "./helper";
 
-function DownloadGoogleImage(picture_url: string, UID: string): string {
-  // spliting google photo url by = and adding =s500 to get 500x500 image
-  var picture_route = `/static/profile/${UID}.jpg`;
-  var uri = picture_url.split("=");
-  https
-    .request(uri[0] + "=s500", function (response) {
-      var data = new Transform();
-      response.on("data", function (chunk) {
-        data.push(chunk);
-      });
-      response.on("end", function () {
-        fs.writeFileSync(picture_route, data.read());
-      });
-    })
-    .end();
-  return picture_route;
-}
-
-function CreateNewGoogleUser(jwt: JWT): UserModel {
-  var picture_route = process.env.DEFAULT_PROFILE_PATH as string;
-  if (jwt.picture) picture_route = DownloadGoogleImage(jwt.picture, jwt.sub);
-  const user: UserModel = {
-    UID: jwt.sub,
-    picture_url: picture_route,
-    bio:
-      process.env.DEFAULT_NEW_USER_BIO ||
-      "Hello everyone, new PING-PONG player here.",
-  };
-  const insertQuery = db.persistent.prepare(
-    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
-  );
-  var res = insertQuery.run(user.UID, user.picture_url, user.bio);
-  if (res.changes !== 1) {
-    if (
-      picture_route !== (process.env.DEFAULT_PROFILE_PATH as string) &&
-      fs.existsSync(picture_route)
-    )
-      fs.unlinkSync(picture_route);
-    throw `Can not add Google user uid=${jwt.sub} to db`;
-  }
-  return user;
-}
-
-function CreateNewStandardUser(jwt: JWT): UserModel {
-  if (!jwt.name || !jwt.picture)
-    throw `Invalid jwt for standard user creation ${jwt.name}`;
-  const user: UserModel = {
-    UID: jwt.sub,
-    picture_url: jwt.picture,
-    bio:
-      process.env.DEFAULT_NEW_USER_BIO ||
-      "Hello everyone, new PING-PONG player here.",
-  };
-  const insertQuery = db.persistent.prepare(
-    `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
-  );
-  var res = insertQuery.run(user.UID, user.picture_url, user.bio);
-  if (res.changes !== 1) throw `Can not add standard user uid=${jwt.sub} to db`;
-  return user;
-}
-
-function FetchMultipleUsersList(UIDs: string): string {
-  let querystring = `SELECT * FROM '${users_table_name}' WHERE `;
-  const uids = UIDs.split(';');
-  for (let i = 0; i < uids.length; i++) {
-    const element = uids[i];
-    querystring += 'UID = ? ';
-    if (i < uids.length - 1)
-      querystring += 'OR ';
-  }
-  if (uids.length > 0) {
-    querystring += ';';
-    const getQuery = db.persistent.prepare(querystring);
-    const res = getQuery.all(...uids);
-    return JSON.stringify(res);
-  }
-  return '[]';
-}
-
-function FetchUser(UID: string): UserModel | string {
-  const getQuery = db.persistent.prepare(
-    `SELECT * FROM '${users_table_name}' WHERE UID = ?;`,
-  );
-  const res = getQuery.get(UID);
-  if (res === undefined) return `No record for user uid ${UID} in db`;
-  return res as UserModel;
-}
-
-function UpdateUserInfo(jwt: JWT, updatedFields: UpdateUser): string {
-  if (!updatedFields.bio && !updatedFields.picture_url)
-    throw "bad UpdateUser request: no field is supplied";
-  const query = db.persistent.prepare(
-    `UPDATE '${users_table_name}' SET picture_url = IFNULL(?, picture_url), bio = IFNULL(?, bio) WHERE UID = ?;`,
-  );
-  const query_result = query.run(
-    updatedFields.picture_url,
-    updatedFields.bio,
-    jwt.sub,
-  );
-  if (query_result.changes !== 1)
-    throw `UpdateUser request: user ${jwt.sub} not updated`;
-  return "user information updated.";
-}
-
-export function HandleMessage(RMqRequest: RabbitMQRequest): RabbitMQResponse {
-  const RMqResponse: RabbitMQResponse = {
+async function CreateNewGoogleUser(request: RabbitMQRequest): Promise<RabbitMQResponse> {
+  let response: RabbitMQResponse = {
+    req_id: request.id,
     service: RabbitMQMicroServices.USER_MANAGER,
-    req_id: RMqRequest.id,
+    op: RabbitMQUserManagerOp.CREATE_GOOGLE,
   } as RabbitMQResponse;
+  try {
+    db.persistent.exec("BEGIN TRANSACTION;")
+    var picture_route = process.env.DEFAULT_PROFILE_PATH as string;
+    if (request.JWT.picture)
+      picture_route = await DownloadGoogleImage(request.JWT.picture, request.JWT.sub);
+    const user: UserModel = {
+      UID: request.JWT.sub,
+      picture_url: picture_route,
+      bio: process.env.DEFAULT_NEW_USER_BIO as string,
+    };
+    const insertQuery = db.persistent.prepare(
+      `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
+    );
+    var res = insertQuery.run(user.UID, user.picture_url, user.bio);
+    if (res.changes !== 1) {
+      if (
+        picture_route !== (process.env.DEFAULT_PROFILE_PATH as string) &&
+        fs.existsSync(picture_route)
+      )
+        fs.unlinkSync(picture_route);
+      throw `Can not add Google user uid=${request.JWT.sub} to db`;
+    }
+    db.persistent.exec("COMMIT;")
+    response.status = 200;
+    response.message = JSON.stringify(user);
+  } catch (error) {
+    db.persistent.exec("ROLLBACK;")
+    console.log(`[ERROR] CreateNewGoogleUser(): ${error}`);
+    response.status = 400;
+    response.message = 'bad request';
+  }
+  return response;
+}
+
+function CreateNewStandardUser(request: RabbitMQRequest): RabbitMQResponse {
+  let response: RabbitMQResponse = {
+    req_id: request.id,
+    service: RabbitMQMicroServices.USER_MANAGER,
+    op: RabbitMQUserManagerOp.CREATE_STANDARD,
+  } as RabbitMQResponse;
+  try {
+    if (!request.JWT.name || !request.JWT.picture)
+      throw `Invalid jwt for standard user creation ${request.JWT.sub}`;
+    const user: UserModel = {
+      UID: request.JWT.sub,
+      picture_url: request.JWT.picture,
+      bio: process.env.DEFAULT_NEW_USER_BIO as string,
+    };
+    const insertQuery = db.persistent.prepare(
+      `INSERT INTO '${users_table_name}' ( UID , picture_url , bio ) VALUES( ? , ? , ? );`,
+    );
+    var res = insertQuery.run(user.UID, user.picture_url, user.bio);
+    if (res.changes !== 1)
+      throw `Can not add standard user uid=${request.JWT.sub} to db`;
+    response.status = 200;
+    response.message = JSON.stringify(user);
+  } catch (error) {
+    console.log(`[ERROR] CreateNewStandardUser(): ${error}`)
+    response.status = 400;
+    response.message = "bad request";
+  }
+  return response;
+}
+
+function FetchUser(request: RabbitMQRequest): RabbitMQResponse {
+  let response: RabbitMQResponse = {
+    req_id: request.id,
+    service: RabbitMQMicroServices.USER_MANAGER,
+    op: RabbitMQUserManagerOp.FETCH,
+  } as RabbitMQResponse;
+  try {
+    if (!request.message)
+      throw "No uid to fetch";
+    const getQuery = db.persistent.prepare(
+      `SELECT * FROM '${users_table_name}' WHERE UID = ?;`,
+    );
+    const res = getQuery.get(request.message);
+    if (res === undefined) {
+      response.status = 404;
+      response.message = 'User not found';
+    } else {
+      response.status = 200;
+      response.message = JSON.stringify(res);
+    }
+  } catch (error) {
+    console.log(`[ERROR] FetchUser(): ${error}`)
+    response.status = 400;
+    response.message = 'bad request';
+  }
+  return response;
+}
+
+
+function FetchMultipleUsersList(request: RabbitMQRequest): RabbitMQResponse {
+  let response: RabbitMQResponse = {
+    req_id: request.id,
+    service: RabbitMQMicroServices.USER_MANAGER,
+    op: RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL,
+  } as RabbitMQResponse;
+  try {
+    if (!request.message)
+      throw "request.message is mandatory for operation [RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL]";
+    let querystring = `SELECT * FROM '${users_table_name}' WHERE `;
+    const uids = request.message.split(';');
+    for (let i = 0; i < uids.length; i++) {
+      const element = uids[i];
+      querystring += 'UID = ? ';
+      if (i < uids.length - 1)
+        querystring += 'OR ';
+    }
+    response.status = 200;
+    if (uids.length > 0) {
+      querystring += ';';
+      const getQuery = db.persistent.prepare(querystring);
+      const res = getQuery.all(...uids);
+      response.message = JSON.stringify(res);
+    } else {
+      response.message = '[]';
+    }
+  } catch (error) {
+    console.log(`[ERROR] CreateNewStandardUser(): ${error}`)
+    response.status = 400;
+    response.message = "bad request";
+  }
+  return response;
+}
+
+
+function UpdateUserInfo(request: RabbitMQRequest): RabbitMQResponse {
+  let response: RabbitMQResponse = {
+    req_id: request.id,
+    service: RabbitMQMicroServices.USER_MANAGER,
+    op: RabbitMQUserManagerOp.UPDATE,
+  } as RabbitMQResponse;
+  try {
+    if (!request.message)
+      throw "request.message is mandatory for operation [RabbitMQUserManagerOp.UPDATE]";
+    const updatedFields = JSON.parse(request.message) as UpdateUser;
+    if (!updatedFields.bio && !updatedFields.picture_url)
+      throw "bad UpdateUser request: no field is supplied";
+    const query = db.persistent.prepare(
+      `UPDATE '${users_table_name}' SET picture_url = IFNULL(?, picture_url), bio = IFNULL(?, bio) WHERE UID = ?;`
+    );
+    const query_result = query.run(updatedFields.picture_url, updatedFields.bio, request.JWT.sub);
+    if (query_result.changes !== 1)
+      throw `user ${request.JWT.sub} not updated`;
+    response.status = 200;
+    response.message = 'user information updated.';
+  } catch (error) {
+    console.log(`[ERROR] UpdateUserInfo(): ${error}`)
+    response.status = 400;
+    response.message = 'user information updated.';
+  }
+  return response;
+}
+
+export async function HandleMessage(RMqRequest: RabbitMQRequest): Promise<RabbitMQResponse> {
   switch (RMqRequest.op) {
     case RabbitMQUserManagerOp.CREATE_GOOGLE: {
-      RMqResponse.message = JSON.stringify(CreateNewGoogleUser(RMqRequest.JWT));
-      RMqResponse.status = 200;
-      break;
+      return await CreateNewGoogleUser(RMqRequest);
     }
     case RabbitMQUserManagerOp.CREATE_STANDARD: {
-      RMqResponse.message = JSON.stringify(
-        CreateNewStandardUser(RMqRequest.JWT),
-      );
-      RMqResponse.status = 200;
-      break;
+      return CreateNewStandardUser(RMqRequest);
     }
     case RabbitMQUserManagerOp.FETCH: {
-      if (!RMqRequest.message)
-        throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.FETCH]";
-      const record = FetchUser(RMqRequest.message as string);
-      if (typeof record === "string") {
-        RMqResponse.status = 404;
-        RMqResponse.message = record;
-      } else {
-        RMqResponse.status = 200;
-        RMqResponse.message = JSON.stringify(record);
-      }
-      break;
+      return FetchUser(RMqRequest);
     }
     case RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL: {
-      if (!RMqRequest.message)
-        throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.FETCH_MULTIPLE_INTERNAL]";
-      RMqResponse.status = 200;
-      RMqResponse.message = FetchMultipleUsersList(RMqRequest.message);
-      break;
+      return FetchMultipleUsersList(RMqRequest);
     }
     case RabbitMQUserManagerOp.UPDATE: {
-      if (!RMqRequest.message)
-        throw "RMqRequest.message is mandatory for operation [RabbitMQUserManagerOp.UPDATE]";
-      const info = JSON.parse(RMqRequest.message) as UpdateUser;
-      RMqResponse.message = UpdateUserInfo(RMqRequest.JWT, info);
-      RMqResponse.status = 200;
-      break;
+      return UpdateUserInfo(RMqRequest);
     }
-    default:
+    default:{
       console.log(
         "WARNING: rabbitmq HandleMessage(): operation not implemented.",
       );
       throw "operation not implemented";
+    }
   }
-  return RMqResponse;
 }
 
 export default HandleMessage;

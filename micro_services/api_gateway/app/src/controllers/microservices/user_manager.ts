@@ -17,12 +17,16 @@ export const SearchByUsername =  async (
 ) => {
   if (!request.query.uname)
     return reply.code(400).send("bad request");
-  reply.header("Content-Type", "application/json");
-  const query = db.persistent.prepare(
-    `SELECT UID,username FROM '${users_table_name}' WHERE username LIKE ? ;`
-  );
-  const res = query.all(`%${request.query.uname}%`);
-  reply.code(200).send(res);
+  try {
+    reply.header("Content-Type", "application/json");
+    const query = db.persistent.prepare(
+      `SELECT username FROM '${users_table_name}' WHERE username LIKE ? ;`
+    );
+    const res = query.all(`%${request.query.uname}%`);
+    reply.code(200).send(res);
+  } catch (error) {
+    reply.code(400).send("bad request");
+  }
 }
 
 export const FetchUserInfo = async (
