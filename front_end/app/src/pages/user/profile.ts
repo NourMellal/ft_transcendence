@@ -513,7 +513,7 @@ export default class ProfilePage extends HTMLElement {
         <!-- Daily winrate Chart -->
         <div class="card border rounded-lg mt-8">
           <div class="card-header p-6 border-b">
-            <h2 class="text-lg font-semibold">Wins Tracker</h2>
+            <h2 class="text-lg font-semibold">Daily Wins Tracker</h2>
           </div>
           <div class="grid grid-cols-1 p-6">
             <player-line-chart
