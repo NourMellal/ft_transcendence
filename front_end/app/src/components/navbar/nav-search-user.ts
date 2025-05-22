@@ -19,7 +19,7 @@ class NavUserSearchInput extends HTMLElement {
         ctrlKey: false,
         shiftKey: false,
         metaKey: false,
-      })
+      }),
     );
   };
 
@@ -57,6 +57,10 @@ class NavUserSearchInput extends HTMLElement {
       const input = ev.target as HTMLInputElement;
       if (input.value.length < 3) {
         this.dropdown?.classList.replace('flex', 'hidden');
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout);
+        }
+        return;
       }
 
       debounceTimeout = setTimeout(async () => {
@@ -73,18 +77,24 @@ class NavUserSearchInput extends HTMLElement {
                     >
                       ${user.username}
                     </button>
-                  `
+                  `,
                 )
-              : html` <p class="text-sm text-muted-foreground p-4 text-center">No user found.</p> `}
+              : html`
+                  <p class="text-sm text-muted-foreground p-4 text-center">
+                    No user found.
+                  </p>
+                `}
           `);
 
-          document.querySelectorAll<HTMLButtonElement>('button[data-url]').forEach((el) =>
-            el.addEventListener('click', (ev) => {
-              const target = ev.target as HTMLButtonElement;
-              if (target.dataset.url) navigateTo(target.dataset.url);
-              this.closeDialog();
-            })
-          );
+          document
+            .querySelectorAll<HTMLButtonElement>('button[data-url]')
+            .forEach((el) =>
+              el.addEventListener('click', (ev) => {
+                const target = ev.target as HTMLButtonElement;
+                if (target.dataset.url) navigateTo(target.dataset.url);
+                this.closeDialog();
+              }),
+            );
         }
       }, 500);
     });
@@ -98,15 +108,20 @@ if (!customElements.get('nav-user-search-input')) {
 class NavSearchUser extends HTMLElement {
   connectedCallback() {
     this.replaceChildren(html`
-      <button id="search-btn" class="btn-outlined btn-icon">${SearchIcon}</button>
+      <button id="search-btn" class="btn-outlined btn-icon">
+        ${SearchIcon}
+      </button>
     `);
 
-    this.querySelector<HTMLButtonElement>('#search-btn')?.addEventListener('click', (ev) => {
-      showDialog({
-        title: 'search user',
-        content: html`<nav-user-search-input></nav-user-search-input>`,
-      });
-    });
+    this.querySelector<HTMLButtonElement>('#search-btn')?.addEventListener(
+      'click',
+      () => {
+        showDialog({
+          title: 'search user',
+          content: html`<nav-user-search-input></nav-user-search-input>`,
+        });
+      },
+    );
   }
 }
 
