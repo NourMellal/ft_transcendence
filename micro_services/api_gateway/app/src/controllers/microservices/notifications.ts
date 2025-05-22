@@ -61,10 +61,16 @@ export const pingUser = function (notificationRaw: string) {
   try {
     let notification: any = JSON.parse(notificationRaw) as NotificationBody;
     const sockets = PushNotificationSocketsMap.get(notification.to_uid);
-    console.log(`\t[INFO]: pingUser(): Ping Request for uid=${notification.to_uid}`);
+    console.log(
+      `\t[INFO]: pingUser(): Ping Request for uid=${notification.to_uid}`
+    );
     if (sockets && sockets.length > 0) {
-      console.log(`\t[INFO]: pingUser(): Sending notification to uid=${notification.to_uid}`);
-      const query = db.persistent.prepare(`SELECT username FROM ${users_table_name} WHERE UID = ? ;`);
+      console.log(
+        `\t[INFO]: pingUser(): Sending notification to uid=${notification.to_uid}`
+      );
+      const query = db.persistent.prepare(
+        `SELECT username FROM ${users_table_name} WHERE UID = ? ;`
+      );
       const res = query.all(notification.from_uid) as UserModel[];
       if (res.length === 0)
         throw `username for ${notification.from_uid} not found`;
@@ -75,7 +81,9 @@ export const pingUser = function (notificationRaw: string) {
       }
     }
   } catch (error) {
-    console.log(`\t[INFO]: pingUser(): ${error} | notificationRaw=${notificationRaw}`);
+    console.log(
+      `\t[INFO]: pingUser(): ${error} | notificationRaw=${notificationRaw}`
+    );
   }
 };
 
@@ -212,7 +220,11 @@ export const GetUserActiveStatus = async (
 ) => {
   const sockets = PushNotificationSocketsMap.get(request.query.uid);
   if (sockets && sockets.length > 0) {
-    return reply.code(200).send("online");
+    return reply.code(200).send({
+      online: true,
+    });
   }
-  return reply.code(404).send("offline");
+  return reply.code(200).send({
+    online: false,
+  });
 };

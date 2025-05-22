@@ -7,6 +7,7 @@ import {
   MatchHistoryEntry,
   MatchStatus,
   MatchType,
+  fetchUserOnlineStatus,
 } from '~/api/user';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
@@ -37,6 +38,7 @@ interface ProfileState {
   friendStatus: FriendStatus;
   pendingRequestId: string | null;
   matchHistory: MatchHistoryEntry[];
+  isOnline: boolean;
 }
 
 export default class ProfilePage extends HTMLElement {
@@ -94,20 +96,23 @@ export default class ProfilePage extends HTMLElement {
 
       const isOwnProfile = profileUser.UID === currentUser.UID;
 
+      const isOnline = await fetchUserOnlineStatus(profileUser.UID);
+
       return {
         user: profileUser,
         isOwnProfile,
         friendStatus: isOwnProfile
           ? FriendStatus.NONE
           : await this.getFriendStatus(profileUser.UID).then(
-              (fs) => fs.friendStatus,
+              (fs) => fs.friendStatus
             ),
         pendingRequestId: isOwnProfile
           ? null
           : await this.getFriendStatus(profileUser.UID).then(
-              (fs) => fs.pendingRequestId,
+              (fs) => fs.pendingRequestId
             ),
         matchHistory,
+        isOnline,
       };
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -117,7 +122,7 @@ export default class ProfilePage extends HTMLElement {
   }
 
   async getFriendStatus(
-    targetUid: string,
+    targetUid: string
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
       // Check if target user is already a friend
@@ -425,9 +430,9 @@ export default class ProfilePage extends HTMLElement {
     const winRate = String(
       rankData.wins + rankData.losses > 0
         ? ((rankData.wins / (rankData.wins + rankData.losses)) * 100).toFixed(
-            0,
+            0
           ) + '%'
-        : '0%',
+        : '0%'
     );
     const rank = String(rankData.rank);
     let wins = String(rankData.wins);
@@ -480,8 +485,15 @@ export default class ProfilePage extends HTMLElement {
                 `
               : ''}
           </div>
-          <div class="text-center space-y-1">
-            <h1 class="text-2xl font-bold">${user.username}</h1>
+          <div class="flex items-center gap-1 flex-col">
+            <div class="flex gap-2 items-center justify-center">
+              <span
+                class="rounded-full w-3 h-3 ${this.state.isOnline
+                  ? 'bg-green-500'
+                  : 'bg-red-500'}"
+              ></span>
+              <h1 class="text-2xl font-bold">${user.username}</h1>
+            </div>
             <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
           <div id="profile-friend-actions" class="flex gap-2">
@@ -497,7 +509,7 @@ export default class ProfilePage extends HTMLElement {
                 <p class="text-2xl font-bold">${stat.value}</p>
                 <p class="text-sm text-muted-foreground">${stat.label}</p>
               </div>
-            `,
+            `
           )}
         </div>
 
@@ -517,16 +529,16 @@ export default class ProfilePage extends HTMLElement {
                           MatchStatus.WIN
                             ? 'bg-primary'
                             : match.state === MatchStatus.LOSS
-                              ? 'bg-destructive'
-                              : 'bg-muted-foreground'}"
+                            ? 'bg-destructive'
+                            : 'bg-muted-foreground'}"
                         ></div>
                         <div class="flex-1">
                           <p class="text-sm font-medium">
                             ${match.state === MatchStatus.WIN
                               ? 'Won'
                               : match.state === MatchStatus.LOSS
-                                ? 'Lost'
-                                : 'Pending'}
+                              ? 'Lost'
+                              : 'Pending'}
                             against
                             ${match.match_type === MatchType.AI
                               ? 'AI'
@@ -537,7 +549,7 @@ export default class ProfilePage extends HTMLElement {
                           </p>
                         </div>
                       </div>
-                    `,
+                    `
                   )
                 : html`<p class="text-sm text-muted-foreground">
                     No recent activity.

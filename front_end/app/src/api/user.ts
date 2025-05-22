@@ -144,3 +144,20 @@ export const SearchByUsername = async (username: string) => {
     };
   }
 };
+
+type UserStatusResponse = {
+  online: boolean;
+};
+
+export const fetchUserOnlineStatus = async (uid: string) => {
+  try {
+    const response = await fetch(`/api/user/status?uid=${uid}`);
+    const data = (await response.json()) as UserStatusResponse;
+    if (response.ok) {
+      return data.online;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+};
