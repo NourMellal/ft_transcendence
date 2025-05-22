@@ -54,7 +54,10 @@ class AppDialog extends HTMLElement {
 
   disconnectedCallback() {
     window.removeEventListener('keydown', this.handleEscape);
-    this.removeEventListener(DIALOG_EVENT_NAME, this.handleEvent as EventListener);
+    this.removeEventListener(
+      DIALOG_EVENT_NAME,
+      this.handleEvent as EventListener,
+    );
   }
 
   private handleEvent = (e: CustomEvent<DialogOptions & { id: string }>) => {
@@ -70,7 +73,9 @@ class AppDialog extends HTMLElement {
     overlay.onclick = () => this.close();
 
     // Panel: either form or div
-    const panel = options.asForm ? document.createElement('form') : document.createElement('div');
+    const panel = options.asForm
+      ? document.createElement('form')
+      : document.createElement('div');
     panel.className = this.getPanelClass(options.size);
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
@@ -118,10 +123,12 @@ class AppDialog extends HTMLElement {
         { transform: 'scale(0.9)', opacity: 0 },
         { transform: 'scale(1)', opacity: 1 },
       ],
-      { duration: this.transitionDuration, easing: 'ease-out' }
+      { duration: this.transitionDuration, easing: 'ease-out' },
     );
 
-    contentEl.querySelector<HTMLInputElement>('input:not([type="hidden"])')?.focus();
+    contentEl
+      .querySelector<HTMLInputElement>('input:not([type="hidden"])')
+      ?.focus();
   }
 
   close() {
@@ -132,7 +139,7 @@ class AppDialog extends HTMLElement {
           { transform: 'scale(1)', opacity: 1 },
           { transform: 'scale(0.9)', opacity: 0 },
         ],
-        { duration: this.transitionDuration, easing: 'ease-in' }
+        { duration: this.transitionDuration, easing: 'ease-in' },
       );
       anim.onfinish = () => this.reset();
     } else this.reset();
@@ -144,7 +151,8 @@ class AppDialog extends HTMLElement {
   }
 
   private getPanelClass(size: DialogSize = 'md'): string {
-    const base = 'relative z-[101] rounded-lg bg-card p-6 shadow-lg ring-1 ring-ring';
+    const base =
+      'relative z-[101] rounded-lg bg-card p-6 shadow-lg ring-1 ring-ring';
     const sizes: Record<DialogSize, string> = {
       sm: 'w-full max-w-sm',
       md: 'w-full max-w-md',

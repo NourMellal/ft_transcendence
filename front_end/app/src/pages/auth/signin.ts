@@ -10,7 +10,8 @@ import { LockIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
 
 export default class SigninPage extends HTMLElement {
-  intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
+  intended =
+    new URLSearchParams(window.location.search).get('intended') ?? '/profile';
 
   handleSumbit = async (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
@@ -56,12 +57,17 @@ export default class SigninPage extends HTMLElement {
               />
             </div>
           `,
-          actions: [{ label: 'verify', className: 'btn-primary', submit: true }],
+          actions: [
+            { label: 'verify', className: 'btn-primary', submit: true },
+          ],
           formHandler: async (formData, dialog) => {
-            const res = await fetch(`/api/2FA/verify?state=${formData.get('state')}`, {
-              method: 'POST',
-              body: formData,
-            });
+            const res = await fetch(
+              `/api/2FA/verify?state=${formData.get('state')}`,
+              {
+                method: 'POST',
+                body: formData,
+              },
+            );
 
             if (res.ok) {
               dialog.close();

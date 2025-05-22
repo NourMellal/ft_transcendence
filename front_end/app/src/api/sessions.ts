@@ -4,7 +4,9 @@ export type ActiveSession = {
   created: number;
 };
 
-export const fetchActiveSessions = async (): Promise<ActiveSession[] | null> => {
+export const fetchActiveSessions = async (): Promise<
+  ActiveSession[] | null
+> => {
   const res = await fetch('/api/jwt/list', {
     cache: 'no-store',
   });

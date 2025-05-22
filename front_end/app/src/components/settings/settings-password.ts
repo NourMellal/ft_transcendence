@@ -8,14 +8,18 @@ class SettingsPassword extends HTMLElement {
       <fieldset class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div class="md:col-span-1">
           <h2 class="text-xl font-semibold mb-1">Password</h2>
-          <p class="text-sm text-muted-foreground">Update your account password.</p>
+          <p class="text-sm text-muted-foreground">
+            Update your account password.
+          </p>
         </div>
         <div class="md:col-span-2">
           <form class="card border rounded-lg shadow-sm" id="password-form">
             <div class="card-content p-6 space-y-6">
               <!-- Current Password -->
               <div class="space-y-2">
-                <label for="current-password" class="label">Current Password</label>
+                <label for="current-password" class="label"
+                  >Current Password</label
+                >
                 <input
                   type="password"
                   id="current-password"
@@ -43,7 +47,9 @@ class SettingsPassword extends HTMLElement {
 
               <!-- Confirm New Password -->
               <div class="space-y-2">
-                <label for="confirm-password" class="label">Confirm New Password</label>
+                <label for="confirm-password" class="label"
+                  >Confirm New Password</label
+                >
                 <input
                   type="password"
                   id="confirm-password"
@@ -55,7 +61,9 @@ class SettingsPassword extends HTMLElement {
               </div>
             </div>
             <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
-              <button type="submit" class="btn btn-primary">Update Password</button>
+              <button type="submit" class="btn btn-primary">
+                Update Password
+              </button>
             </div>
           </form>
         </div>
@@ -66,7 +74,9 @@ class SettingsPassword extends HTMLElement {
 
   updatePassword = async (e: SubmitEvent) => {
     e.preventDefault();
-    const formData = new FormData(this.querySelector<HTMLFormElement>('#password-form')!);
+    const formData = new FormData(
+      this.querySelector<HTMLFormElement>('#password-form')!,
+    );
 
     const newPassword = formData.get('new_password') as string;
     const confirmPassword = formData.get('confirm_password') as string;

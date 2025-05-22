@@ -1,12 +1,26 @@
 import '~/components/navbar/navigation-bar';
 
 import { navigateTo } from '~/components/app-router';
-import { User, fetchMatchHistory, MatchHistoryEntry, MatchStatus, MatchType } from '~/api/user';
+import {
+  User,
+  fetchMatchHistory,
+  MatchHistoryEntry,
+  MatchStatus,
+  MatchType,
+} from '~/api/user';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from '~/api/auth';
 import { html } from '~/lib/html';
-import { friendRequestsStore, userStore, pushNotificationStore } from '~/app-state';
-import { fetchFriendRequests, fetchFriends, fetchSentFriendRequests } from '~/api/friends';
+import {
+  friendRequestsStore,
+  userStore,
+  pushNotificationStore,
+} from '~/app-state';
+import {
+  fetchFriendRequests,
+  fetchFriends,
+  fetchSentFriendRequests,
+} from '~/api/friends';
 import { NotificationData, NotificationType } from '~/api/notifications';
 import { fetchUserRank } from '~/api/leaderboard';
 
@@ -54,7 +68,9 @@ export default class ProfilePage extends HTMLElement {
             <div
               class="-mb-8 md:-mt-20 -mt-16 flex flex-col items-center justify-center min-h-screen space-y-4"
             >
-              <h1 class="text-4xl font-bold tracking-tight">Profile Not Found</h1>
+              <h1 class="text-4xl font-bold tracking-tight">
+                Profile Not Found
+              </h1>
               <p class="text-muted-foreground text-center">
                 The profile you're looking for doesn't exist.
               </p>
@@ -83,10 +99,14 @@ export default class ProfilePage extends HTMLElement {
         isOwnProfile,
         friendStatus: isOwnProfile
           ? FriendStatus.NONE
-          : await this.getFriendStatus(profileUser.UID).then((fs) => fs.friendStatus),
+          : await this.getFriendStatus(profileUser.UID).then(
+              (fs) => fs.friendStatus,
+            ),
         pendingRequestId: isOwnProfile
           ? null
-          : await this.getFriendStatus(profileUser.UID).then((fs) => fs.pendingRequestId),
+          : await this.getFriendStatus(profileUser.UID).then(
+              (fs) => fs.pendingRequestId,
+            ),
         matchHistory,
       };
     } catch (error) {
@@ -97,12 +117,15 @@ export default class ProfilePage extends HTMLElement {
   }
 
   async getFriendStatus(
-    targetUid: string
+    targetUid: string,
   ): Promise<{ friendStatus: FriendStatus; pendingRequestId: string | null }> {
     try {
       // Check if target user is already a friend
       const friendsRes = await fetchFriends();
-      if (friendsRes.success && friendsRes.data.some((u) => u.UID === targetUid)) {
+      if (
+        friendsRes.success &&
+        friendsRes.data.some((u) => u.UID === targetUid)
+      ) {
         return { friendStatus: FriendStatus.FRIEND, pendingRequestId: null };
       }
 
@@ -111,7 +134,10 @@ export default class ProfilePage extends HTMLElement {
       if (incoming) {
         const req = incoming.find((r) => r.from_uid === targetUid);
         if (req) {
-          return { friendStatus: FriendStatus.PENDING_INCOMING, pendingRequestId: req.REQ_ID };
+          return {
+            friendStatus: FriendStatus.PENDING_INCOMING,
+            pendingRequestId: req.REQ_ID,
+          };
         }
       }
 
@@ -120,7 +146,10 @@ export default class ProfilePage extends HTMLElement {
       if (sentRes.success) {
         const outReq = sentRes.data.find((r) => r.to_uid === targetUid);
         if (outReq) {
-          return { friendStatus: FriendStatus.PENDING_OUTGOING, pendingRequestId: outReq.REQ_ID };
+          return {
+            friendStatus: FriendStatus.PENDING_OUTGOING,
+            pendingRequestId: outReq.REQ_ID,
+          };
         }
       }
 
@@ -285,7 +314,11 @@ export default class ProfilePage extends HTMLElement {
 
       default:
         return html`
-          <button class="btn btn-outlined friend-action" data-action="add" data-id="${user.UID}">
+          <button
+            class="btn btn-outlined friend-action"
+            data-action="add"
+            data-id="${user.UID}"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -327,7 +360,9 @@ export default class ProfilePage extends HTMLElement {
         case 'cancel':
           endpoint = `/api/friends/deny?uid=${id}`;
           successMessage =
-            action === 'deny' ? 'Friend request declined' : 'Friend request canceled';
+            action === 'deny'
+              ? 'Friend request declined'
+              : 'Friend request canceled';
           break;
         case 'remove':
           endpoint = `/api/friends/remove?uid=${id}`;
@@ -383,12 +418,16 @@ export default class ProfilePage extends HTMLElement {
     const { user, isOwnProfile, matchHistory } = this.state;
 
     const rankInfo = await fetchUserRank(user.UID);
-    const rankData = rankInfo.data ? rankInfo.data : { rank: 'Unranked', wins: 0, losses: 0 };
+    const rankData = rankInfo.data
+      ? rankInfo.data
+      : { rank: 'Unranked', wins: 0, losses: 0 };
     const gamesPlayed = String(rankData.wins + rankData.losses);
     const winRate = String(
       rankData.wins + rankData.losses > 0
-        ? ((rankData.wins / (rankData.wins + rankData.losses)) * 100).toFixed(0) + '%'
-        : '0%'
+        ? ((rankData.wins / (rankData.wins + rankData.losses)) * 100).toFixed(
+            0,
+          ) + '%'
+        : '0%',
     );
     const rank = String(rankData.rank);
     let wins = String(rankData.wins);
@@ -429,7 +468,9 @@ export default class ProfilePage extends HTMLElement {
                       stroke-linejoin="round"
                       class="h-4 w-4"
                     >
-                      <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"></path>
+                      <path
+                        d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"
+                      ></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
                       <path
                         d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"
@@ -456,7 +497,7 @@ export default class ProfilePage extends HTMLElement {
                 <p class="text-2xl font-bold">${stat.value}</p>
                 <p class="text-sm text-muted-foreground">${stat.label}</p>
               </div>
-            `
+            `,
           )}
         </div>
 
@@ -472,29 +513,35 @@ export default class ProfilePage extends HTMLElement {
                     (match) => html`
                       <div class="flex items-center gap-4">
                         <div
-                          class="w-2 h-2 rounded-full ${match.state === MatchStatus.WIN
+                          class="w-2 h-2 rounded-full ${match.state ===
+                          MatchStatus.WIN
                             ? 'bg-primary'
                             : match.state === MatchStatus.LOSS
-                            ? 'bg-destructive'
-                            : 'bg-muted-foreground'}"
+                              ? 'bg-destructive'
+                              : 'bg-muted-foreground'}"
                         ></div>
                         <div class="flex-1">
                           <p class="text-sm font-medium">
                             ${match.state === MatchStatus.WIN
                               ? 'Won'
                               : match.state === MatchStatus.LOSS
-                              ? 'Lost'
-                              : 'Pending'}
-                            against ${match.match_type === MatchType.AI ? 'AI' : 'Opponent'}
+                                ? 'Lost'
+                                : 'Pending'}
+                            against
+                            ${match.match_type === MatchType.AI
+                              ? 'AI'
+                              : 'Opponent'}
                           </p>
                           <p class="text-xs text-muted-foreground">
                             ${new Date(match.started * 1000).toLocaleString()}
                           </p>
                         </div>
                       </div>
-                    `
+                    `,
                   )
-                : html`<p class="text-sm text-muted-foreground">No recent activity.</p>`}
+                : html`<p class="text-sm text-muted-foreground">
+                    No recent activity.
+                  </p>`}
             </div>
           </div>
         </div>
@@ -523,11 +570,15 @@ export default class ProfilePage extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    pushNotificationStore.get()?.addEventListener('message', this.handleNotification);
+    pushNotificationStore
+      .get()
+      ?.addEventListener('message', this.handleNotification);
   }
 
   disconnectedCallback() {
-    pushNotificationStore.get()?.removeEventListener('message', this.handleNotification);
+    pushNotificationStore
+      .get()
+      ?.removeEventListener('message', this.handleNotification);
     this.cleanupCallbacks.forEach((cleanup) => cleanup());
   }
 }

@@ -21,7 +21,9 @@ export const fetchFriendRequests = async () => {
   return (
     await Promise.all(
       requests.map(async (request) => {
-        const fromUserResponse = await fetchWithAuth(`/api/user/info?uid=${request.from_uid}`);
+        const fromUserResponse = await fetchWithAuth(
+          `/api/user/info?uid=${request.from_uid}`,
+        );
         if (fromUserResponse.ok) {
           const from_user = (await fromUserResponse.json()) as User;
           return {
@@ -29,7 +31,7 @@ export const fetchFriendRequests = async () => {
             ...from_user,
           };
         }
-      })
+      }),
     )
   ).filter((item): item is NonNullable<typeof item> => item != null);
 };

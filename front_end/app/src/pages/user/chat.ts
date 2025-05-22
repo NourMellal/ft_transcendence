@@ -16,7 +16,11 @@ import { PlusIcon } from '~/icons';
 import { showDialog } from '~/components/dialog';
 import { showToast } from '~/components/toast';
 import { fetchFriends } from '~/api/friends';
-import { blockedUsersStore, pushNotificationStore, userStore } from '~/app-state';
+import {
+  blockedUsersStore,
+  pushNotificationStore,
+  userStore,
+} from '~/app-state';
 import { NotificationType, NotificationData } from '~/api/notifications';
 import { navigateTo } from '~/components/app-router';
 
@@ -52,7 +56,10 @@ export default class ChatPage extends HTMLElement {
       }
     }
     if (data.type === NotificationType.NewMessage) {
-      if (this.selectedChat && this.selectedChat.UID === data.conversation_uid) {
+      if (
+        this.selectedChat &&
+        this.selectedChat.UID === data.conversation_uid
+      ) {
         const res = await fetchChatMessages(this.selectedChat.UID);
         if (res.success) {
           const newMessage = res.data.at(0);
@@ -84,7 +91,9 @@ export default class ChatPage extends HTMLElement {
       this.selectChat(this.chatUID);
     }
 
-    pushNotificationStore.get()?.addEventListener('message', this.handleNewMessage);
+    pushNotificationStore
+      .get()
+      ?.addEventListener('message', this.handleNewMessage);
   }
 
   async loadChats() {
@@ -117,7 +126,7 @@ export default class ChatPage extends HTMLElement {
         this.scrollToBottom();
         this.querySelector(`button[data-uid="${uid}"]`)?.classList.add(
           'bg-secondary',
-          'text-secondary-foreground'
+          'text-secondary-foreground',
         );
       }
     }
@@ -132,7 +141,11 @@ export default class ChatPage extends HTMLElement {
     if (res.success) {
       const currentUID = userStore.get()?.UID;
       const now = Math.floor(Date.now() / 1000);
-      const msg: ChatMessage = { user_uid: currentUID!, time: now, message_text: messageText };
+      const msg: ChatMessage = {
+        user_uid: currentUID!,
+        time: now,
+        message_text: messageText,
+      };
       this.messages = [...this.messages, msg];
       this.appendMessage(msg);
       this.newMessageText = '';
@@ -159,7 +172,8 @@ export default class ChatPage extends HTMLElement {
     if (this.messagesContainer) {
       setTimeout(() => {
         if (this.messagesContainer) {
-          this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+          this.messagesContainer.scrollTop =
+            this.messagesContainer.scrollHeight;
         }
       }, 50);
     }
@@ -170,7 +184,9 @@ export default class ChatPage extends HTMLElement {
   async renderLayout() {
     this.replaceChildren(html`
       <div class="container mx-auto mt-8">
-        <div class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden">
+        <div
+          class="flex h-[calc(100vh-8rem)] border rounded-lg overflow-hidden"
+        >
           <aside
             id="sidebar"
             class="fixed md:relative w-3/4 md:w-1/4 h-full border-r bg-card p-4 flex flex-col transform transition-transform duration-300 ease-in-out ${this
@@ -180,8 +196,14 @@ export default class ChatPage extends HTMLElement {
             style="z-index:20"
           ></aside>
 
-          <main id="main-chat" class="relative w-full md:w-3/4 flex flex-col bg-background">
-            <header id="chat-header" class="flex items-center gap-4 border-b p-4 bg-card"></header>
+          <main
+            id="main-chat"
+            class="relative w-full md:w-3/4 flex flex-col bg-background"
+          >
+            <header
+              id="chat-header"
+              class="flex items-center gap-4 border-b p-4 bg-card"
+            ></header>
             <div
               id="messages-container"
               class="flex-1 overflow-y-auto p-4 space-y-4 messages"
@@ -226,7 +248,7 @@ export default class ChatPage extends HTMLElement {
             >
               <span class="font-medium text-sm">${chat.name}</span>
             </button>
-          `
+          `,
         )}
       </div>
       <button
@@ -254,10 +276,13 @@ export default class ChatPage extends HTMLElement {
       this.createNewChat();
     });
 
-    this.querySelector('#btn-close-sidebar')?.addEventListener('click', this.toggleSidebar);
+    this.querySelector('#btn-close-sidebar')?.addEventListener(
+      'click',
+      this.toggleSidebar,
+    );
 
     this.querySelectorAll<HTMLButtonElement>('.chat-item').forEach((btn) =>
-      btn.addEventListener('click', () => this.selectChat(btn.dataset.uid!))
+      btn.addEventListener('click', () => this.selectChat(btn.dataset.uid!)),
     );
   }
 
@@ -285,37 +310,54 @@ export default class ChatPage extends HTMLElement {
         </svg>
       </button>
       <h3 class="text-lg font-semibold text-card-foreground">
-        ${this.selectedChat ? `Chat: ${this.selectedChat.name}` : 'Select a conversation'}
+        ${this.selectedChat
+          ? `Chat: ${this.selectedChat.name}`
+          : 'Select a conversation'}
       </h3>
     `);
 
     if (this.selectedChat) {
       this.headerElement.appendChild(
-        html`<button class="btn-outlined ms-auto" id="rename-chat-btn">Rename Chat</button>`
+        html`<button class="btn-outlined ms-auto" id="rename-chat-btn">
+          Rename Chat
+        </button>`,
       );
 
       const otherUserUID =
-        this.selectedChat.uid_1 === currentUID ? this.selectedChat.uid_2 : this.selectedChat.uid_1;
+        this.selectedChat.uid_1 === currentUID
+          ? this.selectedChat.uid_2
+          : this.selectedChat.uid_1;
       const isBlocked = blockedUsersStore
         .get()
         ?.some((blockedUser) => blockedUser.blocked_uid === otherUserUID);
 
       if (isBlocked) {
         this.headerElement.appendChild(html`
-          <button class="btn-primary" id="unblock-user-btn" data-uid="${otherUserUID}">
+          <button
+            class="btn-primary"
+            id="unblock-user-btn"
+            data-uid="${otherUserUID}"
+          >
             Unblock User
           </button>
         `);
       } else {
         this.headerElement.appendChild(html`
-          <button class="btn-destructive" id="block-user-btn" data-uid="${otherUserUID}">
+          <button
+            class="btn-destructive"
+            id="block-user-btn"
+            data-uid="${otherUserUID}"
+          >
             Block User
           </button>
         `);
       }
     }
 
-    this.querySelector('#btn-toggle-sidebar')?.addEventListener('click', this.toggleSidebar);
+    this.querySelector('#btn-toggle-sidebar')?.addEventListener(
+      'click',
+      this.toggleSidebar,
+    );
     this.setupHeaderActionEvents();
   }
 
@@ -327,16 +369,20 @@ export default class ChatPage extends HTMLElement {
 
     if (this.selectedChat && this.messages.length > 0) {
       this.messages.forEach((msg) => {
-        this.messagesContainer?.appendChild(this.createMessageElement(msg, currentUID));
+        this.messagesContainer?.appendChild(
+          this.createMessageElement(msg, currentUID),
+        );
       });
     } else if (this.selectedChat) {
       this.messagesContainer.appendChild(
-        html`<p class="text-center text-muted-foreground">No messages yet</p>`
+        html`<p class="text-center text-muted-foreground">No messages yet</p>`,
       );
     } else {
       this.messagesContainer.appendChild(html`
         <div class="flex-1 flex items-center justify-center">
-          <p class="text-muted-foreground">Select a conversation to start chatting</p>
+          <p class="text-muted-foreground">
+            Select a conversation to start chatting
+          </p>
         </div>
       `);
     }
@@ -353,7 +399,9 @@ export default class ChatPage extends HTMLElement {
 
     const currentUID = userStore.get()?.UID;
     const otherUserUID =
-      this.selectedChat.uid_1 === currentUID ? this.selectedChat.uid_2 : this.selectedChat.uid_1;
+      this.selectedChat.uid_1 === currentUID
+        ? this.selectedChat.uid_2
+        : this.selectedChat.uid_1;
 
     const blockedByUser = await checkIfBlockedByUser(otherUserUID);
 
@@ -385,22 +433,30 @@ export default class ChatPage extends HTMLElement {
       </form>
     `);
 
-    this.querySelector<HTMLFormElement>('#send-message-form')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const inp = this.querySelector<HTMLInputElement>('#input-message');
-      if (inp) {
-        this.newMessageText = inp.value;
-        this.sendMessage();
-      }
-    });
+    this.querySelector<HTMLFormElement>('#send-message-form')?.addEventListener(
+      'submit',
+      (e) => {
+        e.preventDefault();
+        const inp = this.querySelector<HTMLInputElement>('#input-message');
+        if (inp) {
+          this.newMessageText = inp.value;
+          this.sendMessage();
+        }
+      },
+    );
   }
 
   createMessageElement(msg: ChatMessage, currentUID: string | undefined) {
     return html`
-      <div class="flex ${msg.user_uid === currentUID ? 'justify-end' : 'justify-start'}">
+      <div
+        class="flex ${msg.user_uid === currentUID
+          ? 'justify-end'
+          : 'justify-start'}"
+      >
         <div class="max-w-xs lg:max-w-md">
           <div
-            class="text-xs text-muted-foreground mb-1 ${msg.user_uid === currentUID
+            class="text-xs text-muted-foreground mb-1 ${msg.user_uid ===
+            currentUID
               ? 'text-right'
               : 'text-left'}"
           >
@@ -431,45 +487,51 @@ export default class ChatPage extends HTMLElement {
   }
 
   setupHeaderActionEvents() {
-    this.querySelector('#block-user-btn')?.addEventListener('click', async (ev) => {
-      const uid = (ev.target as HTMLButtonElement).dataset.uid;
-      if (!uid) return;
-      const res = await blockUser(uid);
-      if (res.success) {
-        showToast({
-          type: 'success',
-          message: 'User blocked successfully',
-        });
-        await this.loadChats();
-        this.updateHeader();
-        await this.updateInputField();
-      } else {
-        showToast({
-          type: 'error',
-          message: `Failed to block user: ${res.message}`,
-        });
-      }
-    });
+    this.querySelector('#block-user-btn')?.addEventListener(
+      'click',
+      async (ev) => {
+        const uid = (ev.target as HTMLButtonElement).dataset.uid;
+        if (!uid) return;
+        const res = await blockUser(uid);
+        if (res.success) {
+          showToast({
+            type: 'success',
+            message: 'User blocked successfully',
+          });
+          await this.loadChats();
+          this.updateHeader();
+          await this.updateInputField();
+        } else {
+          showToast({
+            type: 'error',
+            message: `Failed to block user: ${res.message}`,
+          });
+        }
+      },
+    );
 
-    this.querySelector('#unblock-user-btn')?.addEventListener('click', async (ev) => {
-      const uid = (ev.target as HTMLButtonElement).dataset.uid;
-      if (!uid) return;
-      const res = await unblockUser(uid);
-      if (res.success) {
-        showToast({
-          type: 'success',
-          message: 'User unblocked successfully',
-        });
-        await this.loadChats();
-        this.updateHeader();
-        await this.updateInputField();
-      } else {
-        showToast({
-          type: 'error',
-          message: `Failed to unblock user: ${res.message}`,
-        });
-      }
-    });
+    this.querySelector('#unblock-user-btn')?.addEventListener(
+      'click',
+      async (ev) => {
+        const uid = (ev.target as HTMLButtonElement).dataset.uid;
+        if (!uid) return;
+        const res = await unblockUser(uid);
+        if (res.success) {
+          showToast({
+            type: 'success',
+            message: 'User unblocked successfully',
+          });
+          await this.loadChats();
+          this.updateHeader();
+          await this.updateInputField();
+        } else {
+          showToast({
+            type: 'error',
+            message: `Failed to unblock user: ${res.message}`,
+          });
+        }
+      },
+    );
 
     this.querySelector('#rename-chat-btn')?.addEventListener('click', () => {
       const uid = this.selectedChat?.UID;
@@ -545,14 +607,26 @@ export default class ChatPage extends HTMLElement {
             <select class="select" name="to_uid" id="user-uid">
               ${friends.success
                 ? friends.data.map(
-                    (friend) => html` <option value="${friend.UID}">${friend.username}</option> `
+                    (friend) => html`
+                      <option value="${friend.UID}">${friend.username}</option>
+                    `,
                   )
-                : html` <option value="" disabled selected>No friends available</option> `}
+                : html`
+                    <option value="" disabled selected>
+                      No friends available
+                    </option>
+                  `}
             </select>
           </div>
           <div>
             <label class="label" for="chat-message">Message</label>
-            <input id="chat-message" autocomplete="off" type="text" name="message" class="input" />
+            <input
+              id="chat-message"
+              autocomplete="off"
+              type="text"
+              name="message"
+              class="input"
+            />
           </div>
         </div>
       `,
@@ -579,7 +653,9 @@ export default class ChatPage extends HTMLElement {
   }
 
   disconnectedCallback() {
-    pushNotificationStore.get()?.removeEventListener('message', this.handleNewMessage);
+    pushNotificationStore
+      .get()
+      ?.removeEventListener('message', this.handleNewMessage);
   }
 }
 

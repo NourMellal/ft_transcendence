@@ -4,7 +4,9 @@ import { html } from '~/lib/html';
 class AppLoader extends HTMLElement {
   render() {
     this.replaceChildren(html`
-      <div class="z-50 fixed inset-0 bg-background flex items-center justify-center">
+      <div
+        class="z-50 fixed inset-0 bg-background flex items-center justify-center"
+      >
         <div class="flex flex-col gap-2">
           ${LoadingIcon}
           <p>Loading...</p>
@@ -23,11 +25,14 @@ class AppLoader extends HTMLElement {
   }
 
   remove() {
-    const animation = this.firstElementChild?.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: 300,
-      easing: 'ease-in-out',
-      fill: 'forwards',
-    });
+    const animation = this.firstElementChild?.animate(
+      [{ opacity: 1 }, { opacity: 0 }],
+      {
+        duration: 300,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      },
+    );
 
     if (animation) {
       animation.onfinish = () => {

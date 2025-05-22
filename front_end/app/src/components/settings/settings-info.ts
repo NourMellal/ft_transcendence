@@ -60,7 +60,10 @@ class ProfileInfo extends HTMLElement {
               <div class="space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <label for="username-input" class="label">Username</label>
-                  <span id="username-error" class="text-sm text-destructive"></span>
+                  <span
+                    id="username-error"
+                    class="text-sm text-destructive"
+                  ></span>
                 </div>
                 <input
                   name="username"
@@ -71,7 +74,10 @@ class ProfileInfo extends HTMLElement {
                   value="${userStore.get()?.username}"
                   autocomplete="off"
                 />
-                <p id="username-availability" class="text-xs text-muted-foreground">
+                <p
+                  id="username-availability"
+                  class="text-xs text-muted-foreground"
+                >
                   Your unique display name.
                 </p>
               </div>
@@ -87,11 +93,17 @@ class ProfileInfo extends HTMLElement {
                 >
 ${userStore.get()?.bio}</textarea
                 >
-                <p class="text-xs text-muted-foreground">A brief description about you.</p>
+                <p class="text-xs text-muted-foreground">
+                  A brief description about you.
+                </p>
               </div>
             </div>
             <div class="card-footer p-6 bg-muted/50 border-t flex justify-end">
-              <button type="submit" id="save-profile-btn" class="btn btn-primary">
+              <button
+                type="submit"
+                id="save-profile-btn"
+                class="btn btn-primary"
+              >
                 Save Changes
               </button>
             </div>
@@ -155,13 +167,21 @@ ${userStore.get()?.bio}</textarea
   };
 
   setup() {
-    const removeAvatarBtn = this.querySelector<HTMLButtonElement>('#remove-avatar-btn')!;
-    const usernameInput = this.querySelector<HTMLInputElement>("input[name='username']")!;
-    const changeAvatarBtn = this.querySelector<HTMLButtonElement>('#change-avatar-btn')!;
+    const removeAvatarBtn =
+      this.querySelector<HTMLButtonElement>('#remove-avatar-btn')!;
+    const usernameInput = this.querySelector<HTMLInputElement>(
+      "input[name='username']",
+    )!;
+    const changeAvatarBtn =
+      this.querySelector<HTMLButtonElement>('#change-avatar-btn')!;
     const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
-    const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
+    const avatarPreview =
+      this.querySelector<HTMLImageElement>('#avatar-preview')!;
 
-    if (userStore.get()?.picture_url.split('?')[0] !== '/static/profile/default.jpg') {
+    if (
+      userStore.get()?.picture_url.split('?')[0] !==
+      '/static/profile/default.jpg'
+    ) {
       removeAvatarBtn.addEventListener('click', this.removeAvatar);
     } else {
       removeAvatarBtn.disabled = true;
@@ -183,7 +203,8 @@ ${userStore.get()?.bio}</textarea
       const errorSpan = this.querySelector<HTMLSpanElement>('#username-error')!;
       errorSpan.innerText = '';
 
-      const saveBtn = this.querySelector<HTMLButtonElement>('#save-profile-btn')!;
+      const saveBtn =
+        this.querySelector<HTMLButtonElement>('#save-profile-btn')!;
       this.debounceTimeout = window.setTimeout(async () => {
         if (e.key === 'Enter') return;
         if (!target.value || target.value === userStore.get()?.username) {
@@ -193,10 +214,13 @@ ${userStore.get()?.bio}</textarea
         }
 
         try {
-          const res = await fetchWithAuth(`/api/user/namecheck?username=${target.value}`, {
-            method: 'GET',
-            cache: 'no-store',
-          });
+          const res = await fetchWithAuth(
+            `/api/user/namecheck?username=${target.value}`,
+            {
+              method: 'GET',
+              cache: 'no-store',
+            },
+          );
           if (!res.ok) {
             errorSpan.innerText = `Username already taken`;
             saveBtn.disabled = true;
@@ -211,7 +235,8 @@ ${userStore.get()?.bio}</textarea
       }, 500);
     });
 
-    const userDetailsForm = this.querySelector<HTMLFormElement>('#user-details-form')!;
+    const userDetailsForm =
+      this.querySelector<HTMLFormElement>('#user-details-form')!;
     userDetailsForm.addEventListener('submit', this.updateProfile);
   }
 

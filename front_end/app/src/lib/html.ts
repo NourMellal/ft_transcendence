@@ -18,7 +18,10 @@ type NodeMarkerInfo = {
   fragment: DocumentFragment;
 };
 
-export const html = (strings: TemplateStringsArray, ...values: unknown[]): DocumentFragment => {
+export const html = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): DocumentFragment => {
   const nodesToInsertLater: Array<NodeMarkerInfo> = [];
   const fragmentMarkerAttribute = 'data-fragment-marker';
 
@@ -31,7 +34,10 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
     const isDocumentFragment = value instanceof DocumentFragment;
     const isNodeArray =
       Array.isArray(value) &&
-      value.every((item) => item instanceof HTMLElement || item instanceof DocumentFragment);
+      value.every(
+        (item) =>
+          item instanceof HTMLElement || item instanceof DocumentFragment,
+      );
 
     if (isHTMLElement || isDocumentFragment || isNodeArray) {
       const marker = `fragment-${i}`;
@@ -59,7 +65,9 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
   const result = template.content;
 
   nodesToInsertLater.forEach(({ marker, fragment: fragmentToInsert }) => {
-    const placeholder = result.querySelector(`[${fragmentMarkerAttribute}="${marker}"]`);
+    const placeholder = result.querySelector(
+      `[${fragmentMarkerAttribute}="${marker}"]`,
+    );
     if (placeholder) {
       placeholder.replaceWith(fragmentToInsert);
     } else {

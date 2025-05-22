@@ -13,7 +13,9 @@ class NotificationNavMenu extends HTMLElement {
   cleanupCallbacks: Function[] = [];
 
   setNotificationCount(count: number) {
-    const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
+    const notificationCount = this.querySelector<HTMLSpanElement>(
+      '#notification-count',
+    );
     if (notificationCount) {
       notificationCount.textContent = count.toString();
       notificationCount.style.display = count > 0 ? 'flex' : 'none';
@@ -37,7 +39,9 @@ class NotificationNavMenu extends HTMLElement {
           id="notification-menu"
           class="hidden fixed sm:absolute right-0 mt-2 w-[280px] sm:w-[320px] max-w-[90vw] rounded-md border border-border bg-popover text-popover-foreground shadow-md z-40"
         >
-          <div class="flex justify-between items-center px-4 py-2 border-b border-muted">
+          <div
+            class="flex justify-between items-center px-4 py-2 border-b border-muted"
+          >
             <h4 class="text-sm font-semibold">Notifications</h4>
             <button
               id="mark-all-as-read-btn"
@@ -64,16 +68,20 @@ class NotificationNavMenu extends HTMLElement {
                         </p>
                       </button>
                     `;
-                  })
+                  }),
                 )
               : html`
                   <div class="flex items-center justify-center p-4">
-                    <p class="text-sm text-muted-foreground">No notifications</p>
+                    <p class="text-sm text-muted-foreground">
+                      No notifications
+                    </p>
                   </div>
                 `}
           </div>
           <div class="border-t border-muted px-4 py-2 text-center">
-            <a href="/notifications" class="text-primary hover:underline text-sm"
+            <a
+              href="/notifications"
+              class="text-primary hover:underline text-sm"
               >View all notifications</a
             >
           </div>
@@ -81,11 +89,14 @@ class NotificationNavMenu extends HTMLElement {
       </div>
     `);
     this.setup();
-    this.setNotificationCount(notificationsStore.get()?.filter((n) => !n.is_read).length || 0);
+    this.setNotificationCount(
+      notificationsStore.get()?.filter((n) => !n.is_read).length || 0,
+    );
   }
 
   toggle = () => {
-    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+    const notificationMenu =
+      this.querySelector<HTMLDivElement>('#notification-menu');
     if (!notificationMenu) return;
     if (notificationMenu.classList.contains('hidden')) {
       this.open();
@@ -95,7 +106,8 @@ class NotificationNavMenu extends HTMLElement {
   };
 
   open = () => {
-    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+    const notificationMenu =
+      this.querySelector<HTMLDivElement>('#notification-menu');
     if (!notificationMenu) return;
     notificationMenu.classList.remove('hidden');
     notificationMenu.animate(
@@ -107,12 +119,13 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
   };
 
   close = () => {
-    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+    const notificationMenu =
+      this.querySelector<HTMLDivElement>('#notification-menu');
     if (!notificationMenu) return;
     const animation = notificationMenu.animate(
       [
@@ -123,19 +136,22 @@ class NotificationNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
     animation.onfinish = () => notificationMenu.classList.add('hidden');
   };
 
   clickOutsideHandler = (event: MouseEvent) => {
-    const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
-    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
+    const notificationBtn =
+      this.querySelector<HTMLButtonElement>('#notification-btn');
+    const notificationMenu =
+      this.querySelector<HTMLDivElement>('#notification-menu');
     const target = event.target as HTMLElement;
 
     const isClickableWithin =
       notificationMenu?.contains(target) &&
-      (target instanceof HTMLAnchorElement || target instanceof HTMLButtonElement);
+      (target instanceof HTMLAnchorElement ||
+        target instanceof HTMLButtonElement);
     const shouldClose =
       !notificationMenu?.classList.contains('hidden') &&
       !notificationMenu?.contains(target) &&
@@ -159,7 +175,9 @@ class NotificationNavMenu extends HTMLElement {
   }
 
   private updateNotificationCount(count: number) {
-    const notificationCount = this.querySelector<HTMLSpanElement>('#notification-count');
+    const notificationCount = this.querySelector<HTMLSpanElement>(
+      '#notification-count',
+    );
     if (notificationCount) {
       notificationCount.textContent = count.toString();
       notificationCount.style.display = count > 0 ? 'flex' : 'none';
@@ -168,9 +186,13 @@ class NotificationNavMenu extends HTMLElement {
 
   private setup() {
     this.cleanup();
-    const notificationBtn = this.querySelector<HTMLButtonElement>('#notification-btn');
-    const notificationMenu = this.querySelector<HTMLDivElement>('#notification-menu');
-    const markAllBtn = this.querySelector<HTMLButtonElement>('#mark-all-as-read-btn');
+    const notificationBtn =
+      this.querySelector<HTMLButtonElement>('#notification-btn');
+    const notificationMenu =
+      this.querySelector<HTMLDivElement>('#notification-menu');
+    const markAllBtn = this.querySelector<HTMLButtonElement>(
+      '#mark-all-as-read-btn',
+    );
 
     notificationBtn?.addEventListener('click', this.toggle);
     document.addEventListener('click', this.clickOutsideHandler);
@@ -179,7 +201,9 @@ class NotificationNavMenu extends HTMLElement {
     markAllBtn?.addEventListener('click', async () => {
       const notifications = notificationsStore.get();
       if (!notifications || notifications.length === 0) return;
-      const unreadUids = notifications.filter((n) => !n.is_read).map((n) => n.notification_uid);
+      const unreadUids = notifications
+        .filter((n) => !n.is_read)
+        .map((n) => n.notification_uid);
       if (unreadUids.length === 0) return;
       const result = await markNotificationAsRead(unreadUids.join(';'));
       if (result.success) {
@@ -200,7 +224,9 @@ class NotificationNavMenu extends HTMLElement {
     // Mark individual notification as read
     notificationMenu?.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
-      const btn = target.closest('button[data-uid]') as HTMLButtonElement | null;
+      const btn = target.closest(
+        'button[data-uid]',
+      ) as HTMLButtonElement | null;
       if (btn && btn.dataset.uid) {
         const uid = btn.dataset.uid;
         const result = await markNotificationAsRead(uid);
@@ -210,7 +236,9 @@ class NotificationNavMenu extends HTMLElement {
           if (newNotifications.success) {
             notificationsStore.set(newNotifications.data);
             this.updateNotificationItemAsRead(uid);
-            const unreadCount = newNotifications.data.filter((n: any) => !n.read).length;
+            const unreadCount = newNotifications.data.filter(
+              (n: any) => !n.read,
+            ).length;
             this.updateNotificationCount(unreadCount);
           } else {
             showToast({ type: 'error', message: newNotifications.message });
@@ -224,7 +252,9 @@ class NotificationNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(notificationsStore.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(
+      notificationsStore.subscribe(() => this.render()),
+    );
   }
 
   private cleanup() {

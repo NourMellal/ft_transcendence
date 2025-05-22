@@ -6,7 +6,11 @@ import '~/components/app-router';
 
 import { closeNotificationSocket } from './api/notifications';
 import { setupUser } from './api/user';
-import { friendRequestsStore, notificationsStore, userStore } from './app-state';
+import {
+  friendRequestsStore,
+  notificationsStore,
+  userStore,
+} from './app-state';
 import { html } from './lib/html';
 
 function initTheme() {

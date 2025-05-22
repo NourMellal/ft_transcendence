@@ -27,7 +27,8 @@ export default class LeaderboardPage extends HTMLElement {
         this.leaderboardEntries = result.data;
         this.isLastPage = result.data.length < this.itemsPerPage;
       } else {
-        this.errorMessage = result.message || 'Failed to load leaderboard data.';
+        this.errorMessage =
+          result.message || 'Failed to load leaderboard data.';
         this.leaderboardEntries = [];
       }
     } catch (error) {
@@ -49,78 +50,98 @@ export default class LeaderboardPage extends HTMLElement {
         ${this.isLoading
           ? html`<div class="text-center p-4">Loading...</div>`
           : this.errorMessage
-          ? html`<div class="text-red-500 p-4 rounded-md border border-red-500">
-              ${this.errorMessage}
-            </div>`
-          : this.leaderboardEntries.length === 0 && this.currentPage === 0
-          ? html`
-              <div class="text-muted-foreground p-4 rounded-md border">No data available.</div>
-            `
-          : html`
-              ${this.leaderboardEntries.length > 0
-                ? html` <div class="border rounded-lg overflow-hidden mb-4">
-                    <table class="w-full caption-bottom text-sm">
-                      <thead class="[&_tr]:border-b">
-                        <tr class="border-b transition-colors hover:bg-muted/50">
-                          <th
-                            class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]"
-                          >
-                            Rank
-                          </th>
-                          <th
-                            class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
-                          >
-                            Player
-                          </th>
-                          <th
-                            class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
-                          >
-                            Wins
-                          </th>
-                          <th
-                            class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
-                          >
-                            Losses
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="[&_tr:last-child]:border-0">
-                        ${this.leaderboardEntries.map(
-                          (player) => html`
-                            <tr class="border-b transition-colors hover:bg-muted/50">
-                              <td class="p-4 align-middle font-medium">${player.rank}</td>
-                              <td class="p-4 align-middle">${player.username}</td>
-                              <td class="p-4 align-middle text-right">${player.wins}</td>
-                              <td class="p-4 align-middle text-right">${player.losses}</td>
+            ? html`<div
+                class="text-red-500 p-4 rounded-md border border-red-500"
+              >
+                ${this.errorMessage}
+              </div>`
+            : this.leaderboardEntries.length === 0 && this.currentPage === 0
+              ? html`
+                  <div class="text-muted-foreground p-4 rounded-md border">
+                    No data available.
+                  </div>
+                `
+              : html`
+                  ${this.leaderboardEntries.length > 0
+                    ? html` <div class="border rounded-lg overflow-hidden mb-4">
+                        <table class="w-full caption-bottom text-sm">
+                          <thead class="[&_tr]:border-b">
+                            <tr
+                              class="border-b transition-colors hover:bg-muted/50"
+                            >
+                              <th
+                                class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]"
+                              >
+                                Rank
+                              </th>
+                              <th
+                                class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+                              >
+                                Player
+                              </th>
+                              <th
+                                class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
+                              >
+                                Wins
+                              </th>
+                              <th
+                                class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
+                              >
+                                Losses
+                              </th>
                             </tr>
-                          `
-                        )}
-                      </tbody>
-                    </table>
-                  </div>`
-                : html`
-                    <div class="text-muted-foreground p-4 rounded-md border">
-                      No further data available on this page.
-                    </div>
-                  `}
-              <div class="flex items-center justify-end space-x-2 mt-4">
-                <button
-                  id="prev-page"
-                  class="btn btn-sm btn-outlined"
-                  ${isFirstPage ? 'disabled' : ''}
-                >
-                  Previous
-                </button>
-                <span class="text-sm text-muted-foreground"> Page ${this.currentPage + 1} </span>
-                <button
-                  id="next-page"
-                  class="btn btn-sm btn-outlined"
-                  ${this.isLastPage ? 'disabled' : ''}
-                >
-                  Next
-                </button>
-              </div>
-            `}
+                          </thead>
+                          <tbody class="[&_tr:last-child]:border-0">
+                            ${this.leaderboardEntries.map(
+                              (player) => html`
+                                <tr
+                                  class="border-b transition-colors hover:bg-muted/50"
+                                >
+                                  <td class="p-4 align-middle font-medium">
+                                    ${player.rank}
+                                  </td>
+                                  <td class="p-4 align-middle">
+                                    ${player.username}
+                                  </td>
+                                  <td class="p-4 align-middle text-right">
+                                    ${player.wins}
+                                  </td>
+                                  <td class="p-4 align-middle text-right">
+                                    ${player.losses}
+                                  </td>
+                                </tr>
+                              `,
+                            )}
+                          </tbody>
+                        </table>
+                      </div>`
+                    : html`
+                        <div
+                          class="text-muted-foreground p-4 rounded-md border"
+                        >
+                          No further data available on this page.
+                        </div>
+                      `}
+                  <div class="flex items-center justify-end space-x-2 mt-4">
+                    <button
+                      id="prev-page"
+                      class="btn btn-sm btn-outlined"
+                      ${isFirstPage ? 'disabled' : ''}
+                    >
+                      Previous
+                    </button>
+                    <span class="text-sm text-muted-foreground">
+                      Page ${this.currentPage + 1}
+                    </span>
+                    <button
+                      id="next-page"
+                      class="btn btn-sm btn-outlined"
+                      ${this.isLastPage ? 'disabled' : ''}
+                    >
+                      Next
+                    </button>
+                  </div>
+                `}
       </div>
     `);
     this.setupEventListeners();

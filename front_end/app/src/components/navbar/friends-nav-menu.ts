@@ -2,7 +2,11 @@ import { showToast } from '~/components/toast';
 import { html } from '~/lib/html';
 import { UsersIcon } from '~/icons';
 import { friendRequestsStore } from '~/app-state';
-import { acceptFriendRequest, denyFriendRequest, fetchFriendRequests } from '~/api/friends';
+import {
+  acceptFriendRequest,
+  denyFriendRequest,
+  fetchFriendRequests,
+} from '~/api/friends';
 
 class FriendsNavMenu extends HTMLElement {
   cleanupCallbacks = new Array<Function>();
@@ -73,7 +77,9 @@ class FriendsNavMenu extends HTMLElement {
             <ul class="divide-y divide-muted max-h-60 overflow-y-auto">
               ${!requests || requests?.length === 0
                 ? html`
-                    <li class="px-4 py-3 text-center text-sm text-muted-foreground">
+                    <li
+                      class="px-4 py-3 text-center text-sm text-muted-foreground"
+                    >
                       No pending friend requests
                     </li>
                   `
@@ -81,7 +87,8 @@ class FriendsNavMenu extends HTMLElement {
                     (request) => html`
                       <li class="flex items-center px-4 py-3 hover:bg-muted/50">
                         <img
-                          src="/api/${request.picture_url || 'static/profile/default.jpg'}"
+                          src="/api/${request.picture_url ||
+                          'static/profile/default.jpg'}"
                           class="w-8 h-8 rounded-full object-cover"
                         />
                         <div class="ml-3 flex-1 min-w-0">
@@ -106,7 +113,7 @@ class FriendsNavMenu extends HTMLElement {
                           </button>
                         </div>
                       </li>
-                    `
+                    `,
                   )}
             </ul>
           `}
@@ -177,7 +184,7 @@ class FriendsNavMenu extends HTMLElement {
           { opacity: 0, transform: 'translateY(-10px)' },
           { opacity: 1, transform: 'translateY(0)' },
         ],
-        animOpts
+        animOpts,
       );
     } else {
       this.close();
@@ -185,7 +192,8 @@ class FriendsNavMenu extends HTMLElement {
   };
 
   private close = () => {
-    if (!this.friendsMenu || this.friendsMenu.classList.contains('hidden')) return;
+    if (!this.friendsMenu || this.friendsMenu.classList.contains('hidden'))
+      return;
 
     const animation = this.friendsMenu.animate(
       [
@@ -196,7 +204,7 @@ class FriendsNavMenu extends HTMLElement {
         duration: 200,
         easing: 'ease-in-out',
         fill: 'forwards',
-      }
+      },
     );
     animation.onfinish = () => {
       if (this.friendsMenu) {
@@ -207,7 +215,9 @@ class FriendsNavMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.cleanupCallbacks.push(friendRequestsStore.subscribe(() => this.render()));
+    this.cleanupCallbacks.push(
+      friendRequestsStore.subscribe(() => this.render()),
+    );
   }
 
   disconnectedCallback() {

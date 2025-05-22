@@ -25,10 +25,13 @@ class MobileNavigation extends HTMLElement {
         <div class="flex flex-col gap-2">
           ${pages.map(
             (page) => html`
-              <a class="focus:bg-muted py-2 px-4 -mx-4 transition-colors" href="${page.href}">
+              <a
+                class="focus:bg-muted py-2 px-4 -mx-4 transition-colors"
+                href="${page.href}"
+              >
                 ${page.name}
               </a>
-            `
+            `,
           )}
         </div>
       </div>
@@ -37,7 +40,8 @@ class MobileNavigation extends HTMLElement {
   }
 
   toggle = () => {
-    const mobileMenuElement = this.querySelector<HTMLDivElement>('#mobile-menu');
+    const mobileMenuElement =
+      this.querySelector<HTMLDivElement>('#mobile-menu');
 
     if (!mobileMenuElement) return;
 
@@ -56,7 +60,7 @@ class MobileNavigation extends HTMLElement {
           { opacity: 0, transform: 'translateX(-100%)' },
           { opacity: 1, transform: 'translateX(0)' },
         ],
-        animationOpts
+        animationOpts,
       );
     } else {
       const anim = mobileMenuElement.animate(
@@ -64,7 +68,7 @@ class MobileNavigation extends HTMLElement {
           { opacity: 1, transform: 'translateX(0)' },
           { opacity: 0, transform: 'translateX(-100%)' },
         ],
-        animationOpts
+        animationOpts,
       );
 
       anim.onfinish = () => {
@@ -74,9 +78,14 @@ class MobileNavigation extends HTMLElement {
   };
 
   setup() {
-    this.querySelector('#close-menu-btn')?.addEventListener('click', this.toggle);
+    this.querySelector('#close-menu-btn')?.addEventListener(
+      'click',
+      this.toggle,
+    );
 
-    document.querySelector('navigation-bar #open-menu-btn')?.addEventListener('click', this.toggle);
+    document
+      .querySelector('navigation-bar #open-menu-btn')
+      ?.addEventListener('click', this.toggle);
   }
 
   connectedCallback() {

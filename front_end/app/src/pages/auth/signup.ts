@@ -9,7 +9,8 @@ import { userStore } from '~/app-state';
 import { LockIcon } from '~/icons';
 
 export default class SignupPage extends HTMLElement {
-  intended = new URLSearchParams(window.location.search).get('intended') ?? '/profile';
+  intended =
+    new URLSearchParams(window.location.search).get('intended') ?? '/profile';
 
   handleSumbit = async (e: SubmitEvent) => {
     const form = (e.target as HTMLElement).closest('form');
@@ -19,13 +20,15 @@ export default class SignupPage extends HTMLElement {
       const formData = new FormData(form);
 
       // Remove picture field if no image was selected
-      const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
+      const avatarInput =
+        this.querySelector<HTMLInputElement>('#avatar-input')!;
       if (!avatarInput.files?.length) {
         formData.delete('picture');
       }
 
       if (
-        formData.get('password')?.toString() !== formData.get('password_confirmation')?.toString()
+        formData.get('password')?.toString() !==
+        formData.get('password_confirmation')?.toString()
       ) {
         showToast({
           type: 'error',
@@ -90,10 +93,18 @@ export default class SignupPage extends HTMLElement {
                   name="picture"
                   accept="image/jpeg, image/png, image/webp"
                 />
-                <button type="button" id="change-avatar-btn" class="btn btn-outlined">
+                <button
+                  type="button"
+                  id="change-avatar-btn"
+                  class="btn btn-outlined"
+                >
                   Select
                 </button>
-                <button type="button" id="remove-avatar-btn" class="btn btn-destructive">
+                <button
+                  type="button"
+                  id="remove-avatar-btn"
+                  class="btn btn-destructive"
+                >
                   Remove
                 </button>
               </div>
@@ -124,7 +135,9 @@ export default class SignupPage extends HTMLElement {
               />
             </div>
             <div>
-              <label for="user-password-confirmation">password confirmation</label>
+              <label for="user-password-confirmation"
+                >password confirmation</label
+              >
               <input
                 name="password_confirmation"
                 class="input"
@@ -150,10 +163,13 @@ export default class SignupPage extends HTMLElement {
   setup() {
     const signinForm = this.querySelector('form');
     const userInput = this.querySelector<HTMLInputElement>('#user-name')!;
-    const changeAvatarBtn = this.querySelector<HTMLButtonElement>('#change-avatar-btn')!;
+    const changeAvatarBtn =
+      this.querySelector<HTMLButtonElement>('#change-avatar-btn')!;
     const avatarInput = this.querySelector<HTMLInputElement>('#avatar-input')!;
-    const avatarPreview = this.querySelector<HTMLImageElement>('#avatar-preview')!;
-    const removeAvatarBtn = this.querySelector<HTMLButtonElement>('#remove-avatar-btn')!;
+    const avatarPreview =
+      this.querySelector<HTMLImageElement>('#avatar-preview')!;
+    const removeAvatarBtn =
+      this.querySelector<HTMLButtonElement>('#remove-avatar-btn')!;
 
     // Initially hide the remove button
     removeAvatarBtn.style.display = 'none';

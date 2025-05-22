@@ -36,7 +36,9 @@ export const fetchUserChats = async () => {
 };
 
 export const fetchChatMessages = async (uid: string, page = 0) => {
-  const response = await fetchWithAuth(`/api/chat/read?uid=${uid}&page=${page}`);
+  const response = await fetchWithAuth(
+    `/api/chat/read?uid=${uid}&page=${page}`,
+  );
 
   if (response.ok) {
     await markChatNotificationsAsRead(uid);
@@ -47,7 +49,7 @@ export const fetchChatMessages = async (uid: string, page = 0) => {
         messages.map(async (msg) => ({
           ...msg,
           username: (await fetchUserInfo(msg.user_uid))?.username || 'Unknown',
-        }))
+        })),
       ),
     };
   }

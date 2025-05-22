@@ -93,7 +93,7 @@ class UserNavMenu extends HTMLElement {
             duration: 200,
             easing: 'ease-in-out',
             fill: 'forwards',
-          }
+          },
         );
 
         animation.onfinish = () => userMenu.classList.add('hidden');
@@ -119,7 +119,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        }
+        },
       );
       userMenu.classList.remove('hidden');
     } else {
@@ -132,7 +132,7 @@ class UserNavMenu extends HTMLElement {
           duration: 200,
           easing: 'ease-in-out',
           fill: 'forwards',
-        }
+        },
       );
       animation.onfinish = () => userMenu.classList.add('hidden');
     }
@@ -140,11 +140,17 @@ class UserNavMenu extends HTMLElement {
 
   setup() {
     // user menu
-    this.querySelector('#user-menu-btn')?.addEventListener('click', this.toggleUserMenu);
+    this.querySelector('#user-menu-btn')?.addEventListener(
+      'click',
+      this.toggleUserMenu,
+    );
     document.addEventListener('click', this.closeUserMenu);
 
     // logout btn
-    this.querySelector('#logout-btn')?.addEventListener('click', this.handleLogout);
+    this.querySelector('#logout-btn')?.addEventListener(
+      'click',
+      this.handleLogout,
+    );
   }
 
   connectedCallback() {

@@ -29,7 +29,8 @@ export class GoogleSignInButton extends HTMLElement {
 
       const params = {
         state,
-        client_id: '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
+        client_id:
+          '752517493811-3uehg85g0ienmif5frk1c0lpiq15rkqm.apps.googleusercontent.com',
         redirect_uri: 'https://transcendence.fr/api/OAuth/code',
         scope:
           'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',

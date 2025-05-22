@@ -7,7 +7,9 @@ import { html } from '~/lib/html';
 export default class TotpVerify extends HTMLElement {
   render() {
     this.replaceChildren(html`
-      <div class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div
+        class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      >
         <div
           id="card"
           class="opacity-0 relative border bg-background text-foreground rounded-lg p-6 max-w-sm w-full shadow-lg space-y-4 md:max-w-md"
@@ -33,10 +35,16 @@ export default class TotpVerify extends HTMLElement {
               />
             </div>
             <div class="flex gap-2">
-              <button id="cancel-btn" type="button" class="btn btn-destructive w-full">
+              <button
+                id="cancel-btn"
+                type="button"
+                class="btn btn-destructive w-full"
+              >
                 Cancel
               </button>
-              <button type="submit" class="btn btn-primary w-full">Verify</button>
+              <button type="submit" class="btn btn-primary w-full">
+                Verify
+              </button>
             </div>
           </form>
         </div>
@@ -59,7 +67,7 @@ export default class TotpVerify extends HTMLElement {
         duration: 300,
         easing: 'ease-out',
         fill: 'forwards',
-      }
+      },
     );
     form.querySelector('input')!.focus();
 
@@ -71,11 +79,14 @@ export default class TotpVerify extends HTMLElement {
       e.preventDefault();
       const target = e.target as HTMLFormElement;
       const url = new URL(window.location.href);
-      const res = await fetchWithAuth(`/api/2FA/verify?state=${url.searchParams.get('state')}`, {
-        method: 'POST',
-        body: new FormData(target),
-        cache: 'no-store',
-      });
+      const res = await fetchWithAuth(
+        `/api/2FA/verify?state=${url.searchParams.get('state')}`,
+        {
+          method: 'POST',
+          body: new FormData(target),
+          cache: 'no-store',
+        },
+      );
 
       if (res.ok) {
         await setupUser();

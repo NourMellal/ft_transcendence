@@ -69,7 +69,7 @@ class ToastContainer extends HTMLElement {
       {
         duration: this.transitionDuration,
         easing: 'ease-out',
-      }
+      },
     );
 
     leaveAnim.onfinish = () => {
@@ -82,7 +82,8 @@ class ToastContainer extends HTMLElement {
     const toastElement = document.createElement('div');
     toastElement.dataset.id = toast.id;
 
-    const variant: ToastVariant = toast.type === 'error' ? 'destructive' : 'default';
+    const variant: ToastVariant =
+      toast.type === 'error' ? 'destructive' : 'default';
     toastElement.className = this.getToastClass(variant);
 
     const contentDiv = document.createElement('div');
@@ -107,7 +108,7 @@ class ToastContainer extends HTMLElement {
       {
         duration: this.transitionDuration,
         easing: 'ease-out',
-      }
+      },
     );
   }
 
@@ -115,7 +116,8 @@ class ToastContainer extends HTMLElement {
     const base = `group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg`;
     const themes: Record<ToastVariant, string> = {
       default: 'border bg-background text-foreground',
-      destructive: 'border-destructive bg-destructive text-destructive-foreground',
+      destructive:
+        'border-destructive bg-destructive text-destructive-foreground',
     };
     return `${base} ${themes[variant]}`;
   }

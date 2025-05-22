@@ -1,6 +1,14 @@
-import { blockedUsersStore, friendRequestsStore, notificationsStore, userStore } from '~/app-state';
+import {
+  blockedUsersStore,
+  friendRequestsStore,
+  notificationsStore,
+  userStore,
+} from '~/app-state';
 import { fetchFriendRequests } from './friends';
-import { fetchUndreadNotifications, setupNotificationsSocket } from './notifications';
+import {
+  fetchUndreadNotifications,
+  setupNotificationsSocket,
+} from './notifications';
 import { showToast } from '~/components/toast';
 import { fetchWithAuth } from './auth';
 import { fetchBlockedUsers } from './chat';

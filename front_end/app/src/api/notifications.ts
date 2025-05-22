@@ -1,4 +1,8 @@
-import { friendRequestsStore, notificationsStore, pushNotificationStore } from '~/app-state';
+import {
+  friendRequestsStore,
+  notificationsStore,
+  pushNotificationStore,
+} from '~/app-state';
 import { fetchWithAuth } from './auth';
 import { fetchFriendRequests } from './friends';
 import { fetchUserInfo } from './user';
@@ -49,7 +53,9 @@ export const setupNotificationsSocket = async () => {
   const notificationSound = new Audio('/notification.mp3');
   let pingInterval: NodeJS.Timeout;
 
-  const ticket = await (await fetchWithAuth('/api/notifications/ticket')).text();
+  const ticket = await (
+    await fetchWithAuth('/api/notifications/ticket')
+  ).text();
 
   const ws = new WebSocket('/api/notifications/push_notification', [ticket]);
   pushNotificationStore.set(ws);
@@ -68,7 +74,10 @@ export const setupNotificationsSocket = async () => {
   ws.addEventListener('message', async (event) => {
     try {
       const data = JSON.parse(event.data) as NotificationData;
-      if (data.type === NotificationType.NewFriendRequest || data.type === NotificationType.Poke) {
+      if (
+        data.type === NotificationType.NewFriendRequest ||
+        data.type === NotificationType.Poke
+      ) {
         try {
           notificationSound.play();
         } catch {}
@@ -83,7 +92,9 @@ export const setupNotificationsSocket = async () => {
           friendRequestsStore.set(await fetchFriendRequests());
           break;
         default:
-          notificationsStore.set((await fetchUndreadNotifications()).data || null);
+          notificationsStore.set(
+            (await fetchUndreadNotifications()).data || null,
+          );
           break;
       }
     } catch {
@@ -231,7 +242,8 @@ export const getNotificationTitle = (type: NotificationType) => {
 };
 
 export const getNotificationMessage = async (data: NotificationData) => {
-  const fromUsername = (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
+  const fromUsername =
+    (await fetchUserInfo(data.from_uid))?.username || 'an unknown user';
   switch (data.type) {
     case NotificationType.NewFriendRequest:
       return `${fromUsername} sent you a friend request`;
@@ -263,19 +275,22 @@ export const markChatNotificationsAsRead = async (uid: string) => {
   if (allNotifications.success) {
     const chatNotifications = allNotifications.data.filter(
       (notification) =>
-        notification.type === NotificationType.NewMessage && notification.conversation_uid === uid
+        notification.type === NotificationType.NewMessage &&
+        notification.conversation_uid === uid,
     );
 
     await Promise.all(
       chatNotifications.map(
-        async (notification) => await markNotificationAsRead(notification.notification_uid)
-      )
+        async (notification) =>
+          await markNotificationAsRead(notification.notification_uid),
+      ),
     );
     notificationsStore.set(
       allNotifications.data.filter(
         (notification) =>
-          notification.type !== NotificationType.NewMessage || notification.conversation_uid !== uid
-      )
+          notification.type !== NotificationType.NewMessage ||
+          notification.conversation_uid !== uid,
+      ),
     );
     return {
       success: true,

@@ -26,7 +26,10 @@ export default class NotificationsPage extends HTMLElement {
   async renderStructure() {
     this.replaceChildren(html`
       <div class="container mt-8">
-        <button data-action="delete-all-notifications" class="btn-destructive mb-4">
+        <button
+          data-action="delete-all-notifications"
+          class="btn-destructive mb-4"
+        >
           Delete All Notifications
         </button>
         <div id="tabs-container" class="flex border-b border-border mb-6"></div>
@@ -63,7 +66,8 @@ export default class NotificationsPage extends HTMLElement {
     this.tabsElement.innerHTML = '';
     this.tabsElement.append(html`
       <button
-        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'all'
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab ===
+        'all'
           ? 'border-primary text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground'}"
         data-tab="all"
@@ -79,7 +83,8 @@ export default class NotificationsPage extends HTMLElement {
         </span>
       </button>
       <button
-        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'unread'
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab ===
+        'unread'
           ? 'border-primary text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground'}"
         data-tab="unread"
@@ -95,7 +100,8 @@ export default class NotificationsPage extends HTMLElement {
         </span>
       </button>
       <button
-        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab === 'read'
+        class="px-4 py-2 text-sm font-medium border-b-2 ${this.activeTab ===
+        'read'
           ? 'border-primary text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground'}"
         data-tab="read"
@@ -114,7 +120,9 @@ export default class NotificationsPage extends HTMLElement {
 
     this.tabsElement.querySelectorAll('button[data-tab]').forEach((btn) => {
       btn.addEventListener('click', (e: Event) => {
-        const tab = (e.currentTarget as HTMLElement).getAttribute('data-tab') as Tab;
+        const tab = (e.currentTarget as HTMLElement).getAttribute(
+          'data-tab',
+        ) as Tab;
         if (tab && tab !== this.activeTab) {
           this.activeTab = tab;
           this.renderTabs();
@@ -133,14 +141,17 @@ export default class NotificationsPage extends HTMLElement {
 
     if (list.length === 0) {
       this.notificationsListElement.append(
-        html`<div class="text-muted-foreground text-center py-8">No notifications.</div>`
+        html`<div class="text-muted-foreground text-center py-8">
+          No notifications.
+        </div>`,
       );
       return;
     }
 
     // Create and append each notification
     for (const notification of list) {
-      const notificationElement = await this.createNotificationElement(notification);
+      const notificationElement =
+        await this.createNotificationElement(notification);
       this.notificationsListElement.append(notificationElement);
     }
   }
@@ -165,8 +176,12 @@ export default class NotificationsPage extends HTMLElement {
         </div>
         <div class="flex items-start gap-4">
           <div class="flex-1">
-            <h3 class="font-semibold text-card-foreground">${getNotificationTitle(n.type)}</h3>
-            <p class="text-sm text-muted-foreground mt-1">${await getNotificationMessage(n)}</p>
+            <h3 class="font-semibold text-card-foreground">
+              ${getNotificationTitle(n.type)}
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${await getNotificationMessage(n)}
+            </p>
           </div>
         </div>
       </div>
@@ -181,7 +196,9 @@ export default class NotificationsPage extends HTMLElement {
         if (action === 'delete-notification' && id) {
           showDialog({
             title: 'Delete Notification',
-            content: html`<p>Are you sure you want to delete this notification?</p>`,
+            content: html`<p>
+              Are you sure you want to delete this notification?
+            </p>`,
             actions: [
               {
                 label: 'confirm',
@@ -189,14 +206,14 @@ export default class NotificationsPage extends HTMLElement {
                   const res = await deleteNotification(id);
                   if (res.success) {
                     const notificationElement = this.querySelector(
-                      `[data-notification-id="${id}"]`
+                      `[data-notification-id="${id}"]`,
                     );
                     if (notificationElement) {
                       notificationElement.remove();
                     }
 
                     this.notifications = this.notifications.filter(
-                      (n) => n.notification_uid !== id
+                      (n) => n.notification_uid !== id,
                     );
 
                     this.renderTabs();
@@ -205,9 +222,11 @@ export default class NotificationsPage extends HTMLElement {
                     if (list.length === 0 && this.notificationsListElement) {
                       this.notificationsListElement.innerHTML = '';
                       this.notificationsListElement.append(
-                        html`<div class="text-muted-foreground text-center py-8">
+                        html`<div
+                          class="text-muted-foreground text-center py-8"
+                        >
                           No notifications.
-                        </div>`
+                        </div>`,
                       );
                     }
 
@@ -231,14 +250,18 @@ export default class NotificationsPage extends HTMLElement {
         if (action === 'delete-all-notifications') {
           showDialog({
             title: 'Delete All Notifications',
-            content: html`<p>Are you sure you want to delete all notifications?</p>`,
+            content: html`<p>
+              Are you sure you want to delete all notifications?
+            </p>`,
             actions: [
               {
                 label: 'confirm',
                 callback: async (dialog) => {
                   try {
                     await Promise.all(
-                      this.notifications.map((n) => deleteNotification(n.notification_uid))
+                      this.notifications.map((n) =>
+                        deleteNotification(n.notification_uid),
+                      ),
                     );
                     this.notifications = [];
                     this.renderTabs();
