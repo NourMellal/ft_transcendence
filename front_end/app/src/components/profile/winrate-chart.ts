@@ -1,21 +1,20 @@
-import { fetchMatchHistory } from '~/api/user';
-import { userStore } from '~/app-state';
+import { fetchMatchHistory, MatchHistoryEntry } from '~/api/user';
 
 class PlayerLineChart extends HTMLElement {
   async connectedCallback() {
     const canvas = document.createElement('canvas');
     this.appendChild(canvas);
     const ctx = canvas.getContext('2d');
+    const user_id = this.getAttribute('data-uid');
 
-    if (!ctx) return;
-    const history = await fetchMatchHistory(userStore.get()!.UID);
+    if (!user_id || !ctx) return;
+    const history = await fetchMatchHistory(user_id);
 
     if (!history.success || !history.data || history.data.length === 0) {
       ctx.fillStyle = getComputedStyle(
         document.documentElement
       ).getPropertyValue('--muted-foreground');
       ctx.font = '16px Inter';
-      ctx.textAlign = 'center';
       ctx.fillText(
         'No match data available',
         canvas.width / 2,
@@ -39,8 +38,8 @@ class PlayerLineChart extends HTMLElement {
       });
     }
 
-    history.data.forEach((match: any) => {
-      const isWin = match.state ? true : false;
+    history.data.forEach((match: MatchHistoryEntry) => {
+      const isWin = match.state === 1 ? true : false;
 
       if (isWin) {
         const matchDate = new Date(match.started * 1000);

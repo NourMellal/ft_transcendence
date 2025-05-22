@@ -515,12 +515,15 @@ export default class ProfilePage extends HTMLElement {
         </div>
 
         <!-- Daily winrate Chart -->
-        <div class="grid grid-cols-1 p-4 border rounded-xl shadow-md">
-          <player-line-chart class="w-full h-80 bg-card"></player-line-chart>
+        <div class="grid grid-cols-1 p-4 rounded-xl border">
+          <player-line-chart
+            data-uid="${this.state.user.UID}"
+            class="w-full h-80 bg-card"
+          ></player-line-chart>
         </div>
 
         <!-- Recent Activity -->
-        <div class="card border rounded-lg">
+        <div class="card border rounded-lg mt-8">
           <div class="card-header p-6 border-b">
             <h2 class="text-lg font-semibold">Recent Activity</h2>
           </div>
