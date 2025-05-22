@@ -1,6 +1,6 @@
 FROM debian:bookworm
 
-RUN apt update && apt install wget -y 
+RUN apt update && apt install wget -y
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
@@ -13,6 +13,8 @@ RUN ./install.sh
 RUN source "$HOME/.nvm/nvm.sh" && nvm install 22
 
 WORKDIR /app
+
+COPY ./profile /static/profile
 
 ARG NPM_MICROSERVICE_SCRIPT
 ENV NPM_MICROSERVICE_SCRIPT=${NPM_MICROSERVICE_SCRIPT}

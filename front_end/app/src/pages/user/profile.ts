@@ -537,7 +537,7 @@ export default class ProfilePage extends HTMLElement {
                         <div
                           class="w-2 h-2 rounded-full ${match.state ===
                           MatchStatus.WIN
-                            ? 'bg-primary'
+                            ? 'bg-green-500'
                             : match.state === MatchStatus.LOSS
                             ? 'bg-destructive'
                             : 'bg-muted-foreground'}"

@@ -3,7 +3,9 @@ services:
     container_name: nginx
     build: ./nginx
     volumes:
+      - ./front_end/app/game:/api/game:ro
       - static_data_volume:/api/static:ro
+      - ./front_end/app/dist:/app:ro
     ports:
       - "443:443"
     networks:
@@ -139,17 +141,16 @@ services:
       - ft_transcendence
     init: true
     restart: always
-  frontend:
-    container_name: frontend
-    build: ./front_end
-    networks:
-      - ft_transcendence
-    init: true
-    restart: always
-    # for developement
-    volumes:
-      - ./front_end/app:/app:rw
-      - static_data_volume:/static:rw
+  # frontend:
+  #   container_name: frontend
+  #   build: ./front_end
+  #   networks:
+  #     - ft_transcendence
+  #   init: true
+  #   restart: always
+  #   # for developement
+  #   volumes:
+  #     - ./front_end/app:/app:rw
 
 networks:
   ft_transcendence:

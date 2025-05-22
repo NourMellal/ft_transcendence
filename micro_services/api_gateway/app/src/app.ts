@@ -5,7 +5,10 @@ import AuthProvider from "./classes/AuthProvider";
 import rabbitmq from "./classes/RabbitMQ";
 import OAuthRoute from "./routes/OAuth";
 import DiscoveryDocumentRoute from "./routes/DiscoveryDocument";
-import { AuthenticatorRoutes, RefreshTokenManagementRoutes } from "./routes/Authenticator";
+import {
+  AuthenticatorRoutes,
+  RefreshTokenManagementRoutes,
+} from "./routes/Authenticator";
 import UserManagerRoutes from "./routes/microservices/user_manager";
 import FriendsManagerRoutes from "./routes/microservices/friends_manager";
 import TwoFactorAuthRoutes from "./routes/2FA";
@@ -18,35 +21,38 @@ import LeaderboardRoutes from "./routes/microservices/leaderboard";
 import MatchManagerRoutes from "./routes/microservices/match_manager";
 import ChatManagerRoutes from "./routes/microservices/chat_manager";
 import Vault from "./classes/VaultClient";
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-Vault.RetrieveEnvs();
-db.init();
-AuthProvider.init();
-rabbitmq.init();
-const port: number = (process.env.API_GATEWAY_PORT || 5566) as number;
-const app = fastify();
-// Register cors module to allow traffic from all hosts:
-app.register(cors, { origin: "*" });
-// Register api_gateway routes:
-app.addContentTypeParser("multipart/form-data", ParseMultipart);
-app.register(DiscoveryDocumentRoute);
-app.register(OAuthRoute);
-app.register(AuthenticatorRoutes);
-app.register(RefreshTokenManagementRoutes);
-app.register(TwoFactorAuthRoutes);
-// Register micro_services routes:
-app.register(UserManagerRoutes);
-app.register(FriendsManagerRoutes);
-app.register(NotificationRoutes);
-app.register(LeaderboardRoutes);
-app.register(MatchManagerRoutes);
-app.register(ChatManagerRoutes);
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-app.listen({ port: port, host: "0.0.0.0" }, (err, addr) => {
-  if (err) {
-    app.log.error("fatal error: " + err);
-    process.exit(1);
-  }
-  SetupWebSocketServer(app);
-  app.log.info("server now listen on: " + addr);
-});
+(async () => {
+  await Vault.RetrieveEnvs();
+  db.init();
+  AuthProvider.init();
+  rabbitmq.init();
+  const port: number = (process.env.API_GATEWAY_PORT || 5566) as number;
+  const app = fastify();
+  // Register cors module to allow traffic from all hosts:
+  app.register(cors, { origin: "*" });
+  // Register api_gateway routes:
+  app.addContentTypeParser("multipart/form-data", ParseMultipart);
+  app.register(DiscoveryDocumentRoute);
+  app.register(OAuthRoute);
+  app.register(AuthenticatorRoutes);
+  app.register(RefreshTokenManagementRoutes);
+  app.register(TwoFactorAuthRoutes);
+  // Register micro_services routes:
+  app.register(UserManagerRoutes);
+  app.register(FriendsManagerRoutes);
+  app.register(NotificationRoutes);
+  app.register(LeaderboardRoutes);
+  app.register(MatchManagerRoutes);
+  app.register(ChatManagerRoutes);
+
+  app.listen({ port: port, host: "0.0.0.0" }, (err, addr) => {
+    if (err) {
+      app.log.error("fatal error: " + err);
+      process.exit(1);
+    }
+    SetupWebSocketServer(app);
+    app.log.info("server now listen on: " + addr);
+  });
+})();

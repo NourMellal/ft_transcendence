@@ -12,15 +12,19 @@ NODE_MODULES=$(addsuffix /app/node_modules, ${MICRO_SERVICES}) front_end/app/nod
 
 DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES}) front_end/app/game/dist
 
+FRONT_BUILD=./front_end/app/dist
+
 %.env:
 	ln .env $@
 %/node_modules:
 	cd $(abspath ./$@/..) && npm install
+${FRONT_BUILD}:
+	cd $(abspath ./$@/..) && npm run build
 %/dist:
 	cd $(abspath ./$@/..) && npx tsc
-all: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
+all: ${ENV_FILES} ${NODE_MODULES} ${FRONT_BUILD} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
-build: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
+build: ${ENV_FILES} ${NODE_MODULES} ${FRONT_BUILD} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ./vault/docker-compose-vault.yml up --build -d
 	docker compose -f ${COMPOSE_FILE} up --build ${detach}
 clean:
@@ -28,7 +32,7 @@ clean:
 	docker compose -f ./vault/docker-compose-vault.yml down
 fclean: clean
 	@echo "\033[0;31m==> Removing build files:\033[0m"
-	sudo rm -rf ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES}
+	sudo rm -rf ${FRONT_BUILD} ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES}
 re: fclean all
 
 #Create docker persistent volumes

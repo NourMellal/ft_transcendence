@@ -44,8 +44,7 @@ class VaultClient {
       console.info("Credentials retreived from vault!");
     } catch (error) {
       console.log(`[FATAL ERROR] VaultClient.RetrieveEnvs():`, error);
-      await new Promise((r) => setTimeout(r, 1000));
-      this.RetrieveEnvs();
+      process.exit(1);
     }
   }
 }

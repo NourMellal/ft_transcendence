@@ -45,7 +45,10 @@ export default class HomePage extends HTMLElement {
                 players worldwide.
               </p>
               <div class="flex flex-col items-center sm:flex-row gap-4 pt-4">
-                <a href="/signin" class="btn btn-primary px-8 py-3 text-lg">
+                <a
+                  href="/signin?intended=/play"
+                  class="btn btn-primary px-8 py-3 text-lg"
+                >
                   Start Playing
                 </a>
                 <a
@@ -221,7 +224,10 @@ export default class HomePage extends HTMLElement {
                   Challenge other players in competitive 1v1 matches. Test your
                   skills and climb the leaderboard.
                 </p>
-                <a href="/quick-match" class="btn btn-primary w-full">
+                <a
+                  href="/quick-match?intended=/play"
+                  class="btn btn-primary w-full"
+                >
                   Play Now
                 </a>
               </div>
@@ -265,7 +271,7 @@ export default class HomePage extends HTMLElement {
                   Practice against our AI opponent. Perfect for honing your
                   skills and learning new techniques.
                 </p>
-                <a href="/ai-match" class="btn btn-primary w-full">
+                <a href="/signin?intended=/play" class="btn btn-primary w-full">
                   Play Now
                 </a>
               </div>
@@ -284,7 +290,10 @@ export default class HomePage extends HTMLElement {
                 Join thousands of players worldwide and experience the future of
                 online ping pong.
               </p>
-              <a href="/signup" class="btn btn-primary px-8 py-3 text-lg">
+              <a
+                href="/signup?intended=/play"
+                class="btn btn-primary px-8 py-3 text-lg"
+              >
                 Create Your Account
               </a>
             </div>
