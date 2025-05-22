@@ -26,13 +26,9 @@ const CreateMatch = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
   {
-    const query = db.persistent.prepare(`SELECT state FROM ${matchs_table_name} WHERE UID = ? AND state = 0;`)
-    const res = query.all(RMqRequest.JWT.sub);
-    if (res.length !== 0) {
-      response.status = 400;
-      response.message = 'Finish the current match before starting a new one';
-      return response;
-    }
+    // Lose pending matchs
+    const query = db.persistent.prepare(`UPDATE ${matchs_table_name} SET state = -1 WHERE UID = ? AND state = 0;`)
+    const res = query.run(RMqRequest.JWT.sub);
   }
   const match_uid = crypto.randomUUID();
   const query = db.persistent.prepare(`INSERT INTO ${matchs_table_name} ( match_UID, UID, match_type, started, state ) VALUES ( ? , ? , ? , ? , 0 );`)

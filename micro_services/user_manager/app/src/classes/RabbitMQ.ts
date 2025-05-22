@@ -4,7 +4,6 @@ import {
   RabbitMQMicroServices,
   RabbitMQRequest,
   RabbitMQResponse,
-  RabbitMQUserManagerOp,
 } from "../types/RabbitMQMessages";
 import HandleMessage from "../Handlers/UserManager";
 
@@ -58,7 +57,7 @@ class RabbitMQ {
   }
   async consumeUserManagerQueue(msg: amqp.ConsumeMessage | null) {
     if (!msg) return;
-    var RMqRequest: RabbitMQRequest;
+    let RMqRequest: RabbitMQRequest;
     try {
       RMqRequest = JSON.parse(msg.content.toString());
       if (!RMqRequest.id || RMqRequest.id === "")
