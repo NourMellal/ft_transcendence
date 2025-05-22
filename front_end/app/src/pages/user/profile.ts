@@ -514,8 +514,10 @@ export default class ProfilePage extends HTMLElement {
           )}
         </div>
 
-        <!-- Winrate Chart -->
-        <profile-winrate-chart></profile-winrate-chart>
+        <!-- Daily winrate Chart -->
+        <div class="grid grid-cols-1 p-4 border rounded-xl shadow-md">
+          <player-line-chart class="w-full h-80 bg-card"></player-line-chart>
+        </div>
 
         <!-- Recent Activity -->
         <div class="card border rounded-lg">
