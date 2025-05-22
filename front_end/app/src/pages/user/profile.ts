@@ -1,4 +1,5 @@
 import '~/components/navbar/navigation-bar';
+import '~/components/profile/winrate-chart';
 
 import { navigateTo } from '~/components/app-router';
 import {
@@ -488,7 +489,7 @@ export default class ProfilePage extends HTMLElement {
           <div class="flex items-center gap-1 flex-col">
             <div class="flex gap-2 items-center justify-center">
               <span
-                class="rounded-full w-3 h-3 ${this.state.isOnline
+                class="rounded-full w-2 h-2 ${this.state.isOnline
                   ? 'bg-green-500'
                   : 'bg-red-500'}"
               ></span>
@@ -512,6 +513,9 @@ export default class ProfilePage extends HTMLElement {
             `
           )}
         </div>
+
+        <!-- Winrate Chart -->
+        <profile-winrate-chart></profile-winrate-chart>
 
         <!-- Recent Activity -->
         <div class="card border rounded-lg">

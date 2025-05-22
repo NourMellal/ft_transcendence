@@ -121,7 +121,7 @@ export default class NotificationsPage extends HTMLElement {
     this.tabsElement.querySelectorAll('button[data-tab]').forEach((btn) => {
       btn.addEventListener('click', (e: Event) => {
         const tab = (e.currentTarget as HTMLElement).getAttribute(
-          'data-tab',
+          'data-tab'
         ) as Tab;
         if (tab && tab !== this.activeTab) {
           this.activeTab = tab;
@@ -143,15 +143,16 @@ export default class NotificationsPage extends HTMLElement {
       this.notificationsListElement.append(
         html`<div class="text-muted-foreground text-center py-8">
           No notifications.
-        </div>`,
+        </div>`
       );
       return;
     }
 
     // Create and append each notification
     for (const notification of list) {
-      const notificationElement =
-        await this.createNotificationElement(notification);
+      const notificationElement = await this.createNotificationElement(
+        notification
+      );
       this.notificationsListElement.append(notificationElement);
     }
   }
@@ -206,14 +207,14 @@ export default class NotificationsPage extends HTMLElement {
                   const res = await deleteNotification(id);
                   if (res.success) {
                     const notificationElement = this.querySelector(
-                      `[data-notification-id="${id}"]`,
+                      `[data-notification-id="${id}"]`
                     );
                     if (notificationElement) {
                       notificationElement.remove();
                     }
 
                     this.notifications = this.notifications.filter(
-                      (n) => n.notification_uid !== id,
+                      (n) => n.notification_uid !== id
                     );
 
                     this.renderTabs();
@@ -226,7 +227,7 @@ export default class NotificationsPage extends HTMLElement {
                           class="text-muted-foreground text-center py-8"
                         >
                           No notifications.
-                        </div>`,
+                        </div>`
                       );
                     }
 
@@ -260,8 +261,8 @@ export default class NotificationsPage extends HTMLElement {
                   try {
                     await Promise.all(
                       this.notifications.map((n) =>
-                        deleteNotification(n.notification_uid),
-                      ),
+                        deleteNotification(n.notification_uid)
+                      )
                     );
                     this.notifications = [];
                     this.renderTabs();

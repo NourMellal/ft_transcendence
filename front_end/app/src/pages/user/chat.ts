@@ -126,7 +126,7 @@ export default class ChatPage extends HTMLElement {
         this.scrollToBottom();
         this.querySelector(`button[data-uid="${uid}"]`)?.classList.add(
           'bg-secondary',
-          'text-secondary-foreground',
+          'text-secondary-foreground'
         );
       }
     }
@@ -248,7 +248,7 @@ export default class ChatPage extends HTMLElement {
             >
               <span class="font-medium text-sm">${chat.name}</span>
             </button>
-          `,
+          `
         )}
       </div>
       <button
@@ -278,11 +278,11 @@ export default class ChatPage extends HTMLElement {
 
     this.querySelector('#btn-close-sidebar')?.addEventListener(
       'click',
-      this.toggleSidebar,
+      this.toggleSidebar
     );
 
     this.querySelectorAll<HTMLButtonElement>('.chat-item').forEach((btn) =>
-      btn.addEventListener('click', () => this.selectChat(btn.dataset.uid!)),
+      btn.addEventListener('click', () => this.selectChat(btn.dataset.uid!))
     );
   }
 
@@ -320,7 +320,7 @@ export default class ChatPage extends HTMLElement {
       this.headerElement.appendChild(
         html`<button class="btn-outlined ms-auto" id="rename-chat-btn">
           Rename Chat
-        </button>`,
+        </button>`
       );
 
       const otherUserUID =
@@ -356,7 +356,7 @@ export default class ChatPage extends HTMLElement {
 
     this.querySelector('#btn-toggle-sidebar')?.addEventListener(
       'click',
-      this.toggleSidebar,
+      this.toggleSidebar
     );
     this.setupHeaderActionEvents();
   }
@@ -370,12 +370,12 @@ export default class ChatPage extends HTMLElement {
     if (this.selectedChat && this.messages.length > 0) {
       this.messages.forEach((msg) => {
         this.messagesContainer?.appendChild(
-          this.createMessageElement(msg, currentUID),
+          this.createMessageElement(msg, currentUID)
         );
       });
     } else if (this.selectedChat) {
       this.messagesContainer.appendChild(
-        html`<p class="text-center text-muted-foreground">No messages yet</p>`,
+        html`<p class="text-center text-muted-foreground">No messages yet</p>`
       );
     } else {
       this.messagesContainer.appendChild(html`
@@ -442,7 +442,7 @@ export default class ChatPage extends HTMLElement {
           this.newMessageText = inp.value;
           this.sendMessage();
         }
-      },
+      }
     );
   }
 
@@ -455,12 +455,15 @@ export default class ChatPage extends HTMLElement {
       >
         <div class="max-w-xs lg:max-w-md">
           <div
-            class="text-xs text-muted-foreground mb-1 ${msg.user_uid ===
+            class="text-sm text-muted-foreground mb-1 ${msg.user_uid ===
             currentUID
               ? 'text-right'
               : 'text-left'}"
           >
-            ${msg.user_uid === currentUID ? 'You' : msg.username} ·
+            <a class="hover:underline" href="/profile?username=${msg.username}">
+              ${msg.user_uid === currentUID ? 'You' : msg.username}
+            </a>
+            ·
             ${new Date(msg.time * 1000).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -507,7 +510,7 @@ export default class ChatPage extends HTMLElement {
             message: `Failed to block user: ${res.message}`,
           });
         }
-      },
+      }
     );
 
     this.querySelector('#unblock-user-btn')?.addEventListener(
@@ -530,7 +533,7 @@ export default class ChatPage extends HTMLElement {
             message: `Failed to unblock user: ${res.message}`,
           });
         }
-      },
+      }
     );
 
     this.querySelector('#rename-chat-btn')?.addEventListener('click', () => {
@@ -609,7 +612,7 @@ export default class ChatPage extends HTMLElement {
                 ? friends.data.map(
                     (friend) => html`
                       <option value="${friend.UID}">${friend.username}</option>
-                    `,
+                    `
                   )
                 : html`
                     <option value="" disabled selected>

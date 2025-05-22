@@ -19,7 +19,7 @@ class NavUserSearchInput extends HTMLElement {
         ctrlKey: false,
         shiftKey: false,
         metaKey: false,
-      }),
+      })
     );
   };
 
@@ -42,7 +42,7 @@ class NavUserSearchInput extends HTMLElement {
     document.addEventListener('click', (ev) => {
       const target = ev.target as HTMLElement;
 
-      if (target !== this.input) {
+      if (!this.input || this.input.value.length < 3 || target !== this.input) {
         this.dropdown?.classList.replace('flex', 'hidden');
       } else {
         this.dropdown?.classList.replace('hidden', 'flex');
@@ -77,7 +77,7 @@ class NavUserSearchInput extends HTMLElement {
                     >
                       ${user.username}
                     </button>
-                  `,
+                  `
                 )
               : html`
                   <p class="text-sm text-muted-foreground p-4 text-center">
@@ -93,7 +93,7 @@ class NavUserSearchInput extends HTMLElement {
                 const target = ev.target as HTMLButtonElement;
                 if (target.dataset.url) navigateTo(target.dataset.url);
                 this.closeDialog();
-              }),
+              })
             );
         }
       }, 500);
@@ -120,7 +120,7 @@ class NavSearchUser extends HTMLElement {
           title: 'search user',
           content: html`<nav-user-search-input></nav-user-search-input>`,
         });
-      },
+      }
     );
   }
 }
