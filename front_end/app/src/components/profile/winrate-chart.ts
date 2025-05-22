@@ -15,11 +15,7 @@ class PlayerLineChart extends HTMLElement {
         document.documentElement
       ).getPropertyValue('--muted-foreground');
       ctx.font = '16px Inter';
-      ctx.fillText(
-        'No match data available',
-        canvas.width / 2,
-        canvas.height / 2
-      );
+      ctx.fillText('No match data available', 10, 30);
       return;
     }
 
@@ -138,4 +134,6 @@ class PlayerLineChart extends HTMLElement {
   }
 }
 
-customElements.define('player-line-chart', PlayerLineChart);
+if (!customElements.get('player-line-chart')) {
+  customElements.define('player-line-chart', PlayerLineChart);
+}

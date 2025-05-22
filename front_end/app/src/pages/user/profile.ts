@@ -454,7 +454,10 @@ export default class ProfilePage extends HTMLElement {
           <div class="relative">
             <img
               src="/api/${user.picture_url}"
-              class="w-32 h-32 rounded-full ring ring-ring ring-offset-2 ring-offset-background object-cover"
+              class="w-32 h-32 rounded-full ring-4 ring-offset-2 ring-offset-background object-cover ${this
+                .state.isOnline
+                ? 'ring-green-500'
+                : 'ring-red-500'}"
             />
             ${isOwnProfile
               ? html`
@@ -487,14 +490,7 @@ export default class ProfilePage extends HTMLElement {
               : ''}
           </div>
           <div class="flex items-center gap-1 flex-col">
-            <div class="flex gap-2 items-center justify-center">
-              <span
-                class="rounded-full w-2 h-2 ${this.state.isOnline
-                  ? 'bg-green-500'
-                  : 'bg-red-500'}"
-              ></span>
-              <h1 class="text-2xl font-bold">${user.username}</h1>
-            </div>
+            <h1 class="text-2xl font-bold">${user.username}</h1>
             <p class="text-muted-foreground">${user.bio || 'No bio yet'}</p>
           </div>
           <div id="profile-friend-actions" class="flex gap-2">
@@ -515,11 +511,16 @@ export default class ProfilePage extends HTMLElement {
         </div>
 
         <!-- Daily winrate Chart -->
-        <div class="grid grid-cols-1 p-4 rounded-xl border">
-          <player-line-chart
-            data-uid="${this.state.user.UID}"
-            class="w-full h-80 bg-card"
-          ></player-line-chart>
+        <div class="card border rounded-lg mt-8">
+          <div class="card-header p-6 border-b">
+            <h2 class="text-lg font-semibold">Wins Tracker</h2>
+          </div>
+          <div class="grid grid-cols-1 p-6">
+            <player-line-chart
+              data-uid="${this.state.user.UID}"
+              class="w-full h-80 bg-card"
+            ></player-line-chart>
+          </div>
         </div>
 
         <!-- Recent Activity -->
