@@ -17,13 +17,14 @@ import ParseMultipart from "./controllers/multipart";
 import LeaderboardRoutes from "./routes/microservices/leaderboard";
 import MatchManagerRoutes from "./routes/microservices/match_manager";
 import ChatManagerRoutes from "./routes/microservices/chat_manager";
-
+import Vault from "./classes/VaultClient";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+Vault.RetrieveEnvs();
 db.init();
 AuthProvider.init();
 rabbitmq.init();
 const port: number = (process.env.API_GATEWAY_PORT || 5566) as number;
 const app = fastify();
-
 // Register cors module to allow traffic from all hosts:
 app.register(cors, { origin: "*" });
 // Register api_gateway routes:

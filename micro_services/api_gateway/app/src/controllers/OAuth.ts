@@ -19,6 +19,7 @@ import {
   ProcessSignUpResponse,
 } from "./Common";
 import { discoveryDocument } from "../models/DiscoveryDocument";
+import Vault from "../classes/VaultClient";
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
   const reqOpt: RequestInit = {
@@ -29,8 +30,8 @@ async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
     },
     body: new URLSearchParams({
       code: code,
-      client_id: process.env.GOOGLE_CLIENT_ID || "",
-      client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+      client_id: Vault.envs.GOOGLE_CLIENT_ID,
+      client_secret: Vault.envs.GOOGLE_CLIENT_SECRET,
       redirect_uri:
         discoveryDocument.ServerUrl +
         discoveryDocument.OAuthRoutes.OAuthRedirectRoute.route,

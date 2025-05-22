@@ -5,6 +5,7 @@ import JWTFactory from "./JWTFactory";
 import db from "./Databases";
 import { refresh_token_table_name, RefreshTokenModel } from "../types/DbTables";
 import { FastifyReply } from "fastify";
+import Vault from "./VaultClient";
 
 class OAuthProvider {
   isReady: boolean = false;
@@ -129,7 +130,7 @@ class OAuthProvider {
     var jwt: JWT = JSON.parse(Buffer.from(jwt_parts[1], "base64").toString());
     if (jwt.iss !== this.discoveryDocument.issuer)
       throw `Error ValidateJWT_Token(): invalid JWT issuer`;
-    if (jwt.aud !== process.env.GOOGLE_CLIENT_ID)
+    if (jwt.aud !== Vault.envs.GOOGLE_CLIENT_ID)
       throw `Error ValidateJWT_Token(): invalid JWT audience`;
     return jwt;
   }

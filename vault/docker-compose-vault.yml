@@ -1,0 +1,20 @@
+services:
+  vault:
+    container_name: vault
+    build:
+      context: .
+      args:
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+        VAULT_API_GATEWAY_USER: ${VAULT_API_GATEWAY_USER}
+        VAULT_API_GATEWAY_PASS: ${VAULT_API_GATEWAY_PASS}
+    init: true
+    networks:
+      - ft_transcendence
+    restart: always
+  
+networks:
+  ft_transcendence:
+    name: ft_transcendence
+    driver: bridge
+    external: true

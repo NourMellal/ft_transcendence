@@ -21,9 +21,11 @@ DIST_FILES=$(addsuffix /app/dist, ${MICRO_SERVICES}) front_end/app/game/dist
 all: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
 	docker compose -f ${COMPOSE_FILE} up ${detach}
 build: ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES} create_volumes_dir set-host-and-permission
+	docker compose -f ./vault/docker-compose-vault.yml up --build -d
 	docker compose -f ${COMPOSE_FILE} up --build ${detach}
 clean:
 	docker compose -f ${COMPOSE_FILE} down
+	docker compose -f ./vault/docker-compose-vault.yml down
 fclean: clean
 	@echo "\033[0;31m==> Removing build files:\033[0m"
 	sudo rm -rf ${ENV_FILES} ${NODE_MODULES} ${DIST_FILES}

@@ -2,6 +2,7 @@ import crypto, { KeyObject } from "crypto";
 import fs from "fs";
 import { JWT } from "../types/AuthProvider";
 import { GoogleDiscoveryDocument } from "../types/OAuth";
+import Vault from "./VaultClient";
 
 class JWTFactory {
   discoveryDocument: GoogleDiscoveryDocument;
@@ -16,12 +17,12 @@ class JWTFactory {
   }
   public CreateJWT(UID: string, name: string, picture?: string): JWT {
     const jwt: JWT = {
-      aud: process.env.GOOGLE_CLIENT_ID || "",
+      aud: Vault.envs.GOOGLE_CLIENT_ID,
       sub: UID,
       name: name,
       picture: picture,
       exp: (Date.now() / 1000) + 3600,
-      iss: process.env.SERVER_JWT_ISSUER || "",
+      iss: process.env.SERVER_JWT_ISSUER as string,
       iat: Date.now() / 1000,
     };
     return jwt;
@@ -52,7 +53,7 @@ class JWTFactory {
     var jwt: JWT = JSON.parse(Buffer.from(jwt_parts[1], "base64").toString());
     if (jwt.iss !== process.env.SERVER_JWT_ISSUER)
       throw `Error VerifyJWT(): invalid JWT issuer`;
-    if (jwt.aud !== process.env.GOOGLE_CLIENT_ID)
+    if (jwt.aud !== Vault.envs.GOOGLE_CLIENT_ID)
       throw `Error VerifyJWT(): invalid JWT audience`;
     if (jwt.exp <= Date.now() / 1000)
       throw `Error VerifyJWT(): expired JWT token`;

@@ -10,17 +10,6 @@ services:
       - ft_transcendence
     init: true
     restart: always
-  vault:
-    container_name: vault
-    build:
-      context: ./vault
-      args:
-        VAULT_CLIENT_APP_NAME: ${VAULT_CLIENT_APP_NAME}
-        VAULT_OIDC_REDIRECT_URI: ${VAULT_OIDC_REDIRECT_URI}
-    init: true
-    networks:
-      - ft_transcendence
-    restart: always
   rabbitmq:
     env_file: .env
     container_name: rabbitmq
@@ -166,6 +155,7 @@ networks:
   ft_transcendence:
     name: ft_transcendence
     driver: bridge
+    external: true
 
 volumes:
   api_gateway_db_volume:

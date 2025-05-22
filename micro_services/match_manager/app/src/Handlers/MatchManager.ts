@@ -26,8 +26,8 @@ const CreateMatch = function (RMqRequest: RabbitMQRequest): RabbitMQResponse {
     return response;
   }
   {
-    // Lose pending matchs
-    const query = db.persistent.prepare(`UPDATE ${matchs_table_name} SET state = -1 WHERE UID = ? AND state = 0;`)
+    // Delete pending matchs
+    const query = db.persistent.prepare(`DELETE FROM ${matchs_table_name} WHERE UID = ? AND state = 0;`)
     const res = query.run(RMqRequest.JWT.sub);
   }
   const match_uid = crypto.randomUUID();
