@@ -41,9 +41,9 @@ reTournment.addEventListener('click', startTournment);
 export async function    startTournment()
 {
     try{
-        matchUID = await getNewMatch(4);
+        matchUID = await getNewMatch(3);
         games.gametype = 'tournment';
-        player1Name.innerText = tempName.p1;
+        // player1Name.innerText = player1Name.innerText;
         tempName.winners[0] = '', tempName.winners[1] = '', tempName.winners[2] = '';
         tb5.innerText = '', tb6.innerText = '', tb7.innerText = '';
         tb1.style.opacity = '1', tb2.style.opacity = '1', tb3.style.opacity = '1',
@@ -55,7 +55,7 @@ export async function    startTournment()
         if (tempName.p2 === ''  || tempName.p3 === '' || tempName.p4 === '')
             await getParticepantNames();
         if (tempName.p2 != '' &&  tempName.p3 != '' && tempName.p4 != ''){
-            player1Name.innerText = tempName.p1;
+            // player1Name.innerText = tempName.p1;
             player2Name.innerText = tempName.p2;
             tournBoard.style.display = 'flex';
             document.addEventListener('keyup',  firstRound);
@@ -176,7 +176,7 @@ export function getParticepantNames(): Promise<void> {
           inputName2.value = '';
           inputName3.value = '';
           inputName4.value = '';
-          tb1.innerText = tempName.p1;
+          tb1.innerText = player1Name.innerText;
           tb2.innerText = tempName.p2;
           tb3.innerText = tempName.p3;
           tb4.innerText = tempName.p4;

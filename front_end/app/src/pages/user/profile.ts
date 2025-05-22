@@ -549,10 +549,10 @@ export default class ProfilePage extends HTMLElement {
                               : match.state === MatchStatus.LOSS
                               ? 'Lost'
                               : 'Pending'}
-                            against
+                            
                             ${match.match_type === MatchType.AI
-                              ? 'AI'
-                              : 'Opponent'}
+                              ? 'against AI'
+                              : match.match_type === MatchType.Single1V1 ? 'against Opponent' : match.match_type === MatchType.Single2V2 ? 'against Two Opponents' : 'in a Tournament'}
                           </p>
                           <p class="text-xs text-muted-foreground">
                             ${new Date(match.started * 1000).toLocaleString()}

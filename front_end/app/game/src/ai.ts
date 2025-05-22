@@ -9,7 +9,7 @@ export async function    startAiGame()
 {
     try{
 
-        matchUID = await getNewMatch(3);
+        matchUID = await getNewMatch(4);
         games.gametype = 'AI';
         players.player1 = 0;
         players.player2 = 0;

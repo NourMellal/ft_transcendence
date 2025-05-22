@@ -1,10 +1,10 @@
 import { fetchMatchHistory, MatchHistoryEntry } from '~/api/user';
 
 class PlayerLineChart extends HTMLElement {
-  async connectedCallback() {
-    const canvas = document.createElement('canvas');
-    this.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
+  canvas =  document.createElement('canvas');
+  
+   render = async () => {
+    const ctx = this.canvas.getContext('2d');
     const user_id = this.getAttribute('data-uid');
 
     if (!user_id || !ctx) return;
@@ -59,8 +59,8 @@ class PlayerLineChart extends HTMLElement {
     if (maxY === 0) {
       maxY = 5;
     }
-    const width = (canvas.width = this.clientWidth);
-    const height = (canvas.height = this.clientHeight);
+    const width = (this.canvas.width = this.clientWidth);
+    const height = (this.canvas.height = this.clientHeight);
 
     const padding = 40;
     const chartWidth = width - padding * 2;
@@ -131,6 +131,12 @@ class PlayerLineChart extends HTMLElement {
       const x = padding + (i / (wins.length - 1)) * chartWidth;
       ctx.fillText(day, x - 10, height - padding + 20);
     });
+  }
+  
+  async connectedCallback() {
+    this.appendChild(this.canvas);
+    await this.render();
+    window.addEventListener('resize', this.render);
   }
 }
 
