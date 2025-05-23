@@ -77,7 +77,7 @@ export const isRequestAuthorizedHook = async (
       request.headers.cookie
     );
     if (typeof verification === "string")
-      request.jwt = AuthProvider.RefreshToken(verification, reply);
+      request.jwt = AuthProvider.RefreshJwtToken(verification, reply);
     else
       request.jwt = verification;
   } catch (error) {

@@ -22,7 +22,7 @@ export type JWT = {
 };
 
 /**
- * the parsed header part of the JWT which contains the 
+ * the parsed header part of the JWT.
  * 
  * @property alg Algorithm: used as the uid of the user for it's uniqueness.
  * @property kid KeyId: the expiration time after the token will not be valid (unix seconds).
@@ -33,7 +33,17 @@ export type JWTHeaders = {
   typ: string;
 };
 
-export type JWTKeyCert = {
+
+/**
+ * Public keys array used for signature verification of the jwt payload.
+ * 
+ * @property kid key id.
+ * @property e exponent.
+ * @property n modulus.
+ * @property alg algorithm used.
+ * @property pkey a `NodeJs` public key object constructed from `n`, `e` and `alg` used for signature verification.
+ */
+export type JWK_Array = {
   keys: [
     {
       pkey: KeyObject;

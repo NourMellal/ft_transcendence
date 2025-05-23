@@ -21,6 +21,7 @@ import {
   ProcessSignUpResponse,
 } from "./Common";
 import Totp from "../classes/TOTP";
+import JWTFactory from "../classes/JWTFactory";
 
 export const IsDisplayNameAvailable = async (
   request: FastifyRequest<{ Querystring: { username: string } }>,
@@ -87,7 +88,7 @@ export const SignUpNewStandardUser = async (
   }
   try {
     reply.hijack();
-    const jwt = AuthProvider.jwtFactory.CreateJWT(
+    const jwt = JWTFactory.CreateJWT(
       NewUser.UID,
       username.field_value,
       picture_url
@@ -150,7 +151,7 @@ export const SignInStandardUser = async (
       hasher.digest().toString()
     ) as UserModel;
     if (res) {
-      const jwt = AuthProvider.jwtFactory.CreateJWT(res.UID, res.username);
+      const jwt = JWTFactory.CreateJWT(res.UID, res.username);
       const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
       if (res.totp_key && res.totp_enabled === 1) {
         try {
@@ -208,7 +209,7 @@ export const Verify2FACode = async (
   try {
     const refresh_token = CreateRefreshToken(state.UID, request.ip);
     Totp.states.delete(request.query.state);
-    const jwt = AuthProvider.ParseJwt(state.jwt_token);
+    const jwt = JWTFactory.ParseJwt(state.jwt_token);
     const expiresDate = new Date(jwt.exp * 1000).toUTCString();
     reply.raw.appendHeader(
       "set-cookie",

@@ -1,15 +1,14 @@
-
 /**
  * This file contains the schema validation types that
- * @fastify requires to enforce on request validation.
- * see: https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/
+ * `fastify` requires to enforce on request validation.
+ * @see: https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/
  */
 
 
 /**
  *  Used to validate that the headers contain a field named Cookie and of type string.
  *  usefull to automatically reject requests to authorized routes before calling the prehandler
- *  function that performs the authorization flow using jwt tokens. 
+ *  function that performs the authorization flow using jwt tokens.
  */
 export const AuthCookieValidation = {
     schema: {

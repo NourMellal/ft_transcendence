@@ -15,22 +15,10 @@ class JWTFactory {
     this.key = crypto.createPrivateKey(private_key);
     this.discoveryDocument = document;
   }
-  public CreateJWT(UID: string, name: string, picture?: string): JWT {
-    const jwt: JWT = {
-      aud: Vault.envs.GOOGLE_CLIENT_ID,
-      sub: UID,
-      name: name,
-      picture: picture,
-      exp: (Date.now() / 1000) + 3600,
-      iss: process.env.SERVER_JWT_ISSUER as string,
-      iat: Date.now() / 1000,
-    };
-    return jwt;
-  }
   public SignJWT(jwt: JWT): string {
     const header_encoded: string = JSON.stringify({
       alg: "RS256",
-      kid: process.env.SERVER_JWT_KID || "",
+      kid: process.env.SERVER_JWT_KID as string,
       typ: "jwt",
     });
     const jwt_headers = Buffer.from(header_encoded).toString("base64url");
@@ -58,6 +46,26 @@ class JWTFactory {
     if (jwt.exp <= Date.now() / 1000)
       throw `Error VerifyJWT(): expired JWT token`;
     return jwt;
+  }
+
+  public static CreateJWT(UID: string, name?: string, picture?: string): JWT {
+    const jwt: JWT = {
+      aud: Vault.envs.GOOGLE_CLIENT_ID,
+      sub: UID,
+      name: name || '',
+      picture: picture || '',
+      exp: (Date.now() / 1000) + 3600,
+      iss: process.env.SERVER_JWT_ISSUER as string,
+      iat: Date.now() / 1000,
+    };
+    return jwt;
+  }
+  
+  public static ParseJwt(token: string): JWT {
+    let jwt_parts = token.split(".");
+    if (jwt_parts.length !== 3)
+      throw `Error ParseJwt(): JWT token string is invalid!`;
+    return JSON.parse(Buffer.from(jwt_parts[1], "base64").toString());
   }
 }
 
