@@ -156,7 +156,6 @@ networks:
   ft_transcendence:
     name: ft_transcendence
     driver: bridge
-    external: true
 
 volumes:
   api_gateway_db_volume:

@@ -1,0 +1,6 @@
+## Frontend
+
+- [ ] add UI for poking players
+- [ ] fix game fetch calls
+- [ ] update game UI
+- [ ] WS Auto reconnect when connection fails
