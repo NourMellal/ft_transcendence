@@ -10,56 +10,43 @@ import {
   RemoveFriend,
   SendFriendRequest,
 } from "../../controllers/microservices/friends_manager";
-import { AuthHeaderValidation } from "../../types/AuthProvider";
-
-const FriendRequestOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-      },
-      required: ["uid"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
+import { AuthCookieValidation, RequireUid } from "../schemas";
 
 async function FriendsManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
     discoveryDocument.FriendsRoutes.ListFriendsRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     ListFriends
   );
   fastify.get(
     discoveryDocument.FriendsRoutes.ListFriendsRequestsRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     ListRequests
   );
   fastify.get(
     discoveryDocument.FriendsRoutes.ListSentFriendsRequestsRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     ListSentRequests
   );
   fastify.post(
     discoveryDocument.FriendsRoutes.SendFriendRequestRoute.route,
-    FriendRequestOpts,
+    RequireUid,
     SendFriendRequest
   );
   fastify.post(
     discoveryDocument.FriendsRoutes.AcceptFriendRequestRoute.route,
-    FriendRequestOpts,
+    RequireUid,
     AcceptFriendRequest
   );
   fastify.post(
     discoveryDocument.FriendsRoutes.DenyFriendRequestRoute.route,
-    FriendRequestOpts,
+    RequireUid,
     DenyFriendRequest
   );
   fastify.post(
     discoveryDocument.FriendsRoutes.RemoveFriendRoute.route,
-    FriendRequestOpts,
+    RequireUid,
     RemoveFriend
   );
 }

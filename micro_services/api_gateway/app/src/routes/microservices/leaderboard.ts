@@ -1,44 +1,19 @@
 import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
-import { AuthHeaderValidation } from "../../types/AuthProvider";
 import { ListAllRank, GetUserRank } from "../../controllers/microservices/leaderboard";
-
-const RankOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        page: { type: "number" },
-      },
-      required: ["page"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
-
-const UserRankOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-      },
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
+import { AuthCookieValidation, RequirePage, RequireUid } from "../schemas";
 
 async function LeaderboardRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
     discoveryDocument.LeaderboardRoutes.ListAllRank.route,
-    RankOpts,
+    RequirePage,
     ListAllRank
   );
   fastify.get(
     discoveryDocument.LeaderboardRoutes.ListUserRank.route,
-    UserRankOpts,
+    AuthCookieValidation,
     GetUserRank
   );
 }

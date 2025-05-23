@@ -1,35 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
-import { AuthHeaderValidation } from "../../types/AuthProvider";
 import { CreateNewMatch, ListMatchHistory, LoseMatch, WinMatch } from "../../controllers/microservices/match_manager";
-
-const CreateNewMatchOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        match_type: { type: "number" },
-      },
-      required: ["match_type"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
-
-const MatchHistoryOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-        page: { type: "number" },
-      },
-      required: ["page"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
+import { AuthCookieValidation, MatchHistoryOpts, RequireMatchType } from "../schemas";
 
 async function MatchManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
@@ -40,17 +13,17 @@ async function MatchManagerRoutes(fastify: FastifyInstance) {
   );
   fastify.post(
     discoveryDocument.MatchManagerRoutes.CreateNewMatch.route,
-    CreateNewMatchOpts,
+    RequireMatchType,
     CreateNewMatch
   );
   fastify.post(
     discoveryDocument.MatchManagerRoutes.WinMatch.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     WinMatch
   );
   fastify.post(
     discoveryDocument.MatchManagerRoutes.LoseMatch.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     LoseMatch
   );
 }

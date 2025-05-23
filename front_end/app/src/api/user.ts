@@ -35,7 +35,7 @@ export const fetchUserInfo = async (uid?: string | null) => {
 
 export const fetchUserByUsername = async (username?: string | null) => {
   if (!username) return await fetchUserInfo();
-  const res = await fetch(`/api/user/info?uname=${username}`, {
+  const res = await fetch(`/api/user/info?username=${username}`, {
     cache: 'no-store',
   });
   if (res.ok) {
@@ -125,7 +125,7 @@ type SearchUserType = {
 
 export const SearchByUsername = async (username: string) => {
   try {
-    const response = await fetch(`/api/user/search?uname=${username}`);
+    const response = await fetch(`/api/user/search?username=${username}`);
     if (response.ok) {
       return {
         success: true as const,

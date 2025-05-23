@@ -8,59 +8,33 @@ import {
 } from "../../controllers/microservices/user_manager";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
-import { AuthHeaderValidation } from "../../types/AuthProvider";
-
-const GetUserInfoOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-        uname: { type: "string" },
-      },
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
-
-const SearchByUsernameOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uname: { type: "string" },
-      },
-      required: ["uname"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
+import { AuthCookieValidation, RequireUsername } from "../schemas";
 
 async function UserManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
     discoveryDocument.UserManagementRoutes.SearchByUsername.route,
-    SearchByUsernameOpts,
+    RequireUsername,
     SearchByUsername
   );
   fastify.get(
     discoveryDocument.UserManagementRoutes.FetchUserInfoRoute.route,
-    GetUserInfoOpts,
+    AuthCookieValidation,
     FetchUserInfo
   );
   fastify.post(
     discoveryDocument.UserManagementRoutes.UpdateUserInfoRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     UpdateUserInfo
   );
   fastify.post(
     discoveryDocument.UserManagementRoutes.UpdateUserPassword.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     UpdateUserPassword
   );
   fastify.delete(
     discoveryDocument.UserManagementRoutes.RemoveUserProfileRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     RemoveUserProfile
   );
 }

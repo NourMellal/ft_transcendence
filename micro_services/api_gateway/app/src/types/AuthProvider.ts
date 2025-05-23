@@ -1,5 +1,15 @@
 import { KeyObject } from "crypto";
 
+/**
+ * the parsed payload part of the JWT which contains the claims to verify
+ * in order to grant authorization to the entity holding the JWT token.
+ * 
+ * @property sub Subject: used as the uid of the user for it's uniqueness.
+ * @property aud Audience: the uid of the application targeted by the claims.
+ * @property iss Issuer: the uid of the issuer of the token this should be either google or the ft_transcendence server uid.
+ * @property exp Expires: the expiration time after the token will not be valid (unix seconds).
+ * @property iat IssueAt: The unix seconds whe the token created.
+ */
 export type JWT = {
   iss: string;
   aud: string;
@@ -11,6 +21,12 @@ export type JWT = {
   picture?: string;
 };
 
+/**
+ * the parsed header part of the JWT which contains the 
+ * 
+ * @property alg Algorithm: used as the uid of the user for it's uniqueness.
+ * @property kid KeyId: the expiration time after the token will not be valid (unix seconds).
+ */
 export type JWTHeaders = {
   alg: string;
   kid: string;
@@ -27,16 +43,4 @@ export type JWTKeyCert = {
       alg: string;
     }
   ];
-};
-
-export const AuthHeaderValidation = {
-  schema: {
-    headers: {
-      type: "object",
-      properties: {
-        Cookie: { type: "string" },
-      },
-      required: ["Cookie"],
-    },
-  },
 };

@@ -60,7 +60,7 @@ export default class ProfilePage extends HTMLElement {
     try {
       let profileUser: User | null;
       if (userId || username) {
-        const queryParam = username ? `uname=${username}` : `uid=${userId}`;
+        const queryParam = username ? `username=${username}` : `uid=${userId}`;
         const res = await fetchWithAuth(`/api/user/info?${queryParam}`, {
           credentials: 'include',
           cache: 'no-store',

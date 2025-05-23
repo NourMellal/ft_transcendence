@@ -72,8 +72,9 @@ export const isRequestAuthorizedHook = async (
 ) => {
   try {
     if (!AuthProvider.isReady) throw `OAuth class not ready`;
+    if (!request.headers.cookie) throw `jwt cookie null`;
     const verification = AuthProvider.ValidateJWT_Cookie(
-      request.headers.cookie as string
+      request.headers.cookie
     );
     if (typeof verification === "string")
       request.jwt = AuthProvider.RefreshToken(verification, reply);

@@ -237,7 +237,7 @@
             "method": "GET",
             "header": [{ "key": "Cookie", "value": "jwt={{jwt_token}}" }],
             "url": {
-              "raw": "{{ServerUrl}}/api/user/info?uid={{uid}}&uname={{uname}}",
+              "raw": "{{ServerUrl}}/api/user/info?uid={{uid}}&username={{uname}}",
               "host": ["{{ServerUrl}}"],
               "path": ["api", "user", "info"],
               "query": [

@@ -10,50 +10,14 @@ import {
 } from "../controllers/Authenticator";
 import { Verify2FACode } from "../controllers/Authenticator";
 import { isRequestAuthorizedHook } from "../controllers/Common";
-import { AuthHeaderValidation } from "../types/AuthProvider";
+import { AuthCookieValidation, RequireState, RequireToken_id, RequireUsername } from "./schemas";
 
-const CheckDisplayNameOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        username: { type: "string" },
-      },
-      required: ["username"],
-    },
-  },
-};
-
-const Verify2FAOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        state: { type: "string" },
-      },
-      required: ["state"],
-    },
-  },
-};
-
-const RemoveRefreshTokenOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        token_id: { type: "string" },
-      },
-      required: ["token_id"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
 
 export async function AuthenticatorRoutes(fastify: FastifyInstance) {
   fastify.get(
     discoveryDocument.StandardAuthRoutes.CheckUserDisplayNameAvailableRoute
       .route,
-    CheckDisplayNameOpts,
+    RequireUsername,
     IsDisplayNameAvailable
   );
   fastify.post(
@@ -66,7 +30,7 @@ export async function AuthenticatorRoutes(fastify: FastifyInstance) {
   );
   fastify.post(
     discoveryDocument.TwoFactorAuthRoutes.VerifyCode.route,
-    Verify2FAOpts,
+    RequireState,
     Verify2FACode
   );
 }
@@ -79,12 +43,12 @@ export async function RefreshTokenManagementRoutes(fastify: FastifyInstance) {
   );
   fastify.post(
     discoveryDocument.RefreshTokenRoutes.RemoveAccess.route,
-    RemoveRefreshTokenOpts,
+    RequireToken_id,
     RemoveRefreshToken
   )
   fastify.post(
     discoveryDocument.LogOutRoute.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     LogOutCurrentUser
   )
 }

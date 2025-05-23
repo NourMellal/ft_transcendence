@@ -110,14 +110,14 @@ export const discoveryDocument = {
     SearchByUsername: {
       description: "HTTP: Search for users by username.",
       route: "/api/user/search",
-      QueryParams: [{ name: "uname" }],
+      QueryParams: [{ name: "username" }],
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     }, 
     FetchUserInfoRoute: {
       description: "HTTP: Get information about the user with uid.",
       route: "/api/user/info",
-      QueryParams: [{ name: "uid" }, { name: "uname" }],
+      QueryParams: [{ name: "uid" }, { name: "username" }],
       headers: [{ name: "Cookie", value: "jwt={{jwt_token}}" }],
       method: "GET",
     },

@@ -11,7 +11,7 @@
 ###### START USER MANAGEMENT TESTs (Authorization required) ######
 
 # GET user info by uid:
-GET https://transcendence.fr/api/user/search?uname=
+GET https://transcendence.fr/api/user/search?username=
 #Cookie: jwt={{jwt_token}}
 
 ###

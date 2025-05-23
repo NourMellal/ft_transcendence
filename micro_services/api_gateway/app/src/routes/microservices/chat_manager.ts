@@ -1,41 +1,14 @@
 import { FastifyInstance } from "fastify";
 import { isRequestAuthorizedHook } from "../../controllers/Common";
 import { discoveryDocument } from "../../models/DiscoveryDocument";
-import { AuthHeaderValidation } from "../../types/AuthProvider";
 import { BlockUser, CheckBlocked, CreateConversation, ListBlocked, ListConversations, MarkConversationAsRead, ReadConversation, RenameConversation, SendMessageToConversation, UnBlockUser } from "../../controllers/microservices/chat_manager";
-
-const EditPostOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-      },
-      required: ["uid"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
-
-const ReadConversationOpts = {
-  schema: {
-    querystring: {
-      type: "object",
-      properties: {
-        uid: { type: "string" },
-        page: { type: "number" },
-      },
-      required: ["uid", "page"],
-    },
-    headers: AuthHeaderValidation.schema.headers,
-  },
-};
+import { AuthCookieValidation, ReadConversationOpts, RequireUid } from "../schemas";
 
 async function ChatManagerRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", isRequestAuthorizedHook);
   fastify.get(
     discoveryDocument.ChatManagerRoutes.ListConversations.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     ListConversations
   );
   fastify.get(
@@ -45,42 +18,42 @@ async function ChatManagerRoutes(fastify: FastifyInstance) {
   );
   fastify.get(
     discoveryDocument.ChatManagerRoutes.ListBlocked.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     ListBlocked
   );
   fastify.get(
     discoveryDocument.ChatManagerRoutes.CheckBlock.route,
-    EditPostOpts,
+    RequireUid,
     CheckBlocked
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.CreateConversation.route,
-    AuthHeaderValidation,
+    AuthCookieValidation,
     CreateConversation
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.RenameConversation.route,
-    EditPostOpts,
+    RequireUid,
     RenameConversation
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.SendMessageToConversation.route,
-    EditPostOpts,
+    RequireUid,
     SendMessageToConversation
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.BlockUser.route,
-    EditPostOpts,
+    RequireUid,
     BlockUser
   );
   fastify.post(
     discoveryDocument.ChatManagerRoutes.UnBlockUser.route,
-    EditPostOpts,
+    RequireUid,
     UnBlockUser
   );
     fastify.post(
     discoveryDocument.ChatManagerRoutes.MarkConversationAsRead.route,
-    EditPostOpts,
+    RequireUid,
     MarkConversationAsRead
   );
 }

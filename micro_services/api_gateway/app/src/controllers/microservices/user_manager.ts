@@ -50,22 +50,22 @@ const DecorateUserInfo = (UID: string, response_message: string, request: Fastif
 }
 
 export const FetchUserInfo = async (
-  request: FastifyRequest<{ Querystring: { uid: string; uname: string } }>,
+  request: FastifyRequest<{ Querystring: { uid: string; username: string } }>,
   reply: FastifyReply
 ) => {
   try {
-    const { uid, uname } = request.query;
-    if (!uid && !uname) return reply.code(400).send("bad request");
+    const { uid, username } = request.query;
+    if (!uid && !username) return reply.code(400).send("bad request");
     let UID: string = "";
     if (uid) {
       if (uid === "me") UID = request.jwt.sub;
       else UID = uid;
-    } else if (uname) {
+    } else if (username) {
       try {
         const query = db.persistent.prepare(
           `SELECT UID FROM '${users_table_name}' WHERE username = ? ;`
         );
-        const res = query.get(uname) as UserModel;
+        const res = query.get(username) as UserModel;
         if (!res) throw "no user found";
         UID = res.UID;
       } catch (err) {
