@@ -12,17 +12,17 @@ import { UserModel, users_table_name } from "../../types/DbTables";
 import crypto from "crypto";
 
 export const SearchByUsername = async (
-  request: FastifyRequest<{ Querystring: { uname: string } }>,
+  request: FastifyRequest<{ Querystring: { username: string } }>,
   reply: FastifyReply
 ) => {
-  if (!request.query.uname)
+  if (!request.query.username)
     return reply.code(400).send("bad request");
   try {
     reply.header("Content-Type", "application/json");
     const query = db.persistent.prepare(
       `SELECT username FROM '${users_table_name}' WHERE username LIKE ? ;`
     );
-    const res = query.all(`%${request.query.uname}%`);
+    const res = query.all(`%${request.query.username}%`);
     reply.code(200).send(res);
   } catch (error) {
     reply.code(400).send("bad request");
@@ -79,7 +79,7 @@ export const FetchUserInfo = async (
       JWT: request.jwt,
     };
     reply.hijack();
-    rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.user_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       if (response.status !== 200 || response.message === undefined)
         return reply.raw.end(response.message);
@@ -151,7 +151,7 @@ export const UpdateUserInfo = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.user_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });
@@ -224,7 +224,7 @@ export const RemoveUserProfile = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.user_manager_queue, RabbitMQReq, (response) => {
       if (response.status === 200) {
         fs.unlinkSync(picture_path);
       }

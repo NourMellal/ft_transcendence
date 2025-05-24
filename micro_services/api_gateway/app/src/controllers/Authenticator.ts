@@ -99,7 +99,7 @@ export const SignUpNewStandardUser = async (
       id: "",
       JWT: jwt,
     };
-    rabbitmq.sendToUserManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.user_manager_queue, RabbitMQReq, (response) => {
       if (response.status !== 200) {
         db.persistent.exec('ROLLBACK;')
         reply.raw.statusCode = response.status;

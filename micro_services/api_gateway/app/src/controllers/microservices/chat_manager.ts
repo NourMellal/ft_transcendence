@@ -20,7 +20,7 @@ export const ListConversations = async (
     JWT: request.jwt,
     op: RabbitMQChatManagerOp.LIST_CONVERSATIONS,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     if (response.status !== 200) {
       return reply.raw.end();
@@ -39,7 +39,7 @@ export const ListUnreadConversations = async (
     JWT: request.jwt,
     op: RabbitMQChatManagerOp.LIST_UNREAD_CONVERSATIONS,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     if (response.status !== 200) {
       return reply.raw.end();
@@ -69,7 +69,7 @@ export const ReadConversation = async (
     op: RabbitMQChatManagerOp.READ_CONVERSATION,
     message: JSON.stringify(ReadRequest),
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.setHeader("Content-Type", "application/json");
     reply.raw.end(response.message);
@@ -85,7 +85,7 @@ export const ListBlocked = async (
     JWT: request.jwt,
     op: RabbitMQChatManagerOp.BLOCK_LIST,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     try {
       reply.raw.statusCode = response.status;
       reply.raw.setHeader("Content-Type", "application/json");
@@ -120,7 +120,7 @@ export const CheckBlocked = async (
     op: RabbitMQChatManagerOp.CHECK_BLOCK,
     message: request.query.uid,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -160,7 +160,7 @@ export const CreateConversation = async (
     op: RabbitMQChatManagerOp.CREATE_CONVERSATION,
     message: JSON.stringify(conversation),
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -187,7 +187,7 @@ export const RenameConversation = async (
     op: RabbitMQChatManagerOp.RENAME_CONVERSATION,
     message: JSON.stringify(update_conversation),
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -214,7 +214,7 @@ export const SendMessageToConversation = async (
     op: RabbitMQChatManagerOp.SEND_MESSAGE,
     message: JSON.stringify(send_message),
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -236,7 +236,7 @@ export const BlockUser = async (
     op: RabbitMQChatManagerOp.BLOCK,
     message: request.query.uid,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -253,7 +253,7 @@ export const UnBlockUser = async (
     op: RabbitMQChatManagerOp.UNBLOCK,
     message: request.query.uid,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -270,7 +270,7 @@ export const MarkConversationAsRead = async (
     op: RabbitMQChatManagerOp.MARK_CONVERSATIONS_READ,
     message: request.query.uid,
   } as RabbitMQRequest;
-  rabbitmq.sendToChatManagerQueue(RMQrequest, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.chat_manager_queue, RMQrequest, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });

@@ -15,6 +15,11 @@ type VaultLoginResponse = {
   };
 };
 
+/**
+ * VaultClient class used to login to the vault server and retrieve
+ * the google credential used in oidc flow to autheticate google
+ * users.
+ */
 class VaultClient {
   vault_url: string;
   envs: VaultEnvs;

@@ -64,7 +64,7 @@ function SignUpNewGoogleUser(OAuthRes: OAuthResponse, reply: FastifyReply, ip: s
       id: "",
       JWT: OAuthRes.jwt,
     };
-    rabbitmq.sendToUserManagerQueue(msg, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.user_manager_queue, msg, (response) => {
       if (response.status !== 200) {
         db.persistent.exec('ROLLBACK;')
         reply.raw.statusCode = response.status;

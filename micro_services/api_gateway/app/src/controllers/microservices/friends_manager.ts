@@ -41,14 +41,14 @@ const decorateFriendListPayload = function (raw: string, reply: FastifyReply) {
     message: raw,
     JWT: {} as JWT
   }
-  rabbitmq.sendToUserManagerQueue(RmqRequest, (RawResponse) => {
+  rabbitmq.sendToQueue(rabbitmq.user_manager_queue, RmqRequest, (RawResponse) => {
     try {
       let FriendsInfo = JSON.parse(RawResponse.message as string) as {
         UID: string;
         picture_url: string;
         bio: string;
-        username?:string;
-        active_status?:number;
+        username?: string;
+        active_status?: number;
       }[];
       if (FriendsInfo.length === 0)
         return reply.raw.end('[]');
@@ -81,7 +81,7 @@ export const ListFriends = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.setHeader("Content-Type", "application/json");
       if (response.status === 200 && response.message) {
@@ -109,7 +109,7 @@ export const ListRequests = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.setHeader("Content-Type", "application/json");
       if (response.status === 200 && response.message) {
@@ -137,7 +137,7 @@ export const ListSentRequests = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.setHeader("Content-Type", "application/json");
       if (response.status === 200 && response.message) {
@@ -180,7 +180,7 @@ export const SendFriendRequest = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });
@@ -206,7 +206,7 @@ export const AcceptFriendRequest = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });
@@ -232,7 +232,7 @@ export const DenyFriendRequest = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });
@@ -270,7 +270,7 @@ export const RemoveFriend = async (
       id: "",
       JWT: request.jwt,
     };
-    rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
       reply.raw.statusCode = response.status;
       reply.raw.end(response.message);
     });

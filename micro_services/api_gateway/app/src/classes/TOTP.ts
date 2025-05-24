@@ -1,5 +1,10 @@
 import crypto from "crypto";
 
+/**
+ * this object used to temporarly hold the jwt_token
+ * for Users who activated Two factor authentication
+ * to complete the 2FA flow when signing in.
+ */
 export type TOTPStatesModel = {
   totp_key: string;
   jwt_token: string;
@@ -7,11 +12,24 @@ export type TOTPStatesModel = {
   created: number;
 };
 
-class TOTP {
+/**
+ * TOTP class provides functionality for generating totp codes
+ * and holds a map of `TOTPStatesModel` used to temporarly store
+ * the values of jwt token returned to the end user when they
+ * successfuly complete the 2FA flow.
+ */
+export class TOTP {
   states: Map<string, TOTPStatesModel>;
   constructor() {
     this.states = new Map<string, TOTPStatesModel>();
   }
+
+  /**
+   * This function generates totp code using a key
+   * @param keyString The key used to generate the totp code
+   * @returns the current totp code.
+   * @see https://datatracker.ietf.org/doc/html/rfc6238
+   */
   generateTOTP(keyString: string): string {
     const codeDigitsCount = 6;
     const timeStamp = Math.floor(Date.now() / (1000 * 30));

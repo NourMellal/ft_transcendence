@@ -4,9 +4,15 @@ import { JWT } from "../types/AuthProvider";
 import { GoogleDiscoveryDocument } from "../types/OAuth";
 import Vault from "./VaultClient";
 
+/**
+ * JWTFactory is a helper class provides JWT core functions
+ * like generating and signing jwt_token using the server's
+ * private key.
+ */
 class JWTFactory {
   discoveryDocument: GoogleDiscoveryDocument;
   key: KeyObject;
+
   constructor(
     server_private_key_path: string,
     document: GoogleDiscoveryDocument
@@ -15,6 +21,7 @@ class JWTFactory {
     this.key = crypto.createPrivateKey(private_key);
     this.discoveryDocument = document;
   }
+
   public SignJWT(jwt: JWT): string {
     const header_encoded: string = JSON.stringify({
       alg: "RS256",
@@ -32,6 +39,7 @@ class JWTFactory {
       jwt_headers + "." + jwt_payload + "." + Signature.toString("base64url")
     );
   }
+
   public VerifyJWT(jwt_parts: string[]): JWT {
     var Verifier = crypto.createVerify("RSA-SHA256");
     var signature = Buffer.from(jwt_parts[2], "base64");

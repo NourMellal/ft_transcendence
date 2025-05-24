@@ -134,7 +134,7 @@ export const GetUnreadNotification = async (
     id: "",
     JWT: request.jwt,
   };
-  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.notifications_queue, RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
@@ -154,7 +154,7 @@ export const GetAllNotification = async (
     id: "",
     JWT: request.jwt,
   };
-  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.notifications_queue, RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.setHeader("Content-Type", "application/json");
     if (response.message)
@@ -174,7 +174,7 @@ export const MarkNotificationAsRead = async (
     id: "",
     JWT: request.jwt,
   };
-  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.notifications_queue, RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -191,7 +191,7 @@ export const DeleteNotification = async (
     id: "",
     JWT: request.jwt,
   };
-  rabbitmq.sendToNotificationQueue(RabbitMQReq, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.notifications_queue, RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });
@@ -208,7 +208,7 @@ export const PokeFriend = async (
     id: "",
     JWT: request.jwt,
   };
-  rabbitmq.sendToFriendsManagerQueue(RabbitMQReq, (response) => {
+  rabbitmq.sendToQueue(rabbitmq.friends_manager_queue, RabbitMQReq, (response) => {
     reply.raw.statusCode = response.status;
     reply.raw.end(response.message);
   });

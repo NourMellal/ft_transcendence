@@ -14,7 +14,7 @@ export const ListMatchHistory = async (
         message: JSON.stringify({ UID: !request.query.uid ? request.jwt.sub : request.query.uid, page: request.query.page }),
         JWT: request.jwt,
     };
-    rabbitmq.sendToMatchManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.match_manager_queue,RabbitMQReq, (response) => {
         reply.raw.statusCode = response.status;
         reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);
@@ -34,7 +34,7 @@ export const CreateNewMatch = async (
         message: request.query.match_type,
         JWT: request.jwt,
     };
-    rabbitmq.sendToMatchManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.match_manager_queue,RabbitMQReq, (response) => {
         reply.raw.statusCode = response.status;
         reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);
@@ -59,7 +59,7 @@ export const WinMatch = async (
         message: match_uid.field_value,
         JWT: request.jwt,
     };
-    rabbitmq.sendToMatchManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.match_manager_queue,RabbitMQReq, (response) => {
         reply.raw.statusCode = response.status;
         reply.raw.end(response.message);
     });
@@ -83,7 +83,7 @@ export const LoseMatch = async (
         message: match_uid.field_value,
         JWT: request.jwt,
     };
-    rabbitmq.sendToMatchManagerQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.match_manager_queue,RabbitMQReq, (response) => {
         reply.raw.statusCode = response.status;
         reply.raw.end(response.message);
     });

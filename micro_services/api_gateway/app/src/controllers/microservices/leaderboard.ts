@@ -14,7 +14,7 @@ export const ListAllRank = async (
         message: request.query.page.toString(),
         JWT: request.jwt,
     };
-    rabbitmq.sendToLeaderboardQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.leaderboard_queue, RabbitMQReq, (response) => {
         try {
             reply.raw.statusCode = response.status;
             reply.raw.setHeader("Content-Type", "application/json");
@@ -44,7 +44,7 @@ export const GetUserRank = async (
         message: !request.query.uid ? request.jwt.sub : request.query.uid,
         JWT: request.jwt,
     };
-    rabbitmq.sendToLeaderboardQueue(RabbitMQReq, (response) => {
+    rabbitmq.sendToQueue(rabbitmq.leaderboard_queue, RabbitMQReq, (response) => {
         reply.raw.statusCode = response.status;
         reply.raw.setHeader("Content-Type", "application/json");
         reply.raw.end(response.message);

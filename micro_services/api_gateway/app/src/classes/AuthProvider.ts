@@ -8,7 +8,7 @@ import { FastifyReply } from "fastify";
 import Vault from "./VaultClient";
 
 /**
- * @class Provides authorization verification methods.
+ * OAuthProvider Provides authorization verification methods.
  */
 class OAuthProvider {
   isReady: boolean = false;
