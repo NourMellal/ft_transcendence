@@ -15,11 +15,11 @@ import {
 import {
   CreateRefreshToken,
   GetRandomString,
-  GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
 } from "./Common";
 import { discoveryDocument } from "../models/DiscoveryDocument";
 import Vault from "../classes/VaultClient";
+import Totp from "../classes/TOTP";
 
 async function OAuthExchangeCode(code: string): Promise<OAuthResponse> {
   const reqOpt: RequestInit = {
@@ -120,7 +120,7 @@ export const AuthenticateUser = async (
     }
     if (getUserResult.totp_key && getUserResult.totp_enabled === 1) {
       try {
-        const redirectUrl = GetTOTPRedirectionUrl(
+        const redirectUrl = Totp.GetTOTPRedirectionUrl(
           OAuthRes.jwt.sub,
           OAuthRes.response.id_token,
           getUserResult.totp_key
@@ -141,7 +141,7 @@ export const AuthenticateUser = async (
     }
   } catch (error) {
     console.log(`ERROR: AuthenticateUser(): ${error}`);
-    return reply.code(500).send(`Invalid credentials.`);
+    return reply.code(400).send(`invalid credentials`);
   }
 };
 

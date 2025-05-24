@@ -8,9 +8,11 @@ import db from "../classes/Databases";
 import base32 from "base32-encode";
 import { multipart_fields } from "../types/multipart";
 import Totp from "../classes/TOTP";
-import { discoveryDocument } from "../models/DiscoveryDocument";
 
-
+// [Security concern]: this flow is vurlnable cause the totp key is generated one time
+// all the logged-in session for the user have access to the totp key before the 2fa
+// is enabled. an attacker can store the totp key and hold it until activated then he can use it.
+// [Solution]: just-in-time generation of the totp key when the user request to enable 2fa..
 export const Get2FAString = async (
   request: FastifyRequest,
   reply: FastifyReply

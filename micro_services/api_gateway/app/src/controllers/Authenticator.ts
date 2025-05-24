@@ -17,7 +17,6 @@ import AuthProvider from "../classes/AuthProvider";
 import rabbitmq from "../classes/RabbitMQ";
 import {
   CreateRefreshToken,
-  GetTOTPRedirectionUrl,
   ProcessSignUpResponse,
 } from "./Common";
 import Totp from "../classes/TOTP";
@@ -150,40 +149,35 @@ export const SignInStandardUser = async (
       username.field_value,
       hasher.digest().toString()
     ) as UserModel;
-    if (res) {
-      const jwt = JWTFactory.CreateJWT(res.UID, res.username);
-      const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
-      if (res.totp_key && res.totp_enabled === 1) {
-        try {
-          const redirectUrl = GetTOTPRedirectionUrl(
-            res.UID,
-            jwt_token,
-            res.totp_key
-          );
-          return reply.code(301).redirect(redirectUrl);
-        } catch (error) {
-          return reply.code(500).send("internal error try again");
-        }
-      }
-      const expiresDate = new Date(jwt.exp * 1000).toUTCString();
-      const refresh_token = CreateRefreshToken(jwt.sub, request.ip);
-      reply.raw.appendHeader(
-        "set-cookie",
-        `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    if (!res)
+      return reply.code(401).send("invalid credentials");
+    const jwt = JWTFactory.CreateJWT(res.UID, res.username);
+    const jwt_token = AuthProvider.jwtFactory.SignJWT(jwt);
+    if (res.totp_key && res.totp_enabled === 1) {
+      const TotpRedirectUrl = Totp.GetTOTPRedirectionUrl(
+        res.UID,
+        jwt_token,
+        res.totp_key
       );
-      reply.raw.appendHeader(
-        "set-cookie",
-        `refresh_token=${refresh_token}; Path=/; Expires=${new Date(
-          2100,
-          0
-        ).toUTCString()}; Secure; HttpOnly`
-      );
-      return reply.code(200).send();
+      return reply.code(301).redirect(TotpRedirectUrl);
     }
-    return reply.code(401).send("invalid credentials");
+    const expiresDate = new Date(jwt.exp * 1000).toUTCString();
+    const refresh_token = CreateRefreshToken(jwt.sub, request.ip);
+    reply.raw.appendHeader(
+      "set-cookie",
+      `jwt=${jwt_token}; Path=/; Expires=${expiresDate}; Secure; HttpOnly`
+    );
+    reply.raw.appendHeader(
+      "set-cookie",
+      `refresh_token=${refresh_token}; Path=/; Expires=${new Date(
+        2100,
+        0
+      ).toUTCString()}; Secure; HttpOnly`
+    );
+    return reply.code(200).send();
   } catch (error) {
     console.log(`ERROR: SignInStandardUser(): ${error}`);
-    return reply.code(500).send("internal server error please try again.");
+    return reply.code(400).send(`invalid credentials`);
   }
 };
 

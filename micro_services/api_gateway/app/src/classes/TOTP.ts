@@ -1,4 +1,7 @@
 import crypto from "crypto";
+import { GetRandomString } from "../controllers/Common";
+import { state_expiree_sec } from "../types/DbTables";
+import { discoveryDocument } from "../models/DiscoveryDocument";
 
 /**
  * this object used to temporarly hold the jwt_token
@@ -17,6 +20,8 @@ export type TOTPStatesModel = {
  * and holds a map of `TOTPStatesModel` used to temporarly store
  * the values of jwt token returned to the end user when they
  * successfuly complete the 2FA flow.
+ * For Totp verification check the controller function `Verify2FACode`
+ * inside the file `src/controllers/Authenticator.ts` 
  */
 export class TOTP {
   states: Map<string, TOTPStatesModel>;
@@ -53,6 +58,26 @@ export class TOTP {
     }
     return result;
   }
+
+  /**
+   * This function generates a redirect url to give to the user for completing the 2FA flow.
+   * @param uid the uid of the user requesting login.
+   * @param jwt_token the token to set for the user after they enter the correct totp code.
+   * @param totp_key totp_key used to generate the code.
+   * @returns The redirection url for the user to use with the short-lived random state string where he can enter the totp code.
+   */
+  GetTOTPRedirectionUrl(uid: string, jwt_token: string, totp_key: string): string {
+    const state = GetRandomString(8);
+    if (this.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
+    this.states.set(state, {
+      created: Date.now() / 1000,
+      UID: uid,
+      totp_key: totp_key,
+      jwt_token: jwt_token,
+    });
+    setTimeout(() => this.states.delete(state), state_expiree_sec * 1000);
+    return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
+  };
 }
 
 const Totp = new TOTP();

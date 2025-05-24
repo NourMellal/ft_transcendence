@@ -99,23 +99,6 @@ export const GetRandomString = function (bytesCount: number): string {
   return Buffer.from(utf8Array).toString("base64url");
 };
 
-export const GetTOTPRedirectionUrl = function (
-  uid: string,
-  jwt_token: string,
-  totp_key: string
-): string {
-  const state = GetRandomString(8);
-  if (Totp.states.has(state)) throw "GetTOTPRedirectionUrl(): Duplicate state";
-  Totp.states.set(state, {
-    created: Date.now() / 1000,
-    UID: uid,
-    totp_key: totp_key,
-    jwt_token: jwt_token,
-  });
-  setTimeout(() => Totp.states.delete(state), state_expiree_sec * 1000);
-  return `${discoveryDocument.ServerUrl}/2fa/verify?state=${state}`;
-};
-
 export const GetUsernamesByUIDs = function (uids: string[]): Map<string, string> {
   let querystring = `SELECT UID, username FROM ${users_table_name} WHERE `;
   for (let i = 0; i < uids.length; i++) {

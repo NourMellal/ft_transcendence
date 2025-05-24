@@ -23,10 +23,10 @@ ${FRONT_BUILD}:
 %/dist:
 	cd $(abspath ./$@/..) && npx tsc
 all: ${ENV_FILES} ${NODE_MODULES} ${FRONT_BUILD} ${DIST_FILES} create_volumes_dir set-host-and-permission
-	docker compose -f ${COMPOSE_FILE} up ${detach}
+	COMPOSE_BAKE=true docker compose -f ${COMPOSE_FILE} up ${detach}
 build: ${ENV_FILES} ${NODE_MODULES} ${FRONT_BUILD} ${DIST_FILES} create_volumes_dir set-host-and-permission
-	docker compose -f ./vault/docker-compose-vault.yml up --build -d
-	docker compose -f ${COMPOSE_FILE} up --build ${detach}
+	COMPOSE_BAKE=true docker compose -f ./vault/docker-compose-vault.yml up --build -d
+	COMPOSE_BAKE=true docker compose -f ${COMPOSE_FILE} up --build ${detach}
 clean:
 	docker compose -f ${COMPOSE_FILE} down
 	docker compose -f ./vault/docker-compose-vault.yml down
