@@ -1,3 +1,6 @@
+/**
+ * This is the discovery document provides a list of all routes infos.
+ */
 export const discoveryDocument = {
   ServerUrl: "https://transcendence.fr",
   discoveryDocumentRoute: "/api/.well-known/discovery",

@@ -19,7 +19,7 @@ import { pingUser } from "../controllers/microservices/notifications";
  * different services that tries to notify a user on his websocket
  * about something if the user requested is connected to the site.
  */
-class RabbitMQ {
+export class RabbitMQ {
   isReady = false;
 
   // RabbitMQ Connection options:

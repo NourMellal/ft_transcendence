@@ -1,12 +1,12 @@
 import https from "https";
 
-type VaultEnvs = {
+/**
+ * Model of the environments that will be retirived from
+ * Vault key/value (kv) secret engine.
+ */
+export type VaultEnvs = {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
-};
-
-type VaultEnvsResponse = {
-  data: VaultEnvs;
 };
 
 type VaultLoginResponse = {
@@ -20,7 +20,7 @@ type VaultLoginResponse = {
  * the google credential used in oidc flow to autheticate google
  * users.
  */
-class VaultClient {
+export class VaultClient {
   vault_url: string;
   envs: VaultEnvs;
   constructor() {
@@ -45,7 +45,7 @@ class VaultClient {
         { headers: { "X-Vault-Token": token } }
       );
       if (!envs_req.ok) throw "Can't retreive credentials";
-      this.envs = ((await envs_req.json()) as VaultEnvsResponse).data;
+      this.envs = ((await envs_req.json()) as { data: VaultEnvs }).data;
       console.info("Credentials retreived from vault!");
     } catch (error) {
       console.log(`[FATAL ERROR] VaultClient.RetrieveEnvs():`, error);
@@ -53,5 +53,7 @@ class VaultClient {
     }
   }
 }
+
 const Vault: VaultClient = new VaultClient();
+
 export default Vault;

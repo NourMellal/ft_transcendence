@@ -10,7 +10,7 @@ import Vault from "./VaultClient";
 /**
  * OAuthProvider Provides authorization verification methods.
  */
-class OAuthProvider {
+export class OAuthProvider {
   isReady: boolean = false;
   discoveryDocumentURL: string;
   discoveryDocument: GoogleDiscoveryDocument;

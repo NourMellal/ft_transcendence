@@ -8,7 +8,10 @@ import {
   users_table_name,
 } from "../types/DbTables";
 
-class Databases {
+/**
+ * A basic SQLite database connection wrapper
+ */
+export class Databases {
   persistent: DatabaseSync;
 
   constructor(p: DatabaseSync) {
