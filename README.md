@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/msitni1337/ft_transcendence">
-    <img src="images/ft_transcendence.png" alt="Logo" width="80" height="80">
+    <img src="images/ft_transcendence.png" alt="Logo" width="256" height="256">
   </a>
 
 <h3 align="center">ft_transcendence</h3>
@@ -73,10 +73,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![logo](images/ft_transcendence.png)
-![screenshot](images/Screenshot00.png)
-![screenshot](images/Screenshot02.png)
-![screenshot](images/Screenshot05.png)
+![screenshot](images/Screenshot00.png =384x210)
+![screenshot](images/Screenshot02.png =384x210)
+![screenshot](images/Screenshot05.png =384x210)
 ![see-all-screenshots](images)
 
 ft_transcendence is a full-stack web application that reimagines the classic Pong arcade game with modern functionalities, social features and robust security measures and best practices. Developed as part of my curriculum, this project challenged me to work with various technologies while adhering to strict requirements in performance, security, and scalability.
