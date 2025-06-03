@@ -60,17 +60,17 @@ function    getUserName(playername: HTMLDivElement)
 {
     username.style.display = 'flex';
     submit.addEventListener('click',  (e:MouseEvent) => {
-        if (inputName.value === ''){
+        if (inputName.value.trim() === ''){
             e.preventDefault()
             error.innerText = "Enter username";
             error.style.display = "block";
         }
-        else if (inputName.value.length > 10){
+        else if (inputName.value.trim().length > 10){
             e.preventDefault();
             error.innerText = "Too long username";
             error.style.display = "flex";
         }else{
-            playername.innerText = inputName.value;
+            playername.innerText = inputName.value.trim();
             error.style.display = 'none';
             username.style.display = 'none';
             inputName.value = '';
